@@ -17,17 +17,17 @@ class ScriptedLLM:
     """Answers requests from a script keyed by ``request.purpose``.
 
     Each entry may be a fixed string, a list of strings consumed in order, or a
-    function of the request. ``"*"`` is the fallback entry. A bare callable handles
-    every purpose.
+    function of the request. ``"*"`` is the fallback entry. A bare callable, string
+    or list handles every purpose.
     """
 
     def __init__(
         self,
-        script: Handler | dict[str, Handler | list[str] | str],
+        script: Handler | str | list[str] | dict[str, Handler | list[str] | str],
         model: str = "scripted",
     ):
         self.model = model
-        self._script = script
+        self._script = {"*": script} if isinstance(script, (str, list)) else script
         self.requests: list[LLMRequest] = []
 
     def _answer(self, request: LLMRequest) -> str:

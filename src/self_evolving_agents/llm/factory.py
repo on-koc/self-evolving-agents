@@ -28,6 +28,4 @@ def make_backend(spec: str, **options: Any) -> LLMBackend:
         from .offline import OfflineDemoLLM
 
         return OfflineDemoLLM(**options)
-    raise LLMError(
-        f"unknown LLM spec {spec!r}; use 'anthropic[:model]' or 'offline-demo'"
-    )
+    raise LLMError(f"unknown LLM spec {spec!r}; use 'anthropic[:model]' or 'offline-demo'")

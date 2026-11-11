@@ -17,6 +17,7 @@ Basilisk and BSK-RL are imported on first use. The first reset downloads about
 
 from __future__ import annotations
 
+import contextlib
 from typing import Any
 
 from ..types import Action, Observation, Outcome, Task
@@ -286,10 +287,9 @@ class BSKScanEnv(TextEnv):
 
     def close(self) -> None:
         if self._env is not None:
-            try:
+            # BSK-RL's close() assumes a simulator exists.
+            with contextlib.suppress(AttributeError):
                 self._env.close()
-            except AttributeError:
-                pass  # BSK-RL's close() assumes a simulator exists
             self._env = None
         self._ready = False
 

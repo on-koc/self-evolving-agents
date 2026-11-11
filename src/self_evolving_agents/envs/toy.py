@@ -184,6 +184,7 @@ class ToyScanEnv(TextEnv):
             self._battery_wh, self._alive, self._failure = 0.0, False, "battery"
         elif self._wheel >= 1.0:
             self._wheel, self._alive, self._failure = 1.0, False, "wheels"
+        recorded_reward = reward  # what was earned by recording, before any penalty
         if not self._alive:
             reward -= 1.0
             terminated = True
@@ -194,7 +195,8 @@ class ToyScanEnv(TextEnv):
         self._log.append(
             {
                 "action": name,
-                "reward": reward,
+                # The failure penalty is not recorded data; keep it out of the scan tally.
+                "reward": recorded_reward,
                 "dt": dt,
                 "battery": features["battery"],
                 "wheel_speed": features["wheel_speed"],
@@ -219,7 +221,7 @@ class ToyScanEnv(TextEnv):
 
     def outcome(self) -> Outcome:
         metrics = sc.summarise_episode(self._log, self._alive, self._failure, self.params)
-        score = sum(s["reward"] for s in self._log)
+        score = sum(s["reward"] for s in self._log) - (0.0 if self._alive else 1.0)
         return Outcome(
             score=round(score, 6),
             success=bool(self._alive and metrics["scan_fraction"] >= self.params["success_score"]),

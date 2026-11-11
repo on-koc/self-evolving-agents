@@ -145,9 +145,7 @@ class DiscoveryWorldEnv(TextEnv):
         )
         if teleports:
             actions_doc += "\nTeleport locations: " + ", ".join(teleports) + "."
-        actions_doc += (
-            "\nWhile a dialog is open you can only choose one of its numbered options."
-        )
+        actions_doc += "\nWhile a dialog is open you can only choose one of its numbered options."
         return EnvSpec(
             domain="scientific discovery and laboratory investigation in a simulated world",
             role=(
@@ -274,7 +272,9 @@ class DiscoveryWorldEnv(TextEnv):
         ui = raw["ui"]
         self._in_dialog = bool((ui.get("dialog_box") or {}).get("is_in_dialog"))
         loc = ui.get("agentLocation", {})
-        carried = ", ".join(o.get("name", "?") for o in ui.get("inventoryObjects") or []) or "nothing"
+        carried = (
+            ", ".join(o.get("name", "?") for o in ui.get("inventoryObjects") or []) or "nothing"
+        )
         brief = f"at ({loc.get('x')}, {loc.get('y')}) carrying {carried}"
         if self._in_dialog:
             brief += " (in dialog)"
@@ -369,7 +369,7 @@ class DiscoveryWorldEnv(TextEnv):
             self._score_trace.append(float(scorecard[0].get("scoreNormalized", 0.0)))
         truncated = (not complete) and self._steps >= int(self.params["max_steps"])
         info = {"action_ok": success, "errors": [str(e) for e in result.get("errors") or []][:3]}
-        summary = (observation.raw.get("lastActionMessage") or "").strip()
+        summary = " ".join((observation.raw.get("lastActionMessage") or "").split())
         if not summary:
             summary = "action accepted" if success else "action had no effect or was invalid"
         event = ""

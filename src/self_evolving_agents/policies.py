@@ -159,7 +159,9 @@ class RulePolicy:
             if not isinstance(rule, dict) or set(rule) - {"if", "do", "note"} or "if" not in rule:
                 raise PolicyError(f"rule {i} must be an object with 'if' and 'do'")
             if rule.get("do") not in action_names:
-                raise PolicyError(f"rule {i}: action {rule.get('do')!r} is not one of {action_names}")
+                raise PolicyError(
+                    f"rule {i}: action {rule.get('do')!r} is not one of {action_names}"
+                )
             unknown = _features_in(rule["if"]) - set(feature_names)
             if unknown:
                 raise PolicyError(f"rule {i}: unknown feature(s) {', '.join(sorted(unknown))}")

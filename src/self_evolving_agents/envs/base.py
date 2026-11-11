@@ -150,7 +150,9 @@ def match_action_name(text: str, names: list[str], aliases: dict[str, str] | Non
     if cleaned in lookup:
         return lookup[cleaned]
     found = {
-        lookup[key] for key in lookup if re.search(rf"(?<![a-z_]){re.escape(key)}(?![a-z_])", cleaned)
+        lookup[key]
+        for key in lookup
+        if re.search(rf"(?<![a-z_]){re.escape(key)}(?![a-z_])", cleaned)
     }
     if len(found) == 1:
         return found.pop()
