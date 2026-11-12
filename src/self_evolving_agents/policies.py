@@ -222,37 +222,42 @@ def _describe(condition: Any, params: Mapping[str, float]) -> str:
 
 # --------------------------------------------------------------------------- scanning
 
-#: Parameters of the reference scanning policy and what each one controls.
-SCAN_POLICY_PARAMS: dict[str, str] = {
+#: The tunable knobs of the reference scanning policy and what each one controls.
+SCAN_POLICY_KNOBS: dict[str, str] = {
     "desat_above": "unload the wheels when the fastest one exceeds this fraction of its limit",
     "charge_below": "switch to charging when the battery falls below this fraction",
-    "charge_until": "once charging in sunlight, keep charging up to this fraction",
+    "charge_margin": "once charging in sunlight, keep going until this far above charge_below",
     "precharge_window_s": "start topping up this many seconds before an eclipse begins",
     "precharge_below": "... but only if the battery is below this fraction",
     "downlink_above": "downlink during a pass when the buffer is fuller than this fraction",
     "storage_full": "stop scanning and wait when the buffer is fuller than this fraction",
 }
 
+#: A plain, untuned starting point. Which values are *good* depends on the operating
+#: regime, and finding that out is what the experiments are for.
+SCAN_POLICY_DEFAULTS: dict[str, float] = {
+    "desat_above": 0.6,
+    "charge_below": 0.25,
+    "charge_margin": 0.0,
+    "precharge_window_s": 0.0,
+    "precharge_below": 0.0,
+    "downlink_above": 0.05,
+    "storage_full": 0.98,
+}
 
-def scanning_policy(name: str = "reference", **params: float) -> RulePolicy:
-    """The reference rule policy for the nadir-scanning task.
 
-    One fixed rule structure with seven thresholds. The defaults are a plain,
-    untuned starting point; which values are *good* depends on the operating regime,
-    and finding that out is what the experiments are for.
+def scanning_policy(name: str = "reference", **knobs: float) -> RulePolicy:
+    """The reference rule policy for the nadir-scanning task: one rule structure, seven knobs.
+
+    Always build variants through this function rather than ``with_params``: the
+    policy's ``charge_until`` threshold is derived (``charge_below + charge_margin``),
+    so that moving the charge threshold moves the stop-charging level with it.
     """
-    defaults = {
-        "desat_above": 0.6,
-        "charge_below": 0.25,
-        "charge_until": 0.25,
-        "precharge_window_s": 0.0,
-        "precharge_below": 0.0,
-        "downlink_above": 0.05,
-        "storage_full": 0.98,
-    }
-    unknown = set(params) - set(defaults)
+    unknown = set(knobs) - set(SCAN_POLICY_DEFAULTS)
     if unknown:
-        raise PolicyError(f"unknown parameter(s): {', '.join(sorted(unknown))}")
+        raise PolicyError(f"unknown knob(s): {', '.join(sorted(unknown))}")
+    k = {**SCAN_POLICY_DEFAULTS, **{name_: float(v) for name_, v in knobs.items()}}
+    params = {**k, "charge_until": k["charge_below"] + k["charge_margin"]}
     rules = [
         {"if": {"wheel_speed": {">": "$desat_above"}}, "do": "desat"},
         {"if": {"battery": {"<": "$charge_below"}}, "do": "charge"},
@@ -275,7 +280,12 @@ def scanning_policy(name: str = "reference", **params: float) -> RulePolicy:
         {"if": {"gs_in_view": {"==": 1}, "storage": {">": "$downlink_above"}}, "do": "downlink"},
         {"if": {"storage": {">": "$storage_full"}}, "do": "charge"},
     ]
-    return RulePolicy(rules=rules, default="scan", params={**defaults, **params}, name=name)
+    return RulePolicy(rules=rules, default="scan", params=params, name=name)
+
+
+# The knob defaults travel with the factory so that code handed a factory can tell
+# "the setting currently in force" from "the setting a claim recommends".
+scanning_policy.defaults = SCAN_POLICY_DEFAULTS  # type: ignore[attr-defined]
 
 
 def always(action: str, name: str | None = None) -> RulePolicy:

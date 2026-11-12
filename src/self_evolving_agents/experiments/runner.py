@@ -142,7 +142,8 @@ class EpisodeRunner:
         workers: int = 0,
         on_progress: Callable[[int, int], None] | None = None,
     ):
-        self.cache = cache or EpisodeCache()
+        # Not `cache or ...`: an empty cache is falsy, and would be silently replaced.
+        self.cache = cache if cache is not None else EpisodeCache()
         self.workers = workers
         self.on_progress = on_progress
         self.episodes_run = 0
@@ -173,17 +174,17 @@ class EpisodeRunner:
             # Group by simulator configuration so workers can reuse their environment.
             ordered = sorted(missing.values(), key=lambda s: (s.config_key, s.task.seed))
             payloads = [(s.task.to_dict(), s.policy.to_dict(), s.config_key) for s in ordered]
-            total, done = len(ordered), 0
+            total = len(ordered)
             if self.workers and len(ordered) > 1:
                 chunk = max(1, min(8, len(ordered) // (self.workers * 4) or 1))
                 iterator = self._ensure_pool().imap(_run_one, payloads, chunksize=chunk)
             else:
                 iterator = map(_run_one, payloads)
-            for spec, (outcome_dict, wall_s) in zip(ordered, iterator, strict=True):
+            pairs = zip(ordered, iterator, strict=True)
+            for done, (spec, (outcome_dict, wall_s)) in enumerate(pairs, start=1):
                 outcome = Outcome.from_dict(outcome_dict)
                 results[spec.key] = outcome
                 self.cache.put(spec, outcome, wall_s)
-                done += 1
                 if done % 32 == 0:
                     self.cache.commit()
                 if self.on_progress is not None:

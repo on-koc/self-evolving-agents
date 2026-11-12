@@ -1,0 +1,246 @@
+"""Human-readable accounts of a claim graph, and claims rendered as memory items."""
+
+from __future__ import annotations
+
+from typing import Any
+
+from ..reasoningbank.schema import SOURCE_CLAIM, MemoryItem
+from .graph import ClaimGraph
+from .schema import (
+    A_BETTER,
+    B_BETTER,
+    CONTRADICTS,
+    EQUIVALENT,
+    REFUTED,
+    SUPERSEDED,
+    SUPPORTED,
+    SUPPORTS,
+    Claim,
+)
+
+_LABEL_TEXT = {
+    A_BETTER: "intervention better",
+    B_BETTER: "baseline better",
+    EQUIVALENT: "no meaningful difference",
+    "inconclusive": "inconclusive",
+}
+
+
+def _change(claim: Claim) -> str:
+    return ", ".join(
+        f"`{p}` = {claim.intervention[p]:g} instead of {claim.baseline[p]:g}"
+        for p in claim.parameters
+    )
+
+
+def _where(conditions: dict[str, float]) -> str:
+    return ", ".join(f"{k}={v:g}" for k, v in sorted(conditions.items()))
+
+
+def claims_as_memory(
+    graph: ClaimGraph, conditions: dict[str, float], *, max_items: int = 8
+) -> list[MemoryItem]:
+    """Render the claims that apply under ``conditions`` as memory items for an LLM agent.
+
+    Each item says what to do, where that has actually been tested, how far the
+    current conditions are from the nearest supporting test, and what is known about
+    why it works, so the agent can weigh a well-tested rule differently from an
+    extrapolated one.
+    """
+    items = []
+    applicable = sorted(graph.applicable(conditions, statuses=(SUPPORTED,)), key=lambda x: x[1])
+    for claim, distance in applicable[:max_items]:
+        root = graph.root(claim)
+        supporting = [e for e in claim.outcome_evidence() if e.verdict == SUPPORTS]
+        counter = [e for e in claim.evidence if e.kind == "outcome" and e.verdict == CONTRADICTS]
+        best = max(supporting, key=lambda e: e.ci_low) if supporting else None
+        if distance == 0:
+            footing = "It was tested under exactly these conditions."
+        elif distance == float("inf"):
+            footing = "It has no supporting test yet."
+        else:
+            footing = (
+                f"The nearest supporting test differs from the current conditions by a factor of "
+                f"about {pow(2.718281828, distance):.2f}; treat it as an extrapolation."
+            )
+        content = f"Use {_change(claim)}. "
+        if best is not None:
+            content += (
+                f"In a matched-seed test at {_where(best.conditions)} this changed the score by "
+                f"{best.effect:+.3f} (interval {best.ci_low:+.3f} to {best.ci_high:+.3f}, "
+                f"{best.n} seeds). "
+            )
+        if counter:
+            content += (
+                "It did NOT hold at: " + "; ".join(_where(e.conditions) for e in counter[:4]) + ". "
+            )
+        for mechanism in root.mechanisms:
+            content += f"Explanation '{mechanism.statement}' is {mechanism.status}. "
+        items.append(
+            MemoryItem(
+                title=claim.statement[:120],
+                description=f"Applies where {claim.scope.describe()}. {footing}",
+                content=content.strip(),
+                source=SOURCE_CLAIM,
+                meta={
+                    "claim_id": claim.id,
+                    "distance": None if distance == float("inf") else distance,
+                },
+            )
+        )
+    return items
+
+
+def render_report(
+    graph: ClaimGraph,
+    *,
+    title: str = "Claim study",
+    study: dict[str, Any] | None = None,
+    transfer: dict[str, dict[str, Any]] | None = None,
+    composition: list[dict[str, Any]] | None = None,
+) -> str:
+    """Markdown report: what was claimed, what the simulator said, and how the claims changed."""
+    lines = [f"# {title}", ""]
+    if study:
+        lines += [
+            f"{study.get('experiments', '?')} experiments in {study.get('rounds', '?')} rounds, "
+            f"{study.get('episodes_run', '?')} simulator episodes "
+            f"(budget {study.get('budget', '?')}).",
+            "",
+        ]
+    summary = graph.summary()
+    lines += [
+        f"**{summary['families']} comparisons, {summary['claims']} claims** "
+        f"({', '.join(f'{n} {s}' for s, n in sorted(summary['by_status'].items()))}); "
+        f"{summary['relations']} relations between claims.",
+        "",
+        "## Claims by comparison",
+        "",
+    ]
+    for root in graph.roots():
+        author = root.origin.get("author", "?")
+        lines += [
+            f"### {root.statement}",
+            "",
+            f"Proposed by: {author}. Compares {_change(root)}.",
+            "",
+        ]
+        lines += [
+            "| conditions | result | effect on score | 95%+ interval | seeds | failures (intervention / baseline) |",
+            "|---|---|---|---|---|---|",
+        ]
+        outcome = sorted(
+            (e for e in root.evidence if e.kind == "outcome"),
+            key=lambda e: tuple(sorted(e.conditions.items())),
+        )
+        for e in outcome:
+            t, c = e.details.get("treatment", {}), e.details.get("control", {})
+            fails = f"{sum(t.get('failures', {}).values())} / {sum(c.get('failures', {}).values())}"
+            lines.append(
+                f"| {_where(e.conditions)} | {_LABEL_TEXT.get(e.label, e.label)} | {e.effect:+.3f} | "
+                f"[{e.ci_low:+.3f}, {e.ci_high:+.3f}] | {e.n} | {fails} |"
+            )
+        lines.append("")
+        verdict = {
+            SUPPORTED: "Holds everywhere it was tested.",
+            REFUTED: "Did not hold anywhere it was tested.",
+            SUPERSEDED: "Too general as stated; replaced by the narrower claims below.",
+        }.get(root.status, f"Status: {root.status}.")
+        lines += [f"**Original claim: {root.status}.** {verdict}", ""]
+        for child in graph.children(root.id, active_only=False):
+            kind = "reversed" if child.intervention != root.intervention else "narrowed"
+            lines.append(
+                f"- **{child.status}** ({kind}): where {child.scope.describe()}, use {_change(child)}."
+            )
+        if root.origin.get("equivalent_regions"):
+            lines.append(
+                "- No meaningful difference where: "
+                + "; ".join(root.origin["equivalent_regions"])
+                + "."
+            )
+        if graph.children(root.id, active_only=False) or root.origin.get("equivalent_regions"):
+            lines.append("")
+        if root.mechanisms:
+            lines += ["Explanations (judged separately from the outcome):", ""]
+            for mechanism in root.mechanisms:
+                lines.append(f"- *{mechanism.statement}* — **{mechanism.status}**")
+                for e in mechanism.evidence:
+                    detail = ""
+                    if e.kind == "mediator" and e.details.get("treatment_mean") is None:
+                        detail = (
+                            f"`{e.details['mediator']}`: {e.details.get('note', 'not evaluated')}"
+                        )
+                    elif e.kind == "mediator":
+                        detail = (
+                            f"`{e.details['mediator']}`: {e.details['treatment_mean']:g} with the "
+                            f"intervention vs {e.details['control_mean']:g} without"
+                            + (" (identical in every seed)" if e.details.get("unmoved") else "")
+                            + f", over {e.details.get('pairs_used', e.n)} of "
+                            f"{e.details.get('pairs_total', e.n)} seed pairs"
+                        )
+                    elif e.kind == "moderator":
+                        pairs = zip(e.details["levels"], e.details["effect_by_level"], strict=True)
+                        detail = f"effect by `{e.details['moderator']}`: " + ", ".join(
+                            f"{level:g} -> {effect:+.3f}" for level, effect in pairs
+                        )
+                    lines.append(
+                        f"  - {e.kind} test at {_where(e.conditions)}: {e.verdict}. {detail}"
+                    )
+            lines.append("")
+
+    lines += ["## Revision history", ""]
+    for entry in graph.log:
+        if entry["op"] in ("evidence", "mechanism"):
+            continue
+        lines.append(f"- `{entry['op']}` {entry['claim']}: {entry['detail']}")
+    lines.append("")
+
+    for group, result in (transfer or {}).items():
+        lines += [
+            f"## Transfer: {group}",
+            "",
+            f"{len(result['test_points'])} conditions never used in an experiment, "
+            f"{result['n_seeds']} held-out seeds each.",
+            "",
+            "| method | mean score | failure rate |",
+            "|---|---|---|",
+        ]
+        for method, row in result["overall"].items():
+            lines.append(f"| {method} | {row['mean_score']:+.4f} | {row['failure_rate']:.1%} |")
+        lines += ["", "Paired differences over the same (condition, seed) episodes:", ""]
+        for name, comparison in result["comparisons"].items():
+            sc = comparison["score"]
+            lines.append(
+                f"- {name.replace('_', ' ')}: {sc['diff']:+.4f} "
+                f"[{sc['ci_low']:+.4f}, {sc['ci_high']:+.4f}], p = {sc['p_value']:.4f}"
+            )
+        lines += ["", "Per condition (mean score, failure rate, settings used):", ""]
+        methods = list(result["overall"])
+        lines.append("| conditions | " + " | ".join(methods) + " |")
+        lines.append("|---|" + "---|" * len(methods))
+        for row in result["per_point"]:
+            cells = []
+            for method in methods:
+                m = row["methods"][method]
+                settings = (
+                    ", ".join(f"{k}={v:g}" for k, v in sorted(m["settings"].items())) or "reference"
+                )
+                cells.append(f"{m['mean_score']:+.3f} ({m['failure_rate']:.0%}) {settings}")
+            lines.append(f"| {_where(row['conditions'])} | " + " | ".join(cells) + " |")
+        lines.append("")
+
+    if composition:
+        lines += ["## Do the recommended settings still work together?", ""]
+        for row in composition:
+            if "combined_minus_reference" not in row:
+                lines.append(f"- {_where(row['conditions'])}: {row.get('note', '')}")
+                continue
+            d = row["combined_minus_reference"]
+            lines.append(
+                f"- {_where(row['conditions'])}: combined {row['combined_mean']:+.3f} vs reference "
+                f"{row['reference_mean']:+.3f} (difference {d['diff']:+.3f} "
+                f"[{d['ci_low']:+.3f}, {d['ci_high']:+.3f}]); single changes "
+                f"{row['single_change_means']}; interaction: {row['interaction']}."
+            )
+        lines.append("")
+    return "\n".join(lines)

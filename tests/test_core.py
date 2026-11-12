@@ -278,6 +278,13 @@ def test_policy_params_round_trip_and_fingerprint():
     base = scanning_policy()
     tuned = base.with_params(charge_below=0.4)
     assert base.params["charge_below"] == 0.25, "with_params must not mutate the original"
+    moved = scanning_policy(charge_below=0.4, charge_margin=0.1)
+    assert moved.params["charge_until"] == pytest.approx(0.5), (
+        "the stop level follows the threshold"
+    )
+    assert scanning_policy.defaults["charge_margin"] == 0.0
+    with pytest.raises(PolicyError, match="unknown knob"):
+        scanning_policy(charge_until=0.5)
     assert tuned.fingerprint != base.fingerprint
     assert (
         RulePolicy.from_dict(json.loads(json.dumps(tuned.to_dict()))).fingerprint
