@@ -135,6 +135,10 @@ writes PROV-JSON.
 `EpisodeRunner` executes `(task, rule policy)` pairs across worker processes
 (started with `spawn`; Basilisk does not survive `fork`), reusing one simulator per
 configuration, and caches outcomes on disk under a hash of the task and the policy.
+It counts both the episodes it had to simulate and the different episodes it was
+asked for; budgets use the second, so they do not depend on what the cache held. A
+finished study replays from its cache in seconds, which is how the recorded results
+are regenerated after a change to reporting code.
 `stats` holds the paired bootstrap interval, the sign-flip permutation test, the
 interaction contrast and a rank trend test.
 
@@ -155,7 +159,7 @@ runs/<rb-run>/     config.json  provenance.sqlite  bank.jsonl  records.jsonl
                    summary.json  llm_cache/
 runs/<study>/      config.json  provenance.sqlite  episodes.sqlite  graph.json
                    experiments.jsonl  study.json  transfer.json  composition.json
-                   report.md
+                   report.md  (claims*.png and transfer.png from `sea claims plot`)
 ```
 
 `runs/` is git-ignored. Compact outputs of studies meant to be read are copied to

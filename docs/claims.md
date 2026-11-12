@@ -213,8 +213,12 @@ interval against the best single change is reported alongside.
   DiscoveryWorld) can be stored but not tested by this machinery. Testing them would
   mean A/B runs of the agent with and without the claim in its prompt, which costs
   model calls rather than simulator time.
-- **Open-ended scopes are extrapolations.** "battery >= 141 Wh" was tested up to
-  400 Wh. The graph says so through the distance it reports, but it does not stop
-  anyone from using the claim at 4000 Wh unless `max_distance` is set.
+- **Open-ended scopes are extrapolations.** "battery >= 28.5 Wh" for early wheel
+  unloading was tested up to 400 Wh. The graph says so through the distance it
+  reports, but nothing stops the claim being used at 600 Wh, and in the Basilisk
+  study it did not hold there (`results-bsk-battery.md`). `max_distance` refuses any
+  claim beyond a chosen distance; that would also have refused a claim that did keep
+  holding at 600 Wh. The effect sizes were already shrinking towards the edge, and
+  using that trend is the obvious next step.
 - **Mediation is correlational.** A mediator that moves is consistent with an
   explanation, not proof of it.
