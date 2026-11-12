@@ -259,6 +259,38 @@ def cmd_evaluate(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_plot(args: argparse.Namespace) -> int:
+    """Write the study's figures (needs matplotlib)."""
+    from .plots import plot_claims, plot_transfer
+    from .testing import Domain
+
+    run = Path(args.run)
+    out = Path(args.out) if args.out else run
+    graph = _load_graph(args.run)
+    config = json.loads((run / "config.json").read_text())
+    domain = Domain.from_dict(config["domain"])
+    variables = list(domain.variables)
+    x = args.x or variables[0]
+    others = [v for v in variables if v != x]
+    slices: list[dict[str, float]] = [{}]
+    for var in others:
+        slices = [{**s, var: level} for s in slices for level in domain.variables[var]]
+    for fixed in slices:
+        suffix = "".join(f"_{k}={v:g}" for k, v in fixed.items())
+        try:
+            path = plot_claims(
+                graph, out / f"claims{suffix}.png", x=x, x_label=args.x_label or x, fixed=fixed
+            )
+        except ValueError as exc:
+            print(f"skipped slice {fixed}: {exc}")
+            continue
+        print(f"wrote {path}")
+    transfer_path = run / "transfer.json"
+    if transfer_path.exists():
+        print(f"wrote {plot_transfer(json.loads(transfer_path.read_text()), out / 'transfer.png')}")
+    return 0
+
+
 def cmd_report(args: argparse.Namespace) -> int:
     from .report import render_report
 
@@ -317,6 +349,13 @@ def add_claims_commands(sub: Any) -> None:
     evaluate.add_argument("run")
     evaluate.add_argument("--workers", type=int, default=0, help="parallel simulator processes")
     evaluate.set_defaults(func=cmd_evaluate)
+
+    plot = claims.add_parser("plot", help="write the study's figures (needs matplotlib)")
+    plot.add_argument("run")
+    plot.add_argument("--out", help="directory for the images (default: the run directory)")
+    plot.add_argument("--x", help="condition on the horizontal axis (default: the first explored)")
+    plot.add_argument("--x-label", help="axis label, e.g. 'battery capacity (Wh)'")
+    plot.set_defaults(func=cmd_plot)
 
     report = claims.add_parser("report", help="write the Markdown report")
     report.add_argument("run")

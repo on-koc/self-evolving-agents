@@ -1182,3 +1182,22 @@ def test_planner_resolves_each_variable_to_its_own_ratio():
     assert not narrowed.scope.contains({WH: 200.0, "panel_area_m2": 0.1})
     assert not narrowed.scope.contains({WH: 50.0, "panel_area_m2": 0.25})
     assert len(narrowed.scope.constrained) == 2, "the scope is a box in both conditions"
+
+
+def test_figures_are_written(toy_study, tmp_path):
+    pytest.importorskip("matplotlib")
+    from self_evolving_agents.claims.plots import plot_claims, plot_transfer
+
+    graph, domain, runner, *_ = toy_study
+    claims_png = plot_claims(graph, tmp_path / "claims.png", x=WH, x_label="battery capacity (Wh)")
+    assert claims_png.stat().st_size > 20_000
+    with pytest.raises(ValueError, match="no outcome evidence"):
+        plot_claims(graph, tmp_path / "none.png", x=WH, fixed={"panel_area_m2": 9.0})
+
+    transfer = {
+        "inside": evaluate_transfer(
+            runner, graph, domain, [{WH: 35.0}, {WH: 280.0}], range(5000, 5008)
+        ),
+        "outside": evaluate_transfer(runner, graph, domain, [{WH: 600.0}], range(5000, 5008)),
+    }
+    assert plot_transfer(transfer, tmp_path / "transfer.png").stat().st_size > 10_000
