@@ -233,3 +233,74 @@ def test_rerunning_a_study_simulates_nothing_and_finds_the_same_claims(study, ca
     assert summary["episodes_simulated"] == 0
     assert summary["episodes_used"] == summary_before["episodes_used"]
     assert claims() == before
+
+
+def test_claims_replicate_runs_each_seed_base_and_summarises(study, tmp_path, capsys):
+    config = json.loads((study / "config.json").read_text())
+    config["budget"] = 300
+    (tmp_path / "config.json").write_text(json.dumps(config))
+    out = tmp_path / "replication"
+    code, _ = sea(
+        capsys,
+        *("claims", "replicate", "--config", tmp_path / "config.json", "--out", out),
+        *("--seed-bases", "1000,2000"),
+    )
+    assert code == 0
+    for base in (1000, 2000):
+        assert (
+            json.loads((out / f"seed-{base}" / "config.json").read_text())["tester"]["seed_base"]
+            == base
+        )
+        assert not (out / f"seed-{base}" / "episodes.sqlite").exists(), "one shared cache"
+    assert (out / "episodes.sqlite").exists()
+    summary = json.loads((out / "replication.json").read_text())
+    assert summary["replicates"] == ["1000", "2000"]
+    held_out = summary["aggregate"]["held out"]
+    reference = held_out["methods"]["reference"]["mean_score"]
+    assert reference["n"] == 2 and reference["sd"] == 0, "independent of the training seeds"
+    assert len(held_out["methods"]["conditional"]["mean_score"]["values"]) == 2
+    assert {"mean", "sd", "min", "max", "intervals_above_zero"} <= set(
+        held_out["comparisons"]["conditional_minus_reference"]
+    )
+    assert all(len(row["choices"]) >= 1 for row in held_out["settings"])
+    text = (out / "replication.md").read_text()
+    for needle in (
+        "## Size and cost of each replicate",
+        "## Held-out score: held out",
+        "replicates whose 95% interval excludes zero",
+        "## Do the replicates reach the same verdicts?",
+    ):
+        assert needle in text, needle
+
+    code, _ = sea(
+        capsys,
+        *("claims", "replicate", "--config", tmp_path / "config.json", "--out", out),
+        *("--seed-bases", "1000,2000", "--summary-only"),
+    )
+    assert code == 0 and json.loads((out / "replication.json").read_text()) == summary
+
+    code, text = sea(
+        capsys,
+        *("claims", "compare", out / "seed-1000", out / "seed-2000"),
+        *("--cache", out / "episodes.sqlite", "--out", tmp_path / "compare.json"),
+    )
+    assert code == 0 and "held out: A " in text and "A minus B" in text
+    compared = json.loads((tmp_path / "compare.json").read_text())
+    group = compared["groups"]["held out"]
+    assert group["a_minus_b"]["n"] == 2 * 8, "two conditions, eight held-out seeds"
+    first = held_out["methods"]["conditional"]["mean_score"]["values"]
+    assert group["a_minus_b"]["mean_a"] == pytest.approx(first[0], abs=1e-4)
+    assert group["a_minus_b"]["mean_b"] == pytest.approx(first[1], abs=1e-4)
+
+
+def test_replication_refuses_training_seeds_that_overlap_the_held_out_ones(study, tmp_path):
+    from self_evolving_agents.claims.replicate import check_seeds
+
+    config = json.loads((study / "config.json").read_text())
+    check_seeds(config)
+    config["tester"]["seed_base"] = 4990  # 4990..5037 overlaps the held-out 5000..5007
+    with pytest.raises(ValueError, match="overlap the evaluation seeds"):
+        check_seeds(config)
+    config["tester"]["seed_base"] = 5990
+    with pytest.raises(ValueError, match="overlap the evaluation tuning_seeds"):
+        check_seeds(config)

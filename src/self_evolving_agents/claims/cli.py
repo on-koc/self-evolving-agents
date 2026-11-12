@@ -55,8 +55,13 @@ def run_study(
     llm_spec: str | None = None,
     evaluate: bool = True,
     quiet: bool = False,
+    cache_path: Path | None = None,
 ) -> dict[str, Any]:
     """Run a claim study described by ``config`` and write everything to ``out``.
+
+    ``cache_path`` puts the episode cache somewhere other than ``out``, so that several
+    runs (replicates with different training seeds, say) share the episodes they have
+    in common.
 
     Re-running into the same directory continues: finished episodes come from the
     cache, and the graph is rebuilt from the same deterministic sequence of
@@ -90,7 +95,8 @@ def run_study(
             )
 
     started = time.time()
-    with EpisodeRunner(EpisodeCache(out / "episodes.sqlite"), workers=workers) as runner:
+    cache = EpisodeCache(cache_path or out / "episodes.sqlite")
+    with EpisodeRunner(cache, workers=workers) as runner:
         tester = ClaimTester(runner, domain, **config.get("tester", {}))
         planner = Planner(graph, domain, sweeps=config.get("sweeps"), **config.get("planner", {}))
         proposers: list[Any] = []
@@ -167,6 +173,8 @@ def run_study(
 
 def cmd_study(args: argparse.Namespace) -> int:
     config = json.loads(Path(args.config).read_text())
+    if args.seed_base is not None:
+        config.setdefault("tester", {})["seed_base"] = args.seed_base
     result = run_study(
         config,
         Path(args.out),
@@ -174,11 +182,58 @@ def cmd_study(args: argparse.Namespace) -> int:
         workers=args.workers,
         llm_spec=args.llm,
         evaluate=not args.no_eval,
+        cache_path=Path(args.cache) if args.cache else None,
     )
     print(json.dumps(result["study"], indent=2))
     for group, transfer in (result["transfer"] or {}).items():
         print(group, json.dumps(transfer["overall"], indent=2))
     print(f"Report: {Path(args.out) / 'report.md'}")
+    return 0
+
+
+def cmd_replicate(args: argparse.Namespace) -> int:
+    """Run a study once per training-seed base and summarise how much the result varies."""
+    from .replicate import render_replication, run_replicates, summarise_replicates
+
+    config = json.loads(Path(args.config).read_text())
+    out = Path(args.out)
+    bases = [int(x) for x in args.seed_bases.split(",")]
+    if args.summary_only:
+        runs = {str(b): out / f"seed-{b}" for b in bases}
+    else:
+        runs = run_replicates(config, out, bases, workers=args.workers)
+    summary = summarise_replicates(runs)
+    (out / "replication.json").write_text(json.dumps(summary, indent=1))
+    text = render_replication(summary, title=config.get("title", "Claim study"))
+    (out / "replication.md").write_text(text)
+    print(f"Summary: {out / 'replication.md'}")
+    return 0
+
+
+def cmd_compare(args: argparse.Namespace) -> int:
+    """Paired comparison of what two finished runs recommend on the same held-out episodes."""
+    from .replicate import compare_runs
+
+    result = compare_runs(
+        Path(args.run_a),
+        Path(args.run_b),
+        cache_path=Path(args.cache) if args.cache else None,
+        workers=args.workers,
+    )
+    for group, content in result["groups"].items():
+        d = content["a_minus_b"]
+        print(
+            f"{group}: A {d['mean_a']:+.4f} (lost {content['failure_rate_a']:.1%}), "
+            f"B {d['mean_b']:+.4f} (lost {content['failure_rate_b']:.1%}), "
+            f"A minus B {d['diff']:+.4f} [{d['ci_low']:+.4f}, {d['ci_high']:+.4f}], "
+            f"p = {d['p_value']:.4f}"
+        )
+        for row in content["per_point"]:
+            if not row["same_settings"]:
+                print(f"    differs at {row['conditions']}: A {row['a']}  B {row['b']}")
+    if args.out:
+        Path(args.out).write_text(json.dumps(result, indent=1))
+        print(f"wrote {args.out}")
     return 0
 
 
@@ -337,9 +392,41 @@ def add_claims_commands(sub: Any) -> None:
         "--llm", help="also ask this model for hypotheses, e.g. anthropic:claude-opus-5-5"
     )
     study.add_argument(
+        "--seed-base",
+        type=int,
+        help="first training seed (overrides the config); must not overlap the held-out seeds",
+    )
+    study.add_argument("--cache", help="episode cache file to use instead of <out>/episodes.sqlite")
+    study.add_argument(
         "--no-eval", action="store_true", help="skip the held-out transfer evaluation"
     )
     study.set_defaults(func=cmd_study)
+
+    replicate = claims.add_parser(
+        "replicate", help="repeat a study from different training seeds and compare the results"
+    )
+    replicate.add_argument("--config", required=True, help="JSON study configuration")
+    replicate.add_argument("--out", required=True, help="directory for the replicates")
+    replicate.add_argument(
+        "--seed-bases",
+        required=True,
+        help='first training seed of each replicate, e.g. "1000,2000"',
+    )
+    replicate.add_argument("--workers", type=int, default=0, help="parallel simulator processes")
+    replicate.add_argument(
+        "--summary-only", action="store_true", help="only summarise replicates that already ran"
+    )
+    replicate.set_defaults(func=cmd_replicate)
+
+    compare = claims.add_parser(
+        "compare", help="paired comparison of two runs' recommendations on held-out episodes"
+    )
+    compare.add_argument("run_a")
+    compare.add_argument("run_b")
+    compare.add_argument("--cache", help="episode cache file (default: <run_a>/episodes.sqlite)")
+    compare.add_argument("--workers", type=int, default=0, help="parallel simulator processes")
+    compare.add_argument("--out", help="write the comparison as JSON")
+    compare.set_defaults(func=cmd_compare)
 
     show = claims.add_parser("show", help="print claims, evidence and explanations")
     show.add_argument("run")

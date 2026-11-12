@@ -1203,6 +1203,20 @@ def toy_study():
     return graph, domain, runner, tester, loop, result, events
 
 
+def test_planner_without_boundary_probes_only_works_through_the_grid():
+    """The passive design: the same planner with the bisection switched off."""
+    domain = Domain(variables={WH: [25, 50, 100, 200, 400]}, env_id="toy-scan")
+    graph = ClaimGraph()
+    root = graph.add(claim())
+    graph.record(root.id, outcome(50, B_BETTER))
+    graph.record(root.id, outcome(200, A_BETTER))
+    active = {p.kind for p in Planner(graph, domain).propose()}
+    passive = Planner(graph, domain, boundaries=False).propose()
+    assert "boundary" in active
+    assert {p.kind for p in passive} == {"coverage"}
+    assert all(p.conditions[WH] in (25.0, 100.0, 400.0) for p in passive)
+
+
 def test_budget_does_not_depend_on_what_is_cached(tmp_path):
     """A resumed study must stop where an uninterrupted one would."""
     config = json.loads((STUDIES / "toy_battery.json").read_text())

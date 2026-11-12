@@ -66,6 +66,9 @@ class Planner:
             factor of each other (1.25 locates a boundary to within 25%).
         boundary_ratios: per-variable overrides of ``boundary_ratio``, for studies that
             want one condition resolved finely and another only coarsely.
+        boundaries: whether to probe between neighbouring tests that disagree. Without
+            it the planner only works through the study grid, which is the passive
+            design the active one is compared against.
         coverage: whether to propose untested grid points once nothing more urgent
             is left.
         sweeps: levels to use for moderator sweeps over conditions that are not
@@ -79,11 +82,13 @@ class Planner:
         *,
         boundary_ratio: float = 1.25,
         boundary_ratios: dict[str, float] | None = None,
+        boundaries: bool = True,
         coverage: bool = True,
         sweeps: dict[str, list[float]] | None = None,
     ):
         self.graph = graph
         self.domain = domain
+        self.boundaries = boundaries
         self.boundary_ratio = boundary_ratio
         self.boundary_ratios = dict(boundary_ratios or {})
         self.coverage = coverage
@@ -209,7 +214,8 @@ class Planner:
                         )
                     )
                 continue
-            proposals += self._boundaries(root, pool)
+            if self.boundaries:
+                proposals += self._boundaries(root, pool)
             proposals += self._moderators(root, pool)
             if self.coverage:
                 proposals += self._coverage(root, pool)
