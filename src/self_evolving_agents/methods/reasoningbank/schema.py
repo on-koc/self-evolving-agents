@@ -12,7 +12,7 @@ import time
 from dataclasses import dataclass, field
 from typing import Any
 
-from ..types import jsonable, new_id
+from ...types import jsonable, new_id
 
 #: How an item was produced.
 SOURCE_SUCCESS = "success"  # distilled from a trajectory judged successful

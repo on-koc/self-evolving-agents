@@ -9,10 +9,10 @@ from typing import Any
 
 from ..envs.base import TextEnv
 from ..llm import BudgetExceeded, LLMError, LLMRequest, assistant, user
+from ..methods.reasoningbank import prompts
+from ..methods.reasoningbank.render import render_memory
+from ..methods.reasoningbank.schema import MemoryItem
 from ..policies import PolicyError, RulePolicy, always
-from ..reasoningbank import prompts
-from ..reasoningbank.render import render_memory
-from ..reasoningbank.schema import MemoryItem
 from ..types import Action, Observation, Step, Trajectory
 from .base import Agent, run_episode
 

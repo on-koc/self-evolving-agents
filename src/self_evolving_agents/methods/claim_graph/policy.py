@@ -21,7 +21,7 @@ import math
 from dataclasses import dataclass
 from typing import Any
 
-from ..policies import RulePolicy, scanning_policy
+from ...policies import RulePolicy, scanning_policy
 from .graph import ClaimGraph
 from .schema import A_BETTER, SUPPORTED, Claim, Region
 from .testing import Domain, PolicyFactory

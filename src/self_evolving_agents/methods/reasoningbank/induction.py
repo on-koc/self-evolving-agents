@@ -6,9 +6,9 @@ import re
 from collections.abc import Sequence
 from typing import Any
 
-from ..envs.base import EnvSpec
-from ..llm import LLMRequest, user
-from ..types import Trajectory
+from ...envs.base import EnvSpec
+from ...llm import LLMRequest, user
+from ...types import Trajectory
 from . import prompts
 from .render import render_for_extraction, render_many, render_trajectory
 from .schema import (

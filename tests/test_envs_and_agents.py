@@ -17,8 +17,8 @@ from self_evolving_agents.envs import ActionParseError, available_envs, make_env
 from self_evolving_agents.envs import scanning as sc
 from self_evolving_agents.envs.base import match_action_name
 from self_evolving_agents.llm import Budget, BudgetExceeded, LLMRefusal, ScriptedLLM, TrackedLLM
+from self_evolving_agents.methods.reasoningbank.schema import MemoryItem
 from self_evolving_agents.policies import always, scanning_policy
-from self_evolving_agents.reasoningbank.schema import MemoryItem
 from self_evolving_agents.types import Action, Task
 
 

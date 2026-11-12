@@ -29,10 +29,10 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
-from ..agents.policy_agent import extract_json_object
-from ..envs.scanning import DEFAULT_CONDITIONS
-from ..llm import LLMRequest, user
-from ..policies import SCAN_POLICY_DEFAULTS, SCAN_POLICY_KNOBS
+from ...agents.policy_agent import extract_json_object
+from ...envs.scanning import DEFAULT_CONDITIONS
+from ...llm import LLMRequest, user
+from ...policies import SCAN_POLICY_DEFAULTS, SCAN_POLICY_KNOBS
 from .graph import ClaimGraph
 from .schema import Claim, Mechanism, Region
 from .testing import Domain

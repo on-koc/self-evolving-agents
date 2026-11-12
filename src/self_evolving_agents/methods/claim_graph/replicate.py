@@ -341,8 +341,8 @@ def compare_runs(
     recommendation, both policies are run on the same seeds, and the difference
     A minus B is summarised per group of conditions.
     """
-    from ..experiments import EpisodeCache, EpisodeRunner, paired_compare
-    from ..policies import scanning_policy
+    from ...experiments import EpisodeCache, EpisodeRunner, paired_compare
+    from ...policies import scanning_policy
     from .evaluate import _run
     from .policy import recommend
     from .testing import Domain

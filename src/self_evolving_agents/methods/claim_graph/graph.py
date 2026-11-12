@@ -49,7 +49,7 @@ from .schema import (
 )
 
 if TYPE_CHECKING:
-    from ..provenance import ProvenanceStore
+    from ...provenance import ProvenanceStore
 
 SPECIALIZES = "specializes"
 CONTRADICTS_REL = "contradicts"

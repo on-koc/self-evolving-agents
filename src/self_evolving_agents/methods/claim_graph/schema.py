@@ -19,7 +19,7 @@ import time
 from dataclasses import dataclass, field
 from typing import Any
 
-from ..types import jsonable, new_id
+from ...types import jsonable, new_id
 
 # Claim status.
 HYPOTHESIS = "hypothesis"  # proposed, not yet decided by controlled evidence

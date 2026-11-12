@@ -24,8 +24,8 @@ from typing import Any
 
 import numpy as np
 
-from ..experiments import EpisodeRunner, EpisodeSpec, paired_compare
-from ..policies import scanning_policy
+from ...experiments import EpisodeRunner, EpisodeSpec, paired_compare
+from ...policies import scanning_policy
 from .graph import ClaimGraph
 from .policy import MODES, recommend
 from .testing import Domain, PolicyFactory

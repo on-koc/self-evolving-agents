@@ -167,8 +167,8 @@ def test_claims_study_writes_a_complete_run_directory(study):
 
 
 def test_claims_study_honours_the_graph_section_of_the_config(study, monkeypatch):
-    from self_evolving_agents.claims import cli as claims_cli
-    from self_evolving_agents.claims.graph import ClaimGraph
+    from self_evolving_agents.methods.claim_graph import cli as claims_cli
+    from self_evolving_agents.methods.claim_graph.graph import ClaimGraph
 
     seen = {}
     original = ClaimGraph.__init__
@@ -294,7 +294,7 @@ def test_claims_replicate_runs_each_seed_base_and_summarises(study, tmp_path, ca
 
 
 def test_replication_refuses_training_seeds_that_overlap_the_held_out_ones(study, tmp_path):
-    from self_evolving_agents.claims.replicate import check_seeds
+    from self_evolving_agents.methods.claim_graph.replicate import check_seeds
 
     config = json.loads((study / "config.json").read_text())
     check_seeds(config)

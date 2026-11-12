@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
-from ..types import Step, Trajectory
+from ...types import Step, Trajectory
 from .schema import MemoryItem
 
 

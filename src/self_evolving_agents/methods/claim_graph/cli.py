@@ -67,9 +67,9 @@ def run_study(
     cache, and the graph is rebuilt from the same deterministic sequence of
     experiments.
     """
-    from ..experiments import EpisodeCache, EpisodeRunner
-    from ..policies import scanning_policy
-    from ..provenance import ProvenanceStore
+    from ...experiments import EpisodeCache, EpisodeRunner
+    from ...policies import scanning_policy
+    from ...provenance import ProvenanceStore
     from .graph import ClaimGraph
     from .hypotheses import LLMProposer, claim_from_spec
     from .loop import ActiveLoop, LadderProposer, Planner
@@ -103,7 +103,7 @@ def run_study(
         if config.get("ladders"):
             proposers.append(LadderProposer(config["ladders"], env_id=domain.env_id))
         if llm_spec:
-            from ..llm import TrackedLLM, make_backend
+            from ...llm import TrackedLLM, make_backend
 
             llm = TrackedLLM(make_backend(llm_spec), cache_dir=out / "llm_cache", store=store)
             proposers.append(
@@ -266,7 +266,7 @@ def cmd_show(args: argparse.Namespace) -> int:
 
 
 def cmd_recommend(args: argparse.Namespace) -> int:
-    from ..cli import parse_assignments
+    from ...cli import parse_assignments
     from .policy import assemble_policy
     from .testing import Domain
 
@@ -291,7 +291,7 @@ def cmd_recommend(args: argparse.Namespace) -> int:
 
 def cmd_evaluate(args: argparse.Namespace) -> int:
     """Re-run only the held-out evaluation of a finished study (cached episodes are reused)."""
-    from ..experiments import EpisodeCache, EpisodeRunner
+    from ...experiments import EpisodeCache, EpisodeRunner
     from .report import render_report
     from .testing import Domain
 

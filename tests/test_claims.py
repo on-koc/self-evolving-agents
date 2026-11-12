@@ -13,7 +13,17 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from self_evolving_agents.claims import (
+from self_evolving_agents.experiments import (
+    EpisodeCache,
+    EpisodeRunner,
+    EpisodeSpec,
+    interaction_compare,
+    mean_interval,
+    paired_compare,
+    trend_test,
+)
+from self_evolving_agents.llm import ScriptedLLM
+from self_evolving_agents.methods.claim_graph import (
     ActiveLoop,
     Claim,
     ClaimGraph,
@@ -35,8 +45,8 @@ from self_evolving_agents.claims import (
     policy_map,
     recommend,
 )
-from self_evolving_agents.claims.report import claims_as_memory, render_report
-from self_evolving_agents.claims.schema import (
+from self_evolving_agents.methods.claim_graph.report import claims_as_memory, render_report
+from self_evolving_agents.methods.claim_graph.schema import (
     A_BETTER,
     B_BETTER,
     CONTESTED,
@@ -51,17 +61,7 @@ from self_evolving_agents.claims.schema import (
     SUPPORTS,
     log_distance,
 )
-from self_evolving_agents.claims.testing import ABResult, classify_effect, metric_value
-from self_evolving_agents.experiments import (
-    EpisodeCache,
-    EpisodeRunner,
-    EpisodeSpec,
-    interaction_compare,
-    mean_interval,
-    paired_compare,
-    trend_test,
-)
-from self_evolving_agents.llm import ScriptedLLM
+from self_evolving_agents.methods.claim_graph.testing import ABResult, classify_effect, metric_value
 from self_evolving_agents.policies import scanning_policy
 from self_evolving_agents.provenance import ProvenanceStore
 from self_evolving_agents.types import Outcome
@@ -1357,8 +1357,8 @@ def test_composition_check_tells_an_unhelpful_change_from_an_interaction(
     """The verdicts, pinned down with made-up scores in place of a simulator."""
     from types import SimpleNamespace
 
-    from self_evolving_agents.claims import evaluate
-    from self_evolving_agents.claims.policy import Recommendation
+    from self_evolving_agents.methods.claim_graph import evaluate
+    from self_evolving_agents.methods.claim_graph.policy import Recommendation
 
     reference, a_alone, b_alone, both = scores
     table = {(): reference, ("a",): a_alone, ("b",): b_alone, ("a", "b"): both}
@@ -1444,8 +1444,11 @@ def test_pipeline_can_hand_applicable_claims_to_an_llm_agent(tmp_path):
     from self_evolving_agents.agents import StepwiseAgent
     from self_evolving_agents.envs import scan_task
     from self_evolving_agents.llm import TrackedLLM
-    from self_evolving_agents.reasoningbank.induction import EnvJudge
-    from self_evolving_agents.reasoningbank.pipeline import PipelineConfig, ReasoningBankPipeline
+    from self_evolving_agents.methods.reasoningbank.induction import EnvJudge
+    from self_evolving_agents.methods.reasoningbank.pipeline import (
+        PipelineConfig,
+        ReasoningBankPipeline,
+    )
 
     graph = ClaimGraph()
     root = graph.add(claim())
@@ -1518,7 +1521,7 @@ def test_planner_resolves_each_variable_to_its_own_ratio():
 
 def test_figures_are_written(toy_study, tmp_path):
     pytest.importorskip("matplotlib")
-    from self_evolving_agents.claims.plots import plot_claims, plot_transfer
+    from self_evolving_agents.methods.claim_graph.plots import plot_claims, plot_transfer
 
     graph, domain, runner, *_ = toy_study
     claims_png = plot_claims(graph, tmp_path / "claims.png", x=WH, x_label="battery capacity (Wh)")

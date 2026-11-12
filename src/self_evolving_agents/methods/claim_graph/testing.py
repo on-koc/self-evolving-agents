@@ -16,10 +16,10 @@ from typing import Any
 
 import numpy as np
 
-from ..envs.scanning import DEFAULT_CONDITIONS, scan_task
-from ..experiments import EpisodeRunner, EpisodeSpec, paired_compare, trend_test
-from ..policies import RulePolicy, scanning_policy
-from ..types import Outcome, Task, new_id
+from ...envs.scanning import DEFAULT_CONDITIONS, scan_task
+from ...experiments import EpisodeRunner, EpisodeSpec, paired_compare, trend_test
+from ...policies import RulePolicy, scanning_policy
+from ...types import Outcome, Task, new_id
 from .schema import (
     A_BETTER,
     B_BETTER,

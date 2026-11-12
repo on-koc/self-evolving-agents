@@ -28,7 +28,7 @@ from typing import Any
 
 import numpy as np
 
-from ..embeddings import Embedder, HashingEmbedder, condition_similarity
+from ...embeddings import Embedder, HashingEmbedder, condition_similarity
 from .schema import Experience, MemoryItem
 
 

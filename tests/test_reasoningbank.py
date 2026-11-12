@@ -15,9 +15,7 @@ from conftest import ITEM
 from self_evolving_agents.agents import PolicyAgent, StepwiseAgent
 from self_evolving_agents.envs import make_env, scan_task
 from self_evolving_agents.llm import ScriptedLLM, TrackedLLM, make_backend
-from self_evolving_agents.policies import always, scanning_policy
-from self_evolving_agents.provenance import ProvenanceStore
-from self_evolving_agents.reasoningbank import (
+from self_evolving_agents.methods.reasoningbank import (
     Experience,
     MemoryItem,
     ReasoningBank,
@@ -25,19 +23,21 @@ from self_evolving_agents.reasoningbank import (
     parse_memory_items,
     prompts,
 )
-from self_evolving_agents.reasoningbank.induction import (
+from self_evolving_agents.methods.reasoningbank.induction import (
     EnvJudge,
     LLMJudge,
     MemoryExtractor,
     refine_notes,
     select_best,
 )
-from self_evolving_agents.reasoningbank.pipeline import (
+from self_evolving_agents.methods.reasoningbank.pipeline import (
     PipelineConfig,
     ReasoningBankPipeline,
     summarise,
 )
-from self_evolving_agents.reasoningbank.render import render_memory, render_trajectory
+from self_evolving_agents.methods.reasoningbank.render import render_memory, render_trajectory
+from self_evolving_agents.policies import always, scanning_policy
+from self_evolving_agents.provenance import ProvenanceStore
 
 # --------------------------------------------------------------------------- parsing
 

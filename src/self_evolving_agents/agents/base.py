@@ -8,7 +8,7 @@ from collections.abc import Callable, Sequence
 from typing import Any
 
 from ..envs.base import TextEnv
-from ..reasoningbank.schema import MemoryItem
+from ..methods.reasoningbank.schema import MemoryItem
 from ..types import Action, Observation, Step, Trajectory, new_id
 
 #: ``decide(observation, steps_so_far) -> (thought, action, llm_call_id, diagnostics)``

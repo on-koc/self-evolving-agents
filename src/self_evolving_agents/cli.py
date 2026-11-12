@@ -132,10 +132,10 @@ def cmd_envs(args: argparse.Namespace) -> int:
 def cmd_rb_run(args: argparse.Namespace) -> int:
     from .agents import PolicyProgramAgent, StepwiseAgent
     from .llm import Budget, BudgetExceeded, TrackedLLM, make_backend
+    from .methods.reasoningbank import ReasoningBank
+    from .methods.reasoningbank.induction import EnvJudge, LLMJudge, MemoryExtractor
+    from .methods.reasoningbank.pipeline import PipelineConfig, ReasoningBankPipeline
     from .provenance import ProvenanceStore
-    from .reasoningbank import ReasoningBank
-    from .reasoningbank.induction import EnvJudge, LLMJudge, MemoryExtractor
-    from .reasoningbank.pipeline import PipelineConfig, ReasoningBankPipeline
 
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
@@ -172,9 +172,9 @@ def cmd_rb_run(args: argparse.Namespace) -> int:
 
     extra_memory = None
     if args.claims:
-        from .claims.graph import ClaimGraph
-        from .claims.report import claims_as_memory
         from .envs.scanning import DEFAULT_CONDITIONS
+        from .methods.claim_graph.graph import ClaimGraph
+        from .methods.claim_graph.report import claims_as_memory
 
         graph_path = Path(args.claims) / "graph.json"
         if not graph_path.exists():
@@ -231,7 +231,7 @@ def cmd_rb_run(args: argparse.Namespace) -> int:
 
 
 def cmd_rb_show(args: argparse.Namespace) -> int:
-    from .reasoningbank import ReasoningBank
+    from .methods.reasoningbank import ReasoningBank
 
     run = Path(args.run)
     summary_path = run / "summary.json"
@@ -441,7 +441,7 @@ def build_parser() -> argparse.ArgumentParser:
     export.set_defaults(func=cmd_prov_export)
 
     try:
-        from .claims.cli import add_claims_commands
+        from .methods.claim_graph.cli import add_claims_commands
     except ImportError:  # the claim layer is optional at import time
         pass
     else:
