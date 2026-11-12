@@ -1,4 +1,4 @@
-# Basilisk study: which strategies work for which spacecraft
+# Basilisk studies: which strategies work for which spacecraft
 
 **Status of these results.** Everything here was run on the Basilisk simulator
 through BSK-RL. No language model took part: the four starting hypotheses were
@@ -300,7 +300,7 @@ and +0.024 with +0.001 to +0.075).
 
 ## The first pass, and what was changed after it
 
-The study was run twice. Both runs are recorded.
+The battery study was run twice. Both runs are recorded.
 
 The first pass (`results/bsk-battery/first-pass/`, 51 experiments) used an earlier
 version of the decision rules. Reading its claim graph showed claims covering
@@ -323,9 +323,9 @@ blocks beyond their evidence and scored 0.789 and 0.818; the corrected graph sco
 (0.655 against 0.636, and -0.065 against -0.123).
 
 Later changes to the code (how the cost is counted, the composition findings, the
-region table) do not affect these results: replaying the study from its episode
-cache with the final code gives the same 77 experiments, the same 21 claims and the
-same held-out numbers.
+region table, the nearest-test check described further down) do not affect these
+results: replaying the study from its episode cache with the final code gives the
+same 77 experiments, the same 21 claims and the same held-out numbers.
 
 ## Two conditions at once
 

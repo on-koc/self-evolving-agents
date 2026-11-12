@@ -153,7 +153,7 @@ sea rb run --env bsk-scan --regime nominal,small_battery --order interleaved --s
 | `docs/architecture.md` | modules, the environment contract, provenance model |
 | `docs/reasoningbank-adaptation.md` | what follows the paper, what was changed and why |
 | `docs/claims.md` | the claim layer: evidence, revision, planning, limits |
-| `docs/results-bsk-battery.md` | the Basilisk study, with interpretation |
+| `docs/results-bsk-battery.md` | the two Basilisk studies, with interpretation and what went wrong |
 | `docs/running-llm-experiments.md` | commands, cost estimates and protocols for the model experiments |
 
 ## Layout
