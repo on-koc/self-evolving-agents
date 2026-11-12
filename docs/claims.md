@@ -159,11 +159,23 @@ said so.
 
 ## Using the graph
 
-`claims.policy.recommend(graph, conditions)` collects the supported claims whose
-scope contains the conditions and chains them per parameter group ("0.40 beats 0.25
-here" then "0.60 beats 0.40 here" gives 0.60). It reports, for each claim used, the
-distance from the query to the nearest supporting test, so tested ground can be told
-from extrapolation; `max_distance` refuses to extrapolate beyond a chosen distance.
+`claims.policy.recommend(graph, conditions)` collects the supported claims that apply
+at the conditions and chains them per parameter group ("0.40 beats 0.25 here" then
+"0.60 beats 0.40 here" gives 0.60). It reports, for each claim used, the distance from
+the query to the nearest supporting test, so tested ground can be told from
+extrapolation; `max_distance` refuses to extrapolate beyond a chosen distance.
+
+A claim applies when two things hold: its scope contains the conditions, and the
+nearest test of its comparison lies in that scope too. The second condition matters
+once there is more than one condition variable. A scope is a box around tests that
+agree, and a box can reach across to a level of another variable where the claim was
+never tested, past neighbouring tests there that disagree. Requiring the nearest test
+to agree stops a result obtained with one solar array from standing in for another.
+Along a single variable it never bites, since the bounds are the midpoints between
+neighbouring tests. Where box and nearest test disagree, nothing is recommended.
+
+`claims.policy.policy_map(graph)` tabulates the recommendation for every region the
+supported claims tell apart; the study report opens with it.
 
 For a language-model agent, `claims.report.claims_as_memory` renders the applicable
 claims as memory items that state the scope, the nearest supporting test, the known

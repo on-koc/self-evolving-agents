@@ -278,7 +278,13 @@ def _policy_map_section(graph: ClaimGraph) -> list[str]:
         "",
         "Settings that differ from the reference policy, in every region of conditions the "
         "supported claims tell apart. A dot keeps the reference value: either nothing was "
-        "found to beat it there, or nothing could be established.",
+        "found to beat it there, or nothing could be established."
+        + (
+            " With more than one condition, a row is the recommendation at one point inside "
+            "its region; near the edge of a region the nearest test can decide otherwise."
+            if len(variables) > 1
+            else ""
+        ),
         "",
         "| " + " | ".join(variables + [f"`{p}`" for p in parameters]) + " |",
         "|" + "---|" * (len(variables) + len(parameters)),
