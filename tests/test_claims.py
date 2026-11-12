@@ -450,6 +450,61 @@ def test_graph_depth_decides_whether_a_crowded_family_is_separated():
         ClaimGraph(max_depth=0)
 
 
+def test_a_claim_is_not_applied_past_a_nearer_test_that_disagrees():
+    """With two variables a region can reach across to a row where it was never tested."""
+    PA = "panel_area_m2"
+
+    def at(wh, area, label):
+        e = outcome(wh, label)
+        e.conditions = {WH: float(wh), PA: area}
+        e.experiment_id = f"xp_{wh}_{area}"
+        return e
+
+    graph = ClaimGraph(max_depth=8)
+    root = graph.add(claim())
+    for wh, area, label in (
+        (100, 0.25, B_BETTER),
+        (200, 0.25, B_BETTER),
+        (100, 0.1, B_BETTER),
+        (141, 0.1, A_BETTER),
+    ):
+        graph.record(root.id, at(wh, area, label))
+    (narrowed,) = [c for c in graph.children(root.id) if c.intervention == root.intervention]
+    assert PA not in narrowed.scope.bounds, "the supported region spans every array area"
+    low, high = narrowed.scope.bounds[WH]
+    assert low < 141 < 150 < high
+
+    small_array, large_array = {WH: 150.0, PA: 0.1}, {WH: 150.0, PA: 0.25}
+    assert narrowed.scope.contains(small_array) and narrowed.scope.contains(large_array)
+    assert [c.id for c, _ in graph.applicable(small_array)] == [narrowed.id]
+    # At the large array the nearest test is (200 Wh, 0.25): baseline better.
+    assert [e.conditions[WH] for e in graph.nearest_tests(root.id, large_array)] == [200.0]
+    assert graph.applicable(large_array) == [], "box and nearest test disagree: no claim"
+    unchecked = graph.applicable(large_array, check_nearest=False)
+    assert narrowed.id in [c.id for c, _ in unchecked]
+    assert recommend(graph, small_array).settings == {"charge_below": 0.1}
+    assert recommend(graph, large_array).settings == {}
+
+
+def test_the_nearest_test_check_never_bites_along_a_single_variable():
+    graph = ClaimGraph()
+    root = graph.add(claim())
+    for wh, label in (
+        *((25, NO_BENEFIT), (42, B_BETTER), (70.7, B_BETTER), (119, B_BETTER)),
+        *((154, INCONCLUSIVE), (200, A_BETTER), (400, A_BETTER)),
+    ):
+        graph.record(root.id, outcome(wh, label))
+    edges = sorted(
+        bound for c in graph.children(root.id) for bound in c.scope.bounds[WH] if bound is not None
+    )
+    queries = [10 * 1.07**i for i in range(70)] + edges + [e * (1 + 1e-12) for e in edges]
+    for wh in queries:
+        point = {WH: wh}
+        checked = [c.id for c, _ in graph.applicable(point)]
+        assert checked == [c.id for c, _ in graph.applicable(point, check_nearest=False)], wh
+    assert len(edges) >= 3 and graph.nearest_tests(root.id, {}) == []
+
+
 def test_policy_map_lists_the_recommendation_region_by_region():
     graph = ClaimGraph()
     lower = graph.add(claim())

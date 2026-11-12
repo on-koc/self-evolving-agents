@@ -507,13 +507,38 @@ class ClaimGraph:
         root = self.claims[root_id]
         return [root] if root.status in (SUPPORTED, HYPOTHESIS, CONTESTED) else []
 
+    def nearest_tests(self, root_id: str, conditions: dict[str, float]) -> list[Evidence]:
+        """The family's tested point closest to ``conditions`` (several when tied).
+
+        Empty when the family has no outcome test, or when ``conditions`` does not say
+        where it stands on a variable the tests varied.
+        """
+        pool = [e for e in self.claims[root_id].evidence if e.kind == "outcome"]
+        if not pool:
+            return []
+        variables = sorted(pool[0].conditions)
+        if not all(var in conditions for var in variables):
+            return []
+        scored = [(log_distance(conditions, e.conditions, variables), e) for e in pool]
+        closest = min(distance for distance, _ in scored)
+        return [e for distance, e in scored if distance <= closest + 1e-9]
+
     def applicable(
         self,
         conditions: dict[str, float],
         statuses: tuple[str, ...] = (SUPPORTED,),
         env_id: str | None = None,
+        check_nearest: bool = True,
     ) -> list[tuple[Claim, float]]:
-        """Claims whose scope contains ``conditions``, with how far the nearest supporting test is.
+        """Claims that apply at ``conditions``, with how far the nearest supporting test is.
+
+        A claim applies when its scope contains the conditions *and* the family's
+        nearest test lies in that scope too. The scope is a box drawn around tests that
+        agree; with more than one condition variable such a box can reach past a test
+        that says otherwise (a result at one array area standing in for another, where
+        the neighbouring tests disagree). The second condition stops that. Along a
+        single variable it never bites, because the bounds are the midpoints between
+        neighbouring tests. ``check_nearest=False`` switches it off.
 
         The distance (log-ratio units over the variables the family was tested on) is
         zero when the claim was tested exactly here and grows as the claim is being
@@ -525,8 +550,11 @@ class ClaimGraph:
         for root in self.roots():
             if env_id is not None and root.env_id != env_id:
                 continue
+            nearest = self.nearest_tests(root.id, conditions) if check_nearest else []
             for claim in self.active(root.id):
                 if claim.status not in statuses or not claim.scope.contains(conditions):
+                    continue
+                if nearest and not any(claim.scope.contains(e.conditions) for e in nearest):
                     continue
                 supporting = [e for e in claim.outcome_evidence() if e.verdict == SUPPORTS]
                 distance = math.inf
