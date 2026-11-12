@@ -491,6 +491,20 @@ def _both():
     return {"charge_below": 0.1, "desat_above": 0.3}
 
 
+def test_policy_map_of_a_claim_that_holds_everywhere_is_one_row():
+    """No claim has a boundary, so there is no condition to stand on; this used to crash."""
+    graph = ClaimGraph()
+    root = graph.add(claim())
+    graph.record(root.id, outcome(200, A_BETTER))
+    assert policy_map(graph) == [
+        {"region": Region(), "settings": {"charge_below": 0.1}, "claims": [root.id]}
+    ]
+    ((found, distance),) = graph.applicable({})
+    assert found.id == root.id and distance == float("inf")
+    text = render_report(graph, title="t")
+    assert "| any |" not in text and "| 0.1 |" in text
+
+
 def test_policy_map_merges_neighbouring_regions_with_the_same_recommendation():
     graph = ClaimGraph()
     lower = graph.add(claim())

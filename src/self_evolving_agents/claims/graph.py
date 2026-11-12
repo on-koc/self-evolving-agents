@@ -517,7 +517,9 @@ class ClaimGraph:
 
         The distance (log-ratio units over the variables the family was tested on) is
         zero when the claim was tested exactly here and grows as the claim is being
-        extrapolated; callers can use it to tell tested ground from speculation.
+        extrapolated; callers can use it to tell tested ground from speculation. It is
+        infinite when the claim has no supporting test, or when ``conditions`` does not
+        say where it stands on a variable the tests varied.
         """
         out: list[tuple[Claim, float]] = []
         for root in self.roots():
@@ -527,13 +529,13 @@ class ClaimGraph:
                 if claim.status not in statuses or not claim.scope.contains(conditions):
                     continue
                 supporting = [e for e in claim.outcome_evidence() if e.verdict == SUPPORTS]
+                distance = math.inf
                 if supporting:
                     variables = sorted(supporting[0].conditions)
-                    distance = min(
-                        log_distance(conditions, e.conditions, variables) for e in supporting
-                    )
-                else:
-                    distance = math.inf
+                    if all(var in conditions for var in variables):
+                        distance = min(
+                            log_distance(conditions, e.conditions, variables) for e in supporting
+                        )
                 out.append((claim, distance))
         return out
 
