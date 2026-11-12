@@ -5,6 +5,9 @@ The comparison is between ways of *using* the same evidence:
 * ``reference``   – the untuned policy; the floor.
 * ``flat``        – every lesson that held at the reference conditions, applied
   everywhere. This is what a store of unconditional lessons amounts to.
+* ``pooled``      – the best single setting given every test in the graph. Same
+  evidence as ``conditional``, no conditioning: the control for whether the
+  conditions matter.
 * ``conditional`` – the claim graph: a lesson is applied only inside its scope.
 * ``oracle``      – optional ceiling: for each test point, the best of a candidate set
   of settings, chosen on separate tuning seeds.
@@ -111,8 +114,10 @@ def evaluate_transfer(
     }
     comparisons = {}
     for a, b in (
+        ("conditional", "pooled"),
         ("conditional", "flat"),
         ("conditional", "reference"),
+        ("pooled", "reference"),
         ("flat", "reference"),
         ("oracle", "conditional"),
     ):

@@ -1,9 +1,13 @@
 """Acting on the claim graph: which settings does it recommend under given conditions?
 
-Three ways of using what was learned are provided so that they can be compared:
+Four ways of using what was learned are provided so that they can be compared:
 
 * ``conditional`` – apply a claim only where its scope says it holds. This is what
   the graph is for.
+* ``pooled`` – the best *single* setting given every test in the graph: a comparison
+  is adopted if its effect, averaged over all the points it was tested at, is
+  positive. It sees the same evidence as ``conditional`` but cannot condition on
+  anything, which makes it the fair control for "does conditioning matter?".
 * ``flat`` – apply every lesson that held at the reference conditions, everywhere.
   This mimics a memory of unconditional lessons ("a lower charge threshold collects
   more data") with no notion of where they stop being true.
@@ -20,7 +24,7 @@ from .graph import ClaimGraph
 from .schema import A_BETTER, SUPPORTED, Claim
 from .testing import Domain, PolicyFactory
 
-MODES = ("conditional", "flat", "reference")
+MODES = ("reference", "flat", "pooled", "conditional")
 
 
 @dataclass
@@ -78,6 +82,21 @@ def recommend(
             edges.setdefault(claim.parameters, []).append(
                 (claim.baseline, claim.intervention, claim, distance)
             )
+    elif mode == "pooled":
+        for root in graph.roots():
+            tested = [e for e in root.evidence if e.kind == "outcome"]
+            if not tested:
+                continue
+            mean_effect = sum(e.effect for e in tested) / len(tested)
+            if mean_effect >= root.min_effect:
+                edges.setdefault(root.parameters, []).append(
+                    (root.baseline, root.intervention, root, 0.0)
+                )
+            elif mean_effect <= -root.min_effect:
+                # The reverse direction wins on average; that is a recommendation too.
+                edges.setdefault(root.parameters, []).append(
+                    (root.intervention, root.baseline, root, 0.0)
+                )
     else:  # flat
         anchor = domain.explored(domain.anchor()) if domain is not None else None
         for root in graph.roots():
@@ -108,7 +127,7 @@ def recommend(
                     "set": claim.intervention,
                     # None: not established for these conditions at all (flat mode, or untested).
                     "nearest_support_distance": None
-                    if mode == "flat" or distance == float("inf")
+                    if mode in ("flat", "pooled") or distance == float("inf")
                     else round(distance, 3),
                 }
             )

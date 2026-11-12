@@ -794,6 +794,11 @@ def test_recommend_modes():
     # The flat memory learned "0.10 is better" at the reference point and applies it everywhere.
     assert settings(60, "flat") == {"charge_below": 0.10, "desat_above": 0.3}
     assert settings(300, "flat") == settings(60, "flat")
+    # Pooled: one setting for everywhere, from the average effect over all tested points.
+    # "0.10 vs 0.25" averages (0.1 + 0.1 - 0.4 - 0.4) / 4 < 0, so 0.25 is kept; "0.40 vs 0.25"
+    # averages (0.1 + 0.0) / 2 > 0, so 0.40 is adopted, here and at 300 Wh alike.
+    assert settings(60, "pooled") == {"charge_below": 0.40, "desat_above": 0.3}
+    assert settings(300, "pooled") == settings(60, "pooled")
     with pytest.raises(ValueError):
         recommend(graph, domain.conditions(), mode="guess")
 
@@ -998,11 +1003,13 @@ def test_transfer_evaluation_and_composition_check(toy_study):
         oracle_grid={"charge_below": [0.10, 0.25, 0.40]},
         tuning_seeds=range(6000, 6008),
     )
-    assert set(result["overall"]) == {"reference", "flat", "conditional", "oracle"}
+    assert set(result["overall"]) == {"reference", "flat", "pooled", "conditional", "oracle"}
     assert all(row["episodes"] == 24 for row in result["overall"].values())
     assert set(result["comparisons"]) == {
+        "conditional_minus_pooled",
         "conditional_minus_flat",
         "conditional_minus_reference",
+        "pooled_minus_reference",
         "flat_minus_reference",
         "oracle_minus_conditional",
     }

@@ -13,6 +13,39 @@ def _range(pair: list[int]) -> range:
     return range(int(pair[0]), int(pair[1]))
 
 
+def _evaluate(
+    config: dict[str, Any], out: Path, runner: Any, graph: Any, domain: Any, quiet: bool = False
+) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    """Held-out transfer evaluation and composition check, written next to the graph."""
+    from .evaluate import composition_check, evaluate_transfer
+
+    ev = config["evaluation"]
+    seeds = _range(ev["seeds"])
+    groups = ev["test_points"]
+    if isinstance(groups, list):
+        groups = {"held-out conditions": groups}
+    transfer = {}
+    for group, points in groups.items():
+        if not quiet:
+            print(f"evaluating transfer: {group} ({len(points)} conditions)", flush=True)
+        transfer[group] = evaluate_transfer(
+            runner,
+            graph,
+            domain,
+            points,
+            seeds,
+            oracle_grid=ev.get("oracle_grid"),
+            tuning_seeds=_range(ev["tuning_seeds"]) if ev.get("tuning_seeds") else None,
+        )
+    (out / "transfer.json").write_text(json.dumps(transfer, indent=2))
+    all_points = [p for points in groups.values() for p in points]
+    composition = composition_check(
+        runner, graph, domain, ev.get("composition_points", all_points), seeds
+    )
+    (out / "composition.json").write_text(json.dumps(composition, indent=2))
+    return transfer, composition
+
+
 def run_study(
     config: dict[str, Any],
     out: Path,
@@ -32,7 +65,6 @@ def run_study(
     from ..experiments import EpisodeCache, EpisodeRunner
     from ..policies import scanning_policy
     from ..provenance import ProvenanceStore
-    from .evaluate import composition_check, evaluate_transfer
     from .graph import ClaimGraph
     from .hypotheses import LLMProposer, claim_from_spec
     from .loop import ActiveLoop, LadderProposer, Planner
@@ -107,31 +139,8 @@ def run_study(
                 fh.write(json.dumps(x) + "\n")
 
         transfer = composition = None
-        ev = config.get("evaluation")
-        if evaluate and ev:
-            seeds = _range(ev["seeds"])
-            groups = ev["test_points"]
-            if isinstance(groups, list):
-                groups = {"held-out conditions": groups}
-            transfer = {}
-            for group, points in groups.items():
-                if not quiet:
-                    print(f"evaluating transfer: {group} ({len(points)} conditions)", flush=True)
-                transfer[group] = evaluate_transfer(
-                    runner,
-                    graph,
-                    domain,
-                    points,
-                    seeds,
-                    oracle_grid=ev.get("oracle_grid"),
-                    tuning_seeds=_range(ev["tuning_seeds"]) if ev.get("tuning_seeds") else None,
-                )
-            (out / "transfer.json").write_text(json.dumps(transfer, indent=2))
-            all_points = [p for points in groups.values() for p in points]
-            composition = composition_check(
-                runner, graph, domain, ev.get("composition_points", all_points), seeds
-            )
-            (out / "composition.json").write_text(json.dumps(composition, indent=2))
+        if evaluate and config.get("evaluation"):
+            transfer, composition = _evaluate(config, out, runner, graph, domain, quiet)
             study["evaluation_wall_s"] = round(time.time() - started - study["wall_s"], 1)
         study["episodes_total"] = len(runner.cache)
 
@@ -203,7 +212,7 @@ def cmd_recommend(args: argparse.Namespace) -> int:
     config = json.loads((Path(args.run) / "config.json").read_text())
     domain = Domain.from_dict(config["domain"])
     conditions = domain.conditions(**parse_assignments(args.condition))
-    for mode in ("reference", "flat", "conditional"):
+    for mode in ("reference", "flat", "pooled", "conditional"):
         policy, rec = assemble_policy(graph, conditions, mode=mode, domain=domain)
         print(f"\n{mode}: {rec.settings or 'reference settings'}")
         for reason in rec.reasons:
@@ -215,6 +224,38 @@ def cmd_recommend(args: argparse.Namespace) -> int:
             else:
                 footing = f"nearest supporting test {distance} log-units away"
             print(f"   because {reason['claim']}: {reason['statement'][:90]} ({footing})")
+    return 0
+
+
+def cmd_evaluate(args: argparse.Namespace) -> int:
+    """Re-run only the held-out evaluation of a finished study (cached episodes are reused)."""
+    from ..experiments import EpisodeCache, EpisodeRunner
+    from .report import render_report
+    from .testing import Domain
+
+    run = Path(args.run)
+    graph = _load_graph(args.run)
+    config = json.loads((run / "config.json").read_text())
+    if not config.get("evaluation"):
+        raise SystemExit("the study configuration has no 'evaluation' section")
+    domain = Domain.from_dict(config["domain"])
+    with EpisodeRunner(EpisodeCache(run / "episodes.sqlite"), workers=args.workers) as runner:
+        transfer, composition = _evaluate(config, run, runner, graph, domain)
+        print(f"{runner.episodes_run} episodes run, {runner.episodes_cached} reused from the cache")
+    study_path = run / "study.json"
+    study = json.loads(study_path.read_text()) if study_path.exists() else None
+    (run / "report.md").write_text(
+        render_report(
+            graph,
+            title=config.get("title", "Claim study"),
+            study=study,
+            transfer=transfer,
+            composition=composition,
+        )
+    )
+    for group, result in transfer.items():
+        print(group, json.dumps(result["overall"], indent=2))
+    print(f"Report: {run / 'report.md'}")
     return 0
 
 
@@ -269,6 +310,13 @@ def add_claims_commands(sub: Any) -> None:
     rec.add_argument("run")
     rec.add_argument("--condition", action="append", metavar="NAME=VALUE", required=True)
     rec.set_defaults(func=cmd_recommend)
+
+    evaluate = claims.add_parser(
+        "evaluate", help="re-run the held-out evaluation of a finished study"
+    )
+    evaluate.add_argument("run")
+    evaluate.add_argument("--workers", type=int, default=0, help="parallel simulator processes")
+    evaluate.set_defaults(func=cmd_evaluate)
 
     report = claims.add_parser("report", help="write the Markdown report")
     report.add_argument("run")
