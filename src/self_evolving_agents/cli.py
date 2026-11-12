@@ -170,6 +170,20 @@ def cmd_rb_run(args: argparse.Namespace) -> int:
     judge = LLMJudge(llm) if args.judge == "llm" else EnvJudge()
     bank = ReasoningBank(args.bank or out / "bank.jsonl")
 
+    extra_memory = None
+    if args.claims:
+        from .claims.graph import ClaimGraph
+        from .claims.report import claims_as_memory
+        from .envs.scanning import DEFAULT_CONDITIONS
+
+        graph_path = Path(args.claims) / "graph.json"
+        if not graph_path.exists():
+            raise SystemExit(f"--claims: no graph.json in {args.claims}")
+        claim_graph = ClaimGraph(graph_path)
+
+        def extra_memory(task: Task) -> list[Any]:
+            return claims_as_memory(claim_graph, {**DEFAULT_CONDITIONS, **task.conditions})
+
     def progress(record: Any) -> None:
         task = record.task
         print(
@@ -189,6 +203,7 @@ def cmd_rb_run(args: argparse.Namespace) -> int:
         llm=llm,
         store=store,
         config=config,
+        extra_memory=extra_memory,
         on_record=progress,
     )
     if args.llm.startswith("offline"):
@@ -377,6 +392,12 @@ def build_parser() -> argparse.ArgumentParser:
         type=float,
         default=0.0,
         help="item mode: bonus for items whose past uses went well",
+    )
+    g.add_argument(
+        "--claims",
+        metavar="RUN",
+        help="directory of a `sea claims study` run: give the agent the evidence-backed "
+        "claims that apply under each task's conditions (works with --memory none too)",
     )
     g = run.add_argument_group("output")
     g.add_argument("--out", required=True, help="run directory")

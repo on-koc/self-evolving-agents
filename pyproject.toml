@@ -40,7 +40,10 @@ where = ["src"]
 testpaths = ["tests"]
 addopts = "-q"
 # BSK-RL pins pytest 7.3.1, whose assertion rewriter trips Python 3.13 deprecations.
-filterwarnings = ["ignore:ast\\..*is deprecated:DeprecationWarning"]
+filterwarnings = [
+    "ignore:ast\\..*is deprecated:DeprecationWarning",
+    "ignore:Attribute s is deprecated:DeprecationWarning",
+]
 markers = [
     "bsk: needs the Basilisk simulator and its SPICE kernels (slow, network on first run)",
     "discoveryworld: needs the discoveryworld package",

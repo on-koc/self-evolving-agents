@@ -97,6 +97,9 @@ class ReasoningBankPipeline:
         extractor: distils memory items; required when memory is enabled.
         llm: used for refinement notes and best-of-N selection under scaling.
         store: provenance store; every trajectory, verdict, item and link is recorded.
+        extra_memory: given the task, returns further memory items to put in front of the
+            agent besides what the bank retrieves, e.g. evidence-backed claims that
+            apply under the task's conditions (``claims.report.claims_as_memory``).
         on_record: called after each task, e.g. to print progress.
     """
 
@@ -111,6 +114,7 @@ class ReasoningBankPipeline:
         store: ProvenanceStore | None = None,
         config: PipelineConfig | None = None,
         env_factory: Callable[[Task], TextEnv] = make_env,
+        extra_memory: Callable[[Task], list[MemoryItem]] | None = None,
         on_record: Callable[[TaskRecord], None] | None = None,
     ):
         self.config = config or PipelineConfig()
@@ -121,6 +125,7 @@ class ReasoningBankPipeline:
         self.llm = llm
         self.store = store
         self.env_factory = env_factory
+        self.extra_memory = extra_memory
         self.on_record = on_record
         self.records: list[TaskRecord] = []
         self._rng = random.Random(self.config.seed)
@@ -159,10 +164,11 @@ class ReasoningBankPipeline:
         group: str = "",
     ) -> Trajectory:
         first = env.reset()
+        extra = self.extra_memory(env.task) if self.extra_memory is not None else []
         traj = self.agent.run(
             env,
             first_observation=first,
-            memory=[r.item for r in retrieved],
+            memory=[r.item for r in retrieved] + extra,
             notes=notes,
             sample=sample,
             meta={
@@ -176,6 +182,11 @@ class ReasoningBankPipeline:
         )
         if self.store is not None:
             self.store.record_trajectory(traj, store_steps=self.config.store_steps)
+            for item in extra:
+                # Items rendered from claims: make the claim itself the thing that was used.
+                self.store.add_node(item.id, "memory_item", label=item.title, data=item.to_dict())
+                if item.meta.get("claim_id"):
+                    self.store.link(item.id, WAS_DERIVED_FROM, item.meta["claim_id"])
         return traj
 
     def _judge(self, env: TextEnv, query: str, traj: Trajectory) -> Verdict:

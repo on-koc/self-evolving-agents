@@ -1061,3 +1061,44 @@ def test_report_renders_every_section(toy_study):
         "## Do the recommended settings still work together?",
     ):
         assert needle in text, needle
+
+
+def test_pipeline_can_hand_applicable_claims_to_an_llm_agent(tmp_path):
+    """Claims reach the agent's prompt, scoped to the task's conditions, and are traceable."""
+    from self_evolving_agents.agents import StepwiseAgent
+    from self_evolving_agents.envs import scan_task
+    from self_evolving_agents.llm import TrackedLLM
+    from self_evolving_agents.reasoningbank.induction import EnvJudge
+    from self_evolving_agents.reasoningbank.pipeline import PipelineConfig, ReasoningBankPipeline
+
+    graph = ClaimGraph()
+    root = graph.add(claim())
+    graph.record(root.id, outcome(200, A_BETTER))
+    graph.record(root.id, outcome(50, B_BETTER))
+    narrowed = next(c for c in graph.children(root.id) if c.intervention["charge_below"] == 0.10)
+    reverse = next(c for c in graph.children(root.id) if c.intervention["charge_below"] == 0.25)
+
+    scripted = ScriptedLLM("<think>ok</think><action>charge</action>")
+    store = ProvenanceStore()
+    pipeline = ReasoningBankPipeline(
+        StepwiseAgent(TrackedLLM(scripted, store=store)),
+        EnvJudge(),
+        store=store,
+        config=PipelineConfig(memory="none"),
+        extra_memory=lambda task: claims_as_memory(graph, task.conditions),
+    )
+    big = pipeline.run_task(scan_task("toy-scan", "nominal", seed=0, duration_s=600.0))
+    small = pipeline.run_task(scan_task("toy-scan", "small_battery", seed=0, duration_s=600.0))
+
+    systems = [r.system for r in scripted.requests]
+    assert "`charge_below` = 0.1 instead of 0.25" in systems[0]
+    assert "`charge_below` = 0.25 instead of 0.1" in systems[-1]
+    assert "Applies where battery_capacity_wh >= 100" in systems[0]
+    assert "It did NOT hold at: battery_capacity_wh=50" in systems[0]
+
+    used = [e["dst"] for e in store.edges(src=big.trajectory_ids[0], relation="used")]
+    assert len(used) == 1
+    assert store.edges(src=used[0], relation="wasDerivedFrom")[0]["dst"] == narrowed.id
+    used_small = [e["dst"] for e in store.edges(src=small.trajectory_ids[0], relation="used")]
+    assert store.edges(src=used_small[0], relation="wasDerivedFrom")[0]["dst"] == reverse.id
+    assert big.retrieved_item_ids == [], "claims are not bank items and do not touch its statistics"
