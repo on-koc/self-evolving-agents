@@ -55,6 +55,7 @@ def evaluate_transfer(
     oracle_grid: dict[str, list[float]] | None = None,
     tuning_seeds: Sequence[int] | None = None,
     max_distance: float | None = None,
+    check_nearest: bool = True,
 ) -> dict[str, Any]:
     """Evaluate each way of using the graph at held-out points.
 
@@ -64,6 +65,9 @@ def evaluate_transfer(
         oracle_grid: if given, parameter values whose cartesian product forms the
             oracle's candidate settings.
         tuning_seeds: seeds on which the oracle picks its setting (disjoint from ``seeds``).
+        check_nearest: whether the conditional method requires the nearest test to
+            agree with a claim before applying it (the default). ``False`` applies
+            claims by scope alone, for comparison.
     """
     defaults = dict(getattr(policy_factory, "defaults", None) or policy_factory().params)
     methods = list(modes) + (["oracle"] if oracle_grid else [])
@@ -82,6 +86,7 @@ def evaluate_transfer(
                 domain=domain,
                 defaults=defaults,
                 max_distance=max_distance if mode == "conditional" else None,
+                check_nearest=check_nearest,
             )
             outcomes = _run(runner, domain, policy_factory, conditions, rec.settings, seeds)
             row["methods"][mode] = _summarise(outcomes, rec.settings, rec.reasons)

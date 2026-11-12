@@ -486,6 +486,38 @@ def test_a_claim_is_not_applied_past_a_nearer_test_that_disagrees():
     assert recommend(graph, large_array).settings == {}
 
 
+def test_a_claim_still_applies_when_the_nearest_test_agrees_from_a_neighbouring_region():
+    """Agreement is what counts, not which region the nearest test was filed under."""
+    PA = "panel_area_m2"
+
+    def at(wh, area, label):
+        e = outcome(wh, label)
+        e.conditions = {WH: float(wh), PA: area}
+        e.experiment_id = f"xp_{wh}_{area}"
+        return e
+
+    graph = ClaimGraph(max_depth=8)
+    root = graph.add(claim())
+    for wh, area, label in (
+        (100, 0.25, A_BETTER),
+        (200, 0.25, A_BETTER),
+        (100, 0.1, INCONCLUSIVE),
+        (141, 0.1, A_BETTER),
+    ):
+        graph.record(root.id, at(wh, area, label))
+    narrowed = [c for c in graph.children(root.id) if c.status == SUPPORTED]
+    assert len(narrowed) == 2, "two supported regions around the unresolved point"
+    query = {WH: 140.0, PA: 0.2}
+    (holder,) = [c for c in narrowed if c.scope.contains(query)]
+    (nearest,) = graph.nearest_tests(root.id, query)
+    assert nearest.conditions == {WH: 100.0, PA: 0.25} and nearest.label == A_BETTER
+    assert not holder.scope.contains(nearest.conditions), "it sits in the other region"
+    assert [c.id for c, _ in graph.applicable(query)] == [holder.id]
+    assert recommend(graph, query).settings == {"charge_below": 0.1}
+    assert recommend(graph, {WH: 100.0, PA: 0.1}).settings == {}, "unresolved there"
+    assert recommend(graph, query, check_nearest=False).settings == {"charge_below": 0.1}
+
+
 def test_the_nearest_test_check_never_bites_along_a_single_variable():
     graph = ClaimGraph()
     root = graph.add(claim())

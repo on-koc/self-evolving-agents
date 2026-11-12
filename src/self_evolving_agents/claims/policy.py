@@ -59,6 +59,7 @@ def recommend(
     domain: Domain | None = None,
     defaults: dict[str, float] | None = None,
     max_distance: float | None = None,
+    check_nearest: bool = True,
 ) -> Recommendation:
     """Settings the graph recommends at ``conditions``.
 
@@ -69,6 +70,8 @@ def recommend(
 
     ``max_distance`` (conditional mode) refuses to extrapolate: a claim is skipped
     when its nearest supporting test is farther away than this, in log-ratio units.
+    ``check_nearest=False`` applies claims by their scope alone, without requiring the
+    nearest test to agree (see ``ClaimGraph.applicable``); it exists for comparison.
     """
     if mode not in MODES:
         raise ValueError(f"mode must be one of {MODES}")
@@ -78,7 +81,10 @@ def recommend(
 
     edges: dict[tuple[str, ...], list[tuple[dict[str, float], dict[str, float], Claim, float]]] = {}
     if mode == "conditional":
-        for claim, distance in graph.applicable(conditions, statuses=(SUPPORTED,)):
+        applicable = graph.applicable(
+            conditions, statuses=(SUPPORTED,), check_nearest=check_nearest
+        )
+        for claim, distance in applicable:
             if max_distance is not None and distance > max_distance:
                 continue
             edges.setdefault(claim.parameters, []).append(
@@ -144,11 +150,18 @@ def assemble_policy(
     domain: Domain | None = None,
     policy_factory: PolicyFactory = scanning_policy,
     max_distance: float | None = None,
+    check_nearest: bool = True,
 ) -> tuple[RulePolicy, Recommendation]:
     """Build the rule policy the graph recommends for these conditions."""
     defaults = dict(getattr(policy_factory, "defaults", None) or policy_factory().params)
     rec = recommend(
-        graph, conditions, mode=mode, domain=domain, defaults=defaults, max_distance=max_distance
+        graph,
+        conditions,
+        mode=mode,
+        domain=domain,
+        defaults=defaults,
+        max_distance=max_distance,
+        check_nearest=check_nearest,
     )
     return policy_factory(name=mode, **rec.settings), rec
 

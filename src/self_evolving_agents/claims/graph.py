@@ -533,11 +533,11 @@ class ClaimGraph:
         """Claims that apply at ``conditions``, with how far the nearest supporting test is.
 
         A claim applies when its scope contains the conditions *and* the family's
-        nearest test lies in that scope too. The scope is a box drawn around tests that
-        agree; with more than one condition variable such a box can reach past a test
-        that says otherwise (a result at one array area standing in for another, where
-        the neighbouring tests disagree). The second condition stops that. Along a
-        single variable it never bites, because the bounds are the midpoints between
+        nearest test agrees with it. The scope is a box drawn around tests that agree;
+        with more than one condition variable such a box can reach past a test that
+        says otherwise (a result at one array area standing in for another, where the
+        neighbouring tests disagree). The second condition stops that. Along a single
+        variable it never bites, because the bounds are the midpoints between
         neighbouring tests. ``check_nearest=False`` switches it off.
 
         The distance (log-ratio units over the variables the family was tested on) is
@@ -554,7 +554,7 @@ class ClaimGraph:
             for claim in self.active(root.id):
                 if claim.status not in statuses or not claim.scope.contains(conditions):
                     continue
-                if nearest and not any(claim.scope.contains(e.conditions) for e in nearest):
+                if nearest and not any(self._agrees(claim, root, e) for e in nearest):
                     continue
                 supporting = [e for e in claim.outcome_evidence() if e.verdict == SUPPORTS]
                 distance = math.inf
@@ -566,6 +566,12 @@ class ClaimGraph:
                         )
                 out.append((claim, distance))
         return out
+
+    @staticmethod
+    def _agrees(claim: Claim, root: Claim, test: Evidence) -> bool:
+        """Whether a test of the family came out in the direction ``claim`` asserts."""
+        same_direction = claim.intervention == root.intervention
+        return test.label == (A_BETTER if same_direction else B_BETTER)
 
     def summary(self) -> dict[str, Any]:
         by_status: dict[str, int] = {}

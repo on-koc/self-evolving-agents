@@ -166,13 +166,14 @@ the query to the nearest supporting test, so tested ground can be told from
 extrapolation; `max_distance` refuses to extrapolate beyond a chosen distance.
 
 A claim applies when two things hold: its scope contains the conditions, and the
-nearest test of its comparison lies in that scope too. The second condition matters
-once there is more than one condition variable. A scope is a box around tests that
-agree, and a box can reach across to a level of another variable where the claim was
-never tested, past neighbouring tests there that disagree. Requiring the nearest test
-to agree stops a result obtained with one solar array from standing in for another.
-Along a single variable it never bites, since the bounds are the midpoints between
-neighbouring tests. Where box and nearest test disagree, nothing is recommended.
+nearest test of its comparison came out the way the claim says. The second condition
+matters once there is more than one condition variable. A scope is a box around tests
+that agree, and a box can reach across to a level of another variable where the claim
+was never tested, past neighbouring tests there that disagree. Requiring the nearest
+test to agree stops a result obtained with one solar array from standing in for
+another. Along a single variable it never bites, since the bounds are the midpoints
+between neighbouring tests. Where box and nearest test disagree, nothing is
+recommended.
 
 `claims.policy.policy_map(graph)` tabulates the recommendation for every region the
 supported claims tell apart; the study report opens with it.
