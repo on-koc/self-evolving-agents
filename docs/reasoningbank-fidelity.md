@@ -107,3 +107,22 @@ reproduces them.
 Ablations on WebArena-Shopping with Gemini 2.5 Flash: memory from successes only
 46.5 against 49.7 with failures included; parallel MaTTS 49.7 (k = 1) to 55.1
 (k = 5), sequential 49.7 to 54.5, scaling without memory between 39.0 and 42.2.
+
+## What the audit found
+
+The implementation was compared with every row above. These are the places where the
+baseline, as it stood before the audit, departed from the published method. Each was
+either corrected or is listed under remaining deviations below.
+
+| | Row | What the code did | Why it matters | Resolution |
+|---|---|---|---|---|
+| D1 | E1, E2 | The success and failure extraction prompts carried two instructions that are not in the paper: state the operating conditions under which an insight was observed, and mark explanations as hypotheses. | They change what the memory contains. A baseline with them is not ReasoningBank; it is ReasoningBank plus the first step of the extension it is compared with. | Corrected. The baseline uses the published wording. The added instructions moved to the `conditioned_retrieval` method. |
+| D2 | E3 | The extractor was shown each step's observation summary and action feedback, the final state and the total reward, besides reasoning and action. | The published extractor sees the query and the reasoning and action of each step only. | Corrected. Reasoning and action only by default; the richer rendering is an option used by the adaptations. |
+| D3 | E4 | The judge's reasoning was always appended to the extractor's input. | In the released code, not in the paper. | Now an option, off by default. |
+| D4 | R6 | Injected memory items showed title, description and content. | The paper states title and content. | Corrected to title and content; the released code's form is an option. |
+| D5 | J2 | The judge prompt was a rewrite: it included the released code's strictness rules, the environment's rules and a full step-by-step account with observations. | The published prompt has no strictness block, and the judge sees the intent, the action history, the final state and the response. | Restructured to the published frame. What counts as success in the environment replaces the three web task types (unavoidable: that part of the prompt is domain-specific). Strictness rules are an option. |
+| D6 | T4 | Best-of-N used a prompt written for this project, with a different answer format. | The paper's selection prompt is Figure 12. | Corrected to the published prompt and its JSON answer. |
+| D7 | T2 | The self-contrast prompt carried an added instruction about attempts starting from the same situation. | Not in the paper. | Corrected to the published wording. |
+| D8 | T3 | "Sequential" scaling re-ran the task from the start with notes from earlier attempts. | The published procedure continues the same trajectory after it completes. That is a different procedure. | Not correctable in these environments (see below). Renamed `restart` and documented as an adaptation. |
+| D9 | R1 | Retrieval used a hashing embedder that measures word overlap. | The paper uses a neural embedding model. | The paper's model is now available (`GeminiEmbedder`); the hashing embedder remains the offline default and is named in every run's configuration. |
+| D10 | M3 | Deduplication, usage statistics and condition-weighted retrieval lived in the baseline's memory class, switched off by default. | Off by default, so behaviour was the paper's, but the baseline's code path contained the adaptations. | Moved out. The baseline class has no such parameters. |
