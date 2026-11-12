@@ -7,7 +7,8 @@ each region becomes a more specific claim:
 
 * a region where the intervention won keeps the root's claim, narrowed to the region;
 * a region where the baseline won becomes the *reversed* claim for that region;
-* a region where the two were equivalent gets no claim (nothing to recommend).
+* a region where the intervention brought no meaningful benefit, or where the test
+  stayed inconclusive, gets no claim (nothing established, nothing to recommend).
 
 Nothing is deleted. A superseded root keeps every test that contradicted it, and
 each specialised claim keeps the counterexamples that fixed its boundary, so "where
@@ -33,9 +34,9 @@ from .schema import (
     CONTESTED,
     CONTRADICTS,
     DECISIVE,
-    EQUIVALENT,
     HYPOTHESIS,
     INCONCLUSIVE,
+    NO_BENEFIT,
     REFUTED,
     RETIRED,
     SUPERSEDED,
@@ -307,7 +308,7 @@ class ClaimGraph:
         """Evidence about the root's comparison, re-read for a claim of the given polarity."""
         if polarity > 0:
             return evidence
-        verdict = {B_BETTER: SUPPORTS, A_BETTER: CONTRADICTS, EQUIVALENT: CONTRADICTS}.get(
+        verdict = {B_BETTER: SUPPORTS, A_BETTER: CONTRADICTS, NO_BENEFIT: CONTRADICTS}.get(
             evidence.label, INCONCLUSIVE
         )
         return Evidence(
@@ -356,8 +357,12 @@ class ClaimGraph:
         """
         root = self.claims[root_id]
         pool = [e for e in root.evidence if e.kind == "outcome"]
-        decisive = [(dict(e.conditions), e.label) for e in pool if e.label in DECISIVE]
-        leaves = partition(decisive, root.scope) if decisive else []
+        decisive = [e for e in pool if e.label in DECISIVE]
+        # Every tested point takes part in the partition, including those that stayed
+        # inconclusive: a region where the claim could not be established gets no
+        # claim, instead of being covered by whatever its neighbours showed.
+        tested = [(dict(e.conditions), e.label) for e in pool]
+        leaves = partition(tested, root.scope) if decisive else []
         labels = {leaf.label for leaf in leaves}
 
         if not decisive:
@@ -365,10 +370,13 @@ class ClaimGraph:
         elif labels == {A_BETTER}:
             self._set_status(root, SUPPORTED, f"{len(decisive)} decisive test(s), all in favour")
         elif A_BETTER in labels or MIXED in labels:
+            unresolved_only = labels <= {A_BETTER, INCONCLUSIVE}
             self._set_status(
                 root,
                 SUPERSEDED,
-                "evidence disagrees across conditions; replaced by narrower claims",
+                "established in only part of its scope; replaced by narrower claims"
+                if unresolved_only
+                else "evidence disagrees across conditions; replaced by narrower claims",
             )
         else:
             self._set_status(root, REFUTED, f"{len(decisive)} decisive test(s), none in favour")
@@ -419,8 +427,11 @@ class ClaimGraph:
         if root.status == SUPERSEDED:
             for child in self.children(root_id):
                 self.link(child.id, SUPERSEDES, root.id)
-        root.origin["equivalent_regions"] = [
-            leaf.region.describe() for leaf in leaves if leaf.label == EQUIVALENT
+        root.origin["no_benefit_regions"] = [
+            leaf.region.describe() for leaf in leaves if leaf.label == NO_BENEFIT
+        ]
+        root.origin["unresolved_regions"] = [
+            leaf.region.describe() for leaf in leaves if leaf.label == INCONCLUSIVE
         ]
         self._mirror(root)
 
@@ -430,7 +441,11 @@ class ClaimGraph:
             statement = root.statement
         else:
             intervention, baseline = root.baseline, root.intervention
-            statement = f"The opposite of the original claim holds here. Original: {root.statement}"
+            preferred = ", ".join(f"{p}={v:g}" for p, v in sorted(intervention.items()))
+            statement = (
+                f"Here the reverse holds: {preferred} does better. "
+                f"(Reverses the claim: {root.statement})"
+            )
         child = Claim(
             statement=statement,
             intervention=dict(intervention),

@@ -24,8 +24,8 @@ from .schema import (
     A_BETTER,
     B_BETTER,
     CONTRADICTS,
-    EQUIVALENT,
     INCONCLUSIVE,
+    NO_BENEFIT,
     SUPPORTS,
     Claim,
     Evidence,
@@ -154,13 +154,19 @@ def metric_value(outcome: Outcome, metric: str) -> float:
 
 
 def classify_effect(low: float, high: float, mean: float, min_effect: float) -> str:
-    """Three-way reading of an interval for "intervention minus baseline"."""
+    """Reading of an interval for "intervention minus baseline" against a claimed gain.
+
+    A claim asserts a gain of at least ``min_effect``. The interval can show that gain
+    (``A_BETTER``), show a loss of at least that size (``B_BETTER``), rule the claimed
+    gain out without establishing a loss (``NO_BENEFIT``: the whole interval lies below
+    ``min_effect``), or leave the question open (``INCONCLUSIVE``).
+    """
     if low > 0 and mean >= min_effect:
         return A_BETTER
     if high < 0 and mean <= -min_effect:
         return B_BETTER
-    if low > -min_effect and high < min_effect:
-        return EQUIVALENT
+    if high < min_effect:
+        return NO_BENEFIT
     return INCONCLUSIVE
 
 
@@ -254,7 +260,7 @@ class ClaimTester:
             confidence=self.confidence,
         )
         label = classify_effect(result.ci_low, result.ci_high, result.diff, claim.min_effect)
-        verdict = {A_BETTER: SUPPORTS, B_BETTER: CONTRADICTS, EQUIVALENT: CONTRADICTS}.get(
+        verdict = {A_BETTER: SUPPORTS, B_BETTER: CONTRADICTS, NO_BENEFIT: CONTRADICTS}.get(
             label, INCONCLUSIVE
         )
         return Evidence(

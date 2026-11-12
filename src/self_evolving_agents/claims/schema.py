@@ -33,9 +33,12 @@ ACTIVE_STATUSES = (HYPOTHESIS, SUPPORTED, REFUTED, CONTESTED)
 # What one controlled comparison said about "intervention vs baseline" at one point.
 A_BETTER = "intervention_better"
 B_BETTER = "baseline_better"
-EQUIVALENT = "equivalent"  # any difference is credibly smaller than min_effect
+# The claimed gain is ruled out: the interval lies below min_effect. The baseline may be
+# as good or slightly better, but not by enough to recommend it either.
+NO_BENEFIT = "no_benefit"
+# Still undecided after the maximum number of seeds. Treated as "not established here".
 INCONCLUSIVE = "inconclusive"
-DECISIVE = (A_BETTER, B_BETTER, EQUIVALENT)
+DECISIVE = (A_BETTER, B_BETTER, NO_BENEFIT)
 
 # Verdict of a piece of evidence relative to the claim (or mechanism) it is attached to.
 SUPPORTS = "supports"
@@ -147,7 +150,7 @@ class Evidence:
     ci_low: float
     ci_high: float
     p_value: float
-    label: str = ""  # outcome evidence: A_BETTER / B_BETTER / EQUIVALENT / INCONCLUSIVE
+    label: str = ""  # outcome evidence: A_BETTER / B_BETTER / NO_BENEFIT / INCONCLUSIVE
     details: dict[str, Any] = field(default_factory=dict)
     id: str = field(default_factory=lambda: new_id("ev"))
     created_at: float = field(default_factory=time.time)

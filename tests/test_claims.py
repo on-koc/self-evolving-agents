@@ -40,9 +40,9 @@ from self_evolving_agents.claims.schema import (
     B_BETTER,
     CONTESTED,
     CONTRADICTS,
-    EQUIVALENT,
     HYPOTHESIS,
     INCONCLUSIVE,
+    NO_BENEFIT,
     REFUTED,
     RETIRED,
     SUPERSEDED,
@@ -116,11 +116,13 @@ def test_interaction_trend_and_mean_interval():
     "low, high, mean, expected",
     [
         (0.03, 0.09, 0.06, A_BETTER),
-        (0.001, 0.015, 0.008, EQUIVALENT),  # positive but too small to matter
+        (0.001, 0.015, 0.008, NO_BENEFIT),  # positive but too small to matter
         (-0.5, -0.2, -0.35, B_BETTER),
-        (-0.01, 0.015, 0.002, EQUIVALENT),
+        (-0.01, 0.015, 0.002, NO_BENEFIT),
+        (-0.045, 0.000, -0.021, NO_BENEFIT),  # the claimed gain is ruled out; a loss is not shown
         (-0.05, 0.2, 0.07, INCONCLUSIVE),
         (0.005, 0.2, 0.015, INCONCLUSIVE),  # could still be a real effect
+        (-0.2, 0.019, -0.09, NO_BENEFIT),
     ],
 )
 def test_classify_effect(low, high, mean, expected):
@@ -183,8 +185,8 @@ def test_partition_splits_at_the_geometric_midpoint():
 
 
 def test_partition_three_way_and_two_variables():
-    three = partition(points((25, EQUIVALENT), (50, B_BETTER), (200, A_BETTER)), Region())
-    assert [leaf.label for leaf in three] == [EQUIVALENT, B_BETTER, A_BETTER]
+    three = partition(points((25, NO_BENEFIT), (50, B_BETTER), (200, A_BETTER)), Region())
+    assert [leaf.label for leaf in three] == [NO_BENEFIT, B_BETTER, A_BETTER]
 
     grid = [
         ({WH: 50.0, "panel_area_m2": 0.1}, B_BETTER),
@@ -216,12 +218,12 @@ def claim(**kw):
 
 def outcome(wh, label, effect=None, **details):
     effect = (
-        {A_BETTER: 0.1, B_BETTER: -0.4, EQUIVALENT: 0.0, INCONCLUSIVE: 0.03}[label]
+        {A_BETTER: 0.1, B_BETTER: -0.4, NO_BENEFIT: 0.0, INCONCLUSIVE: 0.03}[label]
         if effect is None
         else effect
     )
     width = 0.2 if label == INCONCLUSIVE else 0.01
-    verdict = {A_BETTER: SUPPORTS, B_BETTER: CONTRADICTS, EQUIVALENT: CONTRADICTS}.get(
+    verdict = {A_BETTER: SUPPORTS, B_BETTER: CONTRADICTS, NO_BENEFIT: CONTRADICTS}.get(
         label, INCONCLUSIVE
     )
     return Evidence(
@@ -267,6 +269,36 @@ def test_inconclusive_evidence_decides_nothing():
     assert root.status == HYPOTHESIS and graph.applicable({WH: 200.0}) == []
 
 
+def test_unresolved_points_get_no_claim_instead_of_inheriting_their_neighbours():
+    """Support at two points does not cover a third where the test stayed inconclusive."""
+    graph = ClaimGraph()
+    root = graph.add(claim())
+    graph.record(root.id, outcome(100, A_BETTER))
+    assert root.status == SUPPORTED and graph.applicable({WH: 400.0}) != []
+
+    graph.record(root.id, outcome(400, INCONCLUSIVE))
+    assert root.status == SUPERSEDED
+    assert any("only part of its scope" in entry["detail"] for entry in graph.log)
+    (narrowed,) = graph.children(root.id)
+    assert narrowed.scope.bounds[WH] == (None, pytest.approx(200.0))
+    assert root.origin["unresolved_regions"] == ["battery_capacity_wh >= 200"]
+    assert graph.applicable({WH: 400.0}) == [], (
+        "nothing is recommended where nothing was established"
+    )
+    assert [c.id for c, _ in graph.applicable({WH: 120.0})] == [narrowed.id]
+
+
+def test_no_benefit_contradicts_without_reversing():
+    graph = ClaimGraph()
+    root = graph.add(claim())
+    graph.record(root.id, outcome(100, A_BETTER))
+    graph.record(root.id, outcome(400, NO_BENEFIT))
+    (narrowed,) = graph.children(root.id)
+    assert root.status == SUPERSEDED and narrowed.intervention == root.intervention
+    assert root.origin["no_benefit_regions"] == ["battery_capacity_wh >= 200"]
+    assert graph.applicable({WH: 400.0}) == []
+
+
 def test_disagreement_narrows_the_claim_and_reverses_it_across_the_boundary():
     graph = ClaimGraph()
     root = graph.add(claim())
@@ -284,7 +316,7 @@ def test_disagreement_narrows_the_claim_and_reverses_it_across_the_boundary():
         "charge_below": 0.10
     }
     assert reversed_.scope.bounds[WH] == (None, pytest.approx(100.0))
-    assert "opposite of the original claim" in reversed_.statement
+    assert reversed_.statement.startswith("Here the reverse holds: charge_below=0.25 does better.")
 
     assert {op["op"] for op in log} == {"evidence", "supersede", "specialize", "support"}
     relations = set(graph.relations)
@@ -320,9 +352,9 @@ def test_boundary_probes_rescope_existing_claims_instead_of_replacing_them():
 def test_equivalent_region_gets_no_claim_and_refuted_roots_keep_their_reverse():
     graph = ClaimGraph()
     root = graph.add(claim())
-    graph.record(root.id, outcome(25, EQUIVALENT))
+    graph.record(root.id, outcome(25, NO_BENEFIT))
     assert root.status == REFUTED and graph.children(root.id) == []
-    assert root.origin["equivalent_regions"] == ["all tested conditions"]
+    assert root.origin["no_benefit_regions"] == ["all tested conditions"]
     assert graph.applicable({WH: 25.0}) == []
 
     graph.record(root.id, outcome(50, B_BETTER))
@@ -460,7 +492,7 @@ def test_outcome_evidence_labels(tester):
     same = tester.outcome_evidence(claim(), fake_ab(base + rng.normal(0, 0.002, 16), base))
     assert (better.label, better.verdict) == (A_BETTER, SUPPORTS)
     assert (worse.label, worse.verdict) == (B_BETTER, CONTRADICTS)
-    assert (same.label, same.verdict) == (EQUIVALENT, CONTRADICTS)
+    assert (same.label, same.verdict) == (NO_BENEFIT, CONTRADICTS)
     assert better.conditions == {WH: 200.0}, "only the explored variables identify the point"
     assert worse.details["treatment"]["failures"] == {"battery": 16}
     assert better.n == 16 and better.details["metric"] == "score"
@@ -767,7 +799,7 @@ def graph_with_boundary():
             baseline={"charge_below": 0.25},
         )
     )
-    for wh, label in ((50, A_BETTER), (100, EQUIVALENT)):
+    for wh, label in ((50, A_BETTER), (100, NO_BENEFIT)):
         graph.record(higher.id, outcome(wh, label))
     desat = graph.add(
         claim(
@@ -868,13 +900,18 @@ def test_claims_as_memory_states_scope_footing_and_explanation_status():
     assert "battery_capacity_wh >= 100" in exact[0].description
     assert "tested under exactly these conditions" in exact[0].description
     assert "`charge_below` = 0.1 instead of 0.25" in exact[0].content
-    assert "It did NOT hold at: battery_capacity_wh=50" in exact[0].content
+    assert (
+        "Outside the stated range it did not hold (tested at battery_capacity_wh=50)"
+        in exact[0].content
+    )
     assert "'less time is spent charging' is supported" in exact[0].content
 
     extrapolated = claims_as_memory(graph, {WH: 800.0})
     assert "treat it as an extrapolation" in extrapolated[0].description
     small = claims_as_memory(graph, {WH: 60.0})
     assert "`charge_below` = 0.25 instead of 0.1" in small[0].content
+    assert small[0].title.startswith("Here the opposite of this holds: A lower charge threshold")
+    assert "Explanation" not in small[0].content, "the explanation was for the original direction"
 
 
 # --------------------------------------------------------------------------- experiment runner
@@ -1101,7 +1138,9 @@ def test_pipeline_can_hand_applicable_claims_to_an_llm_agent(tmp_path):
     assert "`charge_below` = 0.1 instead of 0.25" in systems[0]
     assert "`charge_below` = 0.25 instead of 0.1" in systems[-1]
     assert "Applies where battery_capacity_wh >= 100" in systems[0]
-    assert "It did NOT hold at: battery_capacity_wh=50" in systems[0]
+    assert (
+        "Outside the stated range it did not hold (tested at battery_capacity_wh=50)" in systems[0]
+    )
 
     used = [e["dst"] for e in store.edges(src=big.trajectory_ids[0], relation="used")]
     assert len(used) == 1

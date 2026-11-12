@@ -102,29 +102,35 @@ class Planner:
         return min(inside, key=lambda g: log_distance(self.domain.explored(g), anchor, variables))
 
     def _boundaries(self, root: Claim, pool: list[Evidence]) -> list[Proposal]:
+        """Probe between neighbouring tested points whose results differ.
+
+        All tested points count, including unresolved ones, so an inconclusive midpoint
+        between a "better" and a "worse" result is itself bracketed further, until
+        neighbours are within ``boundary_ratio`` of each other.
+        """
         out: list[Proposal] = []
-        decisive = [e for e in pool if e.label in DECISIVE]
-        tested = [e.conditions for e in pool]
+        if not any(e.label in DECISIVE for e in pool):
+            return out
         for var in self.domain.variables:
             lines: dict[tuple[Any, ...], list[Evidence]] = {}
-            for e in decisive:
+            for e in pool:
                 others = tuple(sorted((k, v) for k, v in e.conditions.items() if k != var))
                 lines.setdefault(others, []).append(e)
             for others, members in lines.items():
                 members.sort(key=lambda e: e.conditions[var])
+                values = [e.conditions[var] for e in members]
                 for a, b in zip(members, members[1:], strict=False):
                     low, high = a.conditions[var], b.conditions[var]
                     if a.label == b.label or low <= 0 or high / low <= self.boundary_ratio:
                         continue
                     mid = _round_sig(math.sqrt(low * high))
-                    point = {**dict(others), var: mid}
-                    if point in tested or not low < mid < high:
+                    if not low < mid < high or any(abs(math.log(v / mid)) < 0.03 for v in values):
                         continue
                     out.append(
                         Proposal(
                             "boundary",
                             root.id,
-                            self.domain.conditions(**point),
+                            self.domain.conditions(**{**dict(others), var: mid}),
                             80.0 + min(math.log(high / low), 2.0),
                             f"{var}={low:g} gave '{a.label}' but {var}={high:g} gave '{b.label}'; "
                             f"probing {mid:g} to locate the boundary",

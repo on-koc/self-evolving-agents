@@ -10,7 +10,7 @@ from .schema import (
     A_BETTER,
     B_BETTER,
     CONTRADICTS,
-    EQUIVALENT,
+    NO_BENEFIT,
     REFUTED,
     SUPERSEDED,
     SUPPORTED,
@@ -21,8 +21,8 @@ from .schema import (
 _LABEL_TEXT = {
     A_BETTER: "intervention better",
     B_BETTER: "baseline better",
-    EQUIVALENT: "no meaningful difference",
-    "inconclusive": "inconclusive",
+    NO_BENEFIT: "no meaningful benefit",
+    "inconclusive": "unresolved (inconclusive at the maximum number of seeds)",
 }
 
 
@@ -51,8 +51,15 @@ def claims_as_memory(
     applicable = sorted(graph.applicable(conditions, statuses=(SUPPORTED,)), key=lambda x: x[1])
     for claim, distance in applicable[:max_items]:
         root = graph.root(claim)
+        same_direction = claim.intervention == root.intervention
         supporting = [e for e in claim.outcome_evidence() if e.verdict == SUPPORTS]
-        counter = [e for e in claim.evidence if e.kind == "outcome" and e.verdict == CONTRADICTS]
+        beyond = [
+            e
+            for e in claim.evidence
+            if e.kind == "outcome"
+            and e.verdict == CONTRADICTS
+            and not claim.scope.contains(e.conditions)
+        ]
         best = max(supporting, key=lambda e: e.ci_low) if supporting else None
         if distance == 0:
             footing = "It was tested under exactly these conditions."
@@ -63,6 +70,10 @@ def claims_as_memory(
                 f"The nearest supporting test differs from the current conditions by a factor of "
                 f"about {pow(2.718281828, distance):.2f}; treat it as an extrapolation."
             )
+        if same_direction:
+            title = claim.statement
+        else:
+            title = f"Here the opposite of this holds: {root.statement}"
         content = f"Use {_change(claim)}. "
         if best is not None:
             content += (
@@ -70,15 +81,19 @@ def claims_as_memory(
                 f"{best.effect:+.3f} (interval {best.ci_low:+.3f} to {best.ci_high:+.3f}, "
                 f"{best.n} seeds). "
             )
-        if counter:
+        if beyond:
             content += (
-                "It did NOT hold at: " + "; ".join(_where(e.conditions) for e in counter[:4]) + ". "
+                "Outside the stated range it did not hold (tested at "
+                + "; ".join(_where(e.conditions) for e in beyond[:4])
+                + "). "
             )
-        for mechanism in root.mechanisms:
-            content += f"Explanation '{mechanism.statement}' is {mechanism.status}. "
+        if same_direction:
+            # The explanations were given for the original direction of the claim only.
+            for mechanism in root.mechanisms:
+                content += f"Explanation '{mechanism.statement}' is {mechanism.status}. "
         items.append(
             MemoryItem(
-                title=claim.statement[:120],
+                title=title[:160],
                 description=f"Applies where {claim.scope.describe()}. {footing}",
                 content=content.strip(),
                 source=SOURCE_CLAIM,
@@ -152,13 +167,18 @@ def render_report(
             lines.append(
                 f"- **{child.status}** ({kind}): where {child.scope.describe()}, use {_change(child)}."
             )
-        if root.origin.get("equivalent_regions"):
-            lines.append(
-                "- No meaningful difference where: "
-                + "; ".join(root.origin["equivalent_regions"])
-                + "."
-            )
-        if graph.children(root.id, active_only=False) or root.origin.get("equivalent_regions"):
+        gaps = False
+        for key, text in (
+            ("no_benefit_regions", "No meaningful benefit, so nothing is recommended, where: "),
+            (
+                "unresolved_regions",
+                "Not established either way, so nothing is recommended, where: ",
+            ),
+        ):
+            if root.origin.get(key):
+                lines.append("- " + text + "; ".join(root.origin[key]) + ".")
+                gaps = True
+        if graph.children(root.id, active_only=False) or gaps:
             lines.append("")
         if root.mechanisms:
             lines += ["Explanations (judged separately from the outcome):", ""]
