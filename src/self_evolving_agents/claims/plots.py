@@ -22,7 +22,7 @@ from pathlib import Path
 from typing import Any
 
 from .graph import ClaimGraph
-from .schema import A_BETTER, B_BETTER, INCONCLUSIVE, NO_BENEFIT, SUPPORTED, Claim
+from .schema import A_BETTER, B_BETTER, INCONCLUSIVE, NO_BENEFIT, Claim
 
 SURFACE = "#fcfcfb"
 INK = "#0b0b0b"
@@ -87,6 +87,35 @@ def _setting(values: dict[str, float]) -> str:
     return ", ".join(f"{p} = {v:g}" for p, v in sorted(values.items()))
 
 
+def _applied_spans(
+    graph: ClaimGraph,
+    root: Claim,
+    x: str,
+    fixed: dict[str, float],
+    x_min: float,
+    x_max: float,
+    samples: int = 800,
+) -> list[tuple[float, float, Claim]]:
+    """Stretches of ``x`` (other conditions fixed) over which one claim of the family applies."""
+    spans: list[tuple[float, float, Claim]] = []
+    start, held = x_min, None
+    previous = x_min
+    for i in range(samples + 1):
+        value = x_min * (x_max / x_min) ** (i / samples)
+        hit = next(
+            (c for c, _ in graph.applicable({**fixed, x: value}) if c.family == root.id), None
+        )
+        if (hit.id if hit else None) != (held.id if held else None):
+            edge = math.sqrt(previous * value)
+            if held is not None:
+                spans.append((start, edge, held))
+            start, held = edge, hit
+        previous = value
+    if held is not None:
+        spans.append((start, x_max, held))
+    return spans
+
+
 def plot_claims(
     graph: ClaimGraph,
     path: str | Path,
@@ -133,25 +162,12 @@ def plot_claims(
         ax.grid(axis="y", color=GRID, linewidth=0.8)
         ax.axhline(0, color=AXIS, linewidth=1.0, zorder=1)
 
-        # Regions in which a claim of this family is currently supported.
-        regions = []
-        for claim in graph.active(root.id):
-            if claim.status != SUPPORTED:
-                continue
-            slice_ok = all(
-                (low is None or fixed[var] >= low) and (high is None or fixed[var] < high)
-                for var, (low, high) in claim.scope.bounds.items()
-                if var in fixed
-            )
-            if not slice_ok:
-                continue
-            low, high = claim.scope.bounds.get(x, (None, None))
-            low, high = max(low or x_min, x_min), min(high or x_max, x_max)
-            if low >= high:
-                continue
+        # Where a claim of this family applies along the slice. Sampled, not read off
+        # the scopes, so that the shading shows what the graph would actually recommend.
+        regions = _applied_spans(graph, root, x, fixed, x_min, x_max)
+        for low, high, claim in regions:
             same = claim.intervention == root.intervention
             ax.axvspan(low, high, color=BLUE if same else RED, alpha=0.10, linewidth=0, zorder=0)
-            regions.append((low, high, claim))
 
         for e in points:
             style = _STYLE.get(e.label, _STYLE[INCONCLUSIVE])
