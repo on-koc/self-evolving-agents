@@ -26,7 +26,7 @@ Everything that happens is written to a provenance store.
 |---|---|---|
 | `bsk-scan` adapter, rule policies, experiment runner | real Basilisk 2.12 / BSK-RL 1.3.11 | exact per-seed reproducibility, matched initial conditions, physics sanity check, all in the test suite |
 | `discoveryworld` adapter | real DiscoveryWorld 0.0.2 | scripted solutions complete the task on seeds 0-4; oracle scorecard never reaches the agent |
-| Claim graph, active experimentation, transfer evaluation | real Basilisk, several thousand episodes | results below and in `results/` |
+| Claim graph, active experimentation, transfer evaluation | real Basilisk, two studies, about 13,000 episodes | results below and in `results/` |
 | Claude backend | the real `anthropic` SDK against a local fake server | request shape and reply handling only; **never called the live API** |
 | ReasoningBank loop, MaTTS, LLM agents, LLM hypothesis proposer | scripted stand-ins for the model | mechanics only; **no real language model has run yet** |
 
@@ -70,10 +70,17 @@ hour of CPU) chosen by the planner.
 Outside the studied range (18 and 600 Wh) the claims still beat every baseline, but
 fall short of tuning (0.377 against 0.479), and one claim was applied past the point
 where it holds. `docs/results-bsk-battery.md` has the full account, including what
-went wrong and the one revision of the decision rules.
+went wrong and every revision of the decision rules.
 
-A second study, across battery size and solar-array area together, is configured in
-`studies/bsk_battery_panel.json`. Its results are not recorded here yet.
+A second study varies the solar-array area as well (157 experiments, 5,648 episodes).
+The same pattern holds at eight untested combinations inside the studied range, in
+two groups of four: conditional claims score +0.348 and +0.452, tuning on the test
+conditions +0.347 and +0.457, the same evidence without conditions +0.121 and +0.261.
+At two array areas outside the range, where no spacecraft is lost, the unconditional
+lessons do slightly better than the claims (0.604 against 0.587). The study also
+turned "top up before each eclipse" from a lesson about battery size into one about
+battery size and array area: with the small array it helps at one battery size and
+costs score on large ones.
 
 ## Install
 
@@ -121,7 +128,7 @@ Run a rule policy on real Basilisk, no model involved:
 sea policy run --env bsk-scan --regime small_battery --seeds 0:8 --set charge_below=0.4
 ```
 
-Reproduce the claim study (about 30 minutes on 4 cores):
+Reproduce the first claim study (about 30 minutes on 4 cores):
 
 ```bash
 sea claims study --config studies/bsk_battery.json --out runs/bsk-battery --workers 4
@@ -163,7 +170,7 @@ src/self_evolving_agents/
   provenance/     SQLite store, lineage, PROV-JSON export
 studies/          study configurations
 results/          compact outputs of studies run on real Basilisk
-tests/            181 tests
+tests/            212 tests
 ```
 
 ## Limits

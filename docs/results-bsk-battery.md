@@ -24,7 +24,9 @@ end.
 | grid search at each test condition (yardstick) | +0.607 | 0.0% |
 
 Four battery sizes inside the studied range, 32 seeds each. Details and the
-out-of-range conditions are in [Transfer](#transfer-to-conditions-never-tested).
+out-of-range conditions are in [Transfer](#transfer-to-conditions-never-tested). A
+second study that varies the solar-array area as well shows the same pattern
+([Two conditions at once](#two-conditions-at-once)).
 
 ## Setup
 
@@ -327,8 +329,116 @@ same held-out numbers.
 
 ## Two conditions at once
 
-A second study varies battery capacity and solar-array area together
-(`studies/bsk_battery_panel.json`). Its results are not recorded here yet.
+The second study (`studies/bsk_battery_panel.json`, results in
+`results/bsk-battery-panel/`) varies battery capacity and solar-array area together:
+the same eight comparisons, with the reference array (0.25 m²) and with a small one
+(0.10 m²), for batteries from 25 to 400 Wh. It took 157 experiments (8 first tests,
+88 boundary probes, 60 coverage points, 1 moderator sweep) and 5,648 episodes, about
+2.6 hours of CPU. Most tests with the reference array are the same episodes as in the
+first study, read from the cache. The graph ended with 35 claims: 26 supported, 8
+superseded, 1 retired.
+
+### What the second condition changed
+
+| Comparison | With the 0.25 m² array | With the 0.10 m² array |
+|---|---|---|
+| eclipse top-up | supported from 25 to 119 Wh (unresolved at 50) | supported only at 35 Wh; no benefit from 60 to 240 Wh; **worse** at 283 and 400 Wh (-0.03, -0.06) |
+| `charge_below` 0.1 vs 0.25 | supported from 200 Wh (+0.05 to +0.09); unresolved at 154 | supported from 141 Wh, with larger effects (+0.10 to +0.15) |
+| `charge_below` 0.05 vs 0.1 | supported nowhere | supported at 336 and 400 Wh (+0.03, +0.02) |
+| `charge_margin` 0.25 vs 0 | supported from 25 to 141 Wh (unresolved at 50 and 60) | supported at 30, 35 and 71 Wh; no benefit from 84 Wh up |
+| `charge_below` 0.8 vs 0.6 | unresolved at 25 Wh | supported at 25 Wh (+0.18) |
+| early wheel unloading | supported from 32 to 400 Wh | supported from 30 to 283 Wh (unresolved at 100), with smaller effects; no benefit at 400 |
+
+The eclipse top-up is the clearest case. In the first study it was a lesson for small
+and mid-sized batteries. It is also a lesson for a particular array: with the small
+one it helps at a single battery size and costs score on large batteries. A reading
+that fits all six rows, and the charge-time measurements behind the first claim: with
+a small array charging is slow, so strategies that spend sunlit time charging return
+less, and strategies that cut charging return more. That reading was not tested as
+such.
+
+The explanations came out as before, on more evidence: "keeps the wheels from their
+speed limit" refuted (16 checks, no wheel lost in either arm), "slower wheels draw
+less power" supported (12 checks and the moderator sweep), "prevents battery
+depletion" contested (2 for, 4 against).
+
+![Claims with the small array](../results/bsk-battery-panel/claims_panel_area_m2=0.1.png)
+
+The same figure for the reference array is
+`results/bsk-battery-panel/claims_panel_area_m2=0.25.png`.
+
+### Transfer
+
+Ten conditions that appear in no experiment, 32 seeds each, in three groups.
+
+![Held-out scores, two-variable study](../results/bsk-battery-panel/transfer.png)
+
+| Held-out conditions | reference | flat | pooled | conditional | grid search |
+|---|---|---|---|---|---|
+| untested battery sizes with the small array (35, 70, 140, 280 Wh at 0.10 m²) | +0.082 (21%) | -0.093 (46%) | +0.121 (2%) | **+0.348** (2%) | +0.347 (2%) |
+| array areas between the two studied (0.13, 0.16, 0.2 m²) | +0.184 (20%) | -0.034 (48%) | +0.261 (2%) | **+0.452** (2%) | +0.457 (1%) |
+| array areas outside the studied range (140 Wh at 0.07 and 0.4 m²) | +0.523 (0%) | +0.604 (0%) | +0.387 (0%) | **+0.587** (0%) | +0.604 (0%) |
+
+Mean score, with the share of episodes that lost the spacecraft.
+
+| Paired difference | small array | between areas | outside |
+|---|---|---|---|
+| conditional minus reference | +0.265 [+0.202, +0.330] | +0.268 [+0.194, +0.349] | +0.064 [+0.039, +0.086] |
+| conditional minus pooled | +0.226 [+0.188, +0.265] | +0.191 [+0.162, +0.223] | +0.200 [+0.170, +0.230] |
+| conditional minus flat | +0.441 [+0.355, +0.528] | +0.485 [+0.387, +0.584] | -0.017 [-0.032, -0.005] |
+| grid search minus conditional | -0.001 [-0.027, +0.029] | +0.005 [-0.028, +0.040] | +0.017 [+0.005, +0.032] |
+
+The pattern of the first study repeats on a second condition: unconditional lessons
+lose the spacecraft in nearly half the episodes, the pooled setting is safe and gives
+up score, and the claim graph is indistinguishable from tuning on the test conditions
+in the first two groups.
+
+The third group goes the other way, slightly: the flat lessons beat the graph by
+0.017 on average, all of it at 140 Wh with a 0.4 m² array (0.827 against 0.792), where
+nobody loses the spacecraft. The lower charge threshold pays off there on these
+seeds, and the graph withholds it: with the reference array the lower threshold was
+unresolved at 154 Wh (4 spacecraft lost in 48) and reversed at 119 Wh. Here knowing
+less would have scored more.
+
+On the composition check nine of ten conditions are consistent. One is flagged (140 Wh
+at 0.2 m²: unloading and longer charging blocks together score 0.536, unloading alone
+0.549); the paired difference is -0.014 with an interval from -0.050 to +0.019, so it
+cannot be told from noise.
+
+### When does a claim apply? A rule that changed during this study
+
+This is the part of the work where the method was still moving, so the order of
+events matters.
+
+1. **While the experiments ran**, a claim applied wherever its scope contained the
+   conditions.
+2. **Reading the finished graph**, before any held-out result existed, showed scopes
+   reaching across array areas. A scope is a box around tests that agree. The
+   lower-threshold claim covered 130 to 147 Wh at *every* array area on the strength
+   of one test at 141 Wh with the small array, although with the reference array the
+   neighbouring tests said unresolved and reversed. A check was added: the nearest
+   test of the comparison must agree with the claim. Along one variable this check
+   never bites, and the first study re-evaluates to identical numbers.
+3. **The first held-out evaluation** then showed that the check, as written, also
+   blocked a claim whose nearest test agreed with it but belonged to a neighbouring
+   region. Early wheel unloading was withheld at two conditions for that reason. The
+   check was corrected to compare verdicts. This correction came after held-out
+   numbers had been seen.
+
+| Conditional method, mean held-out score | scope only (1) | check as first written (2) | check as corrected (3) |
+|---|---|---|---|
+| small array | 0.348 | 0.348 | 0.348 |
+| between areas | 0.477 | 0.449 | 0.452 |
+| outside | 0.607 | 0.583 | 0.587 |
+
+The three rules differ at two conditions only, both at 140 Wh with the larger arrays,
+and at both the check lowers the score (0.536 against 0.636, and 0.792 against
+0.833). It removes exactly the lower threshold discussed above. The check stays the
+default, because what it relies on was sound: the tests with that array did not
+establish the lower threshold, and 32 seeds without a loss do not show it is safe
+when 4 of 48 were lost a little higher up. But the held-out data do not favour it,
+and it is a judgment call. `results/bsk-battery-panel/applicability-rules.json` has
+the numbers, and `first-evaluation/` keeps the evaluation as it first ran.
 
 ## What this shows and what it does not
 
@@ -342,7 +452,10 @@ It shows, on a real simulator:
   they were attached to hold.
 - Using the result as a conditional policy transfers to untested battery sizes about
   as well as tuning on them, and clearly better than using the same evidence without
-  conditions.
+  conditions. The same holds with a second condition varied at once.
+- Varying a second condition turned a lesson about battery size into a lesson about
+  battery size and array area, without anyone telling the system which claims the
+  array would matter for.
 
 It does not show:
 
@@ -359,6 +472,14 @@ It does not show:
 - **A general optimiser.** The policy has a fixed structure and seven parameters, and
   each change is tested against the reference policy one at a time. Interactions are
   only screened afterwards.
+- **That caution always pays.** Twice the graph declined to recommend something that
+  would have scored better on the held-out seeds (at 140 Wh in both studies). Whether
+  abstaining on unresolved evidence is right depends on what a lost spacecraft costs
+  compared with a few points of score, and that trade-off is fixed here by the
+  scoring rule, not chosen.
+- **A settled method.** The decision rules changed three times in response to what
+  the studies showed, once after held-out numbers had been seen. Each change is
+  recorded above with the numbers before and after.
 
 ## Reproduce
 
@@ -368,8 +489,15 @@ About 15 minutes for the study and 15 for the evaluation on four cores:
 sea claims study --config studies/bsk_battery.json --out runs/bsk-battery --workers 4
 ```
 
+The two-variable study takes about 40 minutes plus 35 for its evaluation:
+
+```bash
+sea claims study --config studies/bsk_battery_panel.json --out runs/bsk-battery-panel --workers 4
+```
+
 Seeds are fixed, so the experiments and claims come out the same; claim identifiers
-are random.
+are random. An interrupted run continues from its episode cache when started again
+with the same command.
 
 Ask the recorded graph about a spacecraft it has not seen:
 
