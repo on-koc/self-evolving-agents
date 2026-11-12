@@ -35,7 +35,45 @@ and tested for mechanics but has produced no findings. `docs/running-llm-experim
 has the commands to run it with a key and says where the first real run is most
 likely to need tuning.
 
-RESULTS_PLACEHOLDER
+## Results so far (simulator only)
+
+One study on Basilisk: charging, eclipse and wheel-unloading strategies for
+spacecraft with batteries from 25 to 400 Wh. Four hypotheses written by hand, four
+more from a simple rule, and 77 matched-seed experiments (2,688 episodes, about an
+hour of CPU) chosen by the planner.
+
+- **None of the four hypotheses held as stated; all four are now claims with
+  boundaries.** "A lower charge threshold collects more data" is true for the
+  reference spacecraft (+0.09 score at 200 Wh) and loses the spacecraft in 16
+  episodes of 16 at 71 Wh. The planner found that with its second experiment after
+  the claim was first supported, and located both edges with four more.
+- **One explanation was refuted although its claim holds.** Unloading the reaction
+  wheels early helps almost everywhere, but not by keeping them from their speed
+  limit: no wheel was lost in either arm in any seed. It saves power.
+- **The result transfers.** On four battery sizes that appear in no experiment, with
+  seeds that were never used:
+
+  | | mean score | spacecraft lost |
+  |---|---|---|
+  | untuned reference policy | +0.305 | 19.5% |
+  | lessons from the reference spacecraft, applied everywhere | +0.103 | 43.0% |
+  | best single setting given all the evidence | +0.443 | 1.6% |
+  | **conditional claims** | **+0.598** | **1.6%** |
+  | grid search at each test condition (yardstick) | +0.607 | 0.0% |
+
+  Conditional claims beat the same evidence used without conditions by +0.155 (95%
+  interval +0.128 to +0.185) and are within 0.009 of tuning on the test conditions
+  themselves (-0.019 to +0.043).
+
+![Held-out scores by method and battery size](results/bsk-battery/transfer.png)
+
+Outside the studied range (18 and 600 Wh) the claims still beat every baseline, but
+fall short of tuning (0.377 against 0.479), and one claim was applied past the point
+where it holds. `docs/results-bsk-battery.md` has the full account, including what
+went wrong and the one revision of the decision rules.
+
+A second study, across battery size and solar-array area together, is configured in
+`studies/bsk_battery_panel.json`. Its results are not recorded here yet.
 
 ## Install
 
@@ -83,7 +121,7 @@ Run a rule policy on real Basilisk, no model involved:
 sea policy run --env bsk-scan --regime small_battery --seeds 0:8 --set charge_below=0.4
 ```
 
-Reproduce the claim study (about 25 minutes on 4 cores):
+Reproduce the claim study (about 30 minutes on 4 cores):
 
 ```bash
 sea claims study --config studies/bsk_battery.json --out runs/bsk-battery --workers 4
