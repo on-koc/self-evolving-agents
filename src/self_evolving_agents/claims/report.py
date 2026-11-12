@@ -119,7 +119,7 @@ def render_report(
     if study:
         lines += [
             f"{study.get('experiments', '?')} experiments in {study.get('rounds', '?')} rounds, "
-            f"{study.get('episodes_run', '?')} simulator episodes "
+            f"{study.get('episodes_used', study.get('episodes_run', '?'))} simulator episodes "
             f"(budget {study.get('budget', '?')}).",
             "",
         ]
@@ -250,17 +250,70 @@ def render_report(
         lines.append("")
 
     if composition:
-        lines += ["## Do the recommended settings still work together?", ""]
-        for row in composition:
-            if "combined_minus_reference" not in row:
-                lines.append(f"- {_where(row['conditions'])}: {row.get('note', '')}")
-                continue
-            d = row["combined_minus_reference"]
-            lines.append(
-                f"- {_where(row['conditions'])}: combined {row['combined_mean']:+.3f} vs reference "
-                f"{row['reference_mean']:+.3f} (difference {d['diff']:+.3f} "
-                f"[{d['ci_low']:+.3f}, {d['ci_high']:+.3f}]); single changes "
-                f"{row['single_change_means']}; interaction: {row['interaction']}."
-            )
-        lines.append("")
+        lines += _composition_section(composition)
     return "\n".join(lines)
+
+
+def _finding(row: dict[str, Any]) -> str:
+    """The composition verdict of a row, including rows written by earlier versions."""
+    if "finding" in row:
+        return str(row["finding"])
+    return "below best single change" if row.get("interaction") == "negative" else "consistent"
+
+
+def _composition_section(composition: list[dict[str, Any]]) -> list[str]:
+    lines = [
+        "## Do the recommended settings still work together?",
+        "",
+        "Every family was tested with only its own change. Here the reference policy, each "
+        "recommended change on its own, and all of them together run on the same held-out "
+        "seeds.",
+        "",
+        "| conditions | reference | each change alone | all together | together minus reference "
+        "| finding |",
+        "|---|---|---|---|---|---|",
+    ]
+    notes: list[str] = []
+    for row in composition:
+        where = _where(row["conditions"])
+        if "combined_minus_reference" not in row:
+            lines.append(f"| {where} | | | | | {row.get('note', 'nothing to combine')} |")
+            continue
+        d = row["combined_minus_reference"]
+        singles = row["single_change_means"]
+        alone = "; ".join(f"`{name}` {mean:+.3f}" for name, mean in singles.items())
+        finding = _finding(row)
+        lines.append(
+            f"| {where} | {row['reference_mean']:+.3f} | {alone} | {row['combined_mean']:+.3f} | "
+            f"{d['diff']:+.3f} [{d['ci_low']:+.3f}, {d['ci_high']:+.3f}] | {finding} |"
+        )
+        if finding == "consistent":
+            continue
+        best = row.get("best_single_change")
+        gap = row.get("combined_minus_best_single")
+        shortfall = (
+            f" All together is {gap['diff']:+.3f} [{gap['ci_low']:+.3f}, {gap['ci_high']:+.3f}] "
+            f"against `{best}` alone."
+            if best and gap
+            else ""
+        )
+        if finding == "unhelpful change":
+            names = ", ".join(
+                f"`{name}` ({singles[name]:+.3f} against {row['reference_mean']:+.3f})"
+                for name in row.get("unhelpful_alone", [])
+            )
+            notes.append(
+                f"- {where}: on its own, {names} scores below the reference here, so the "
+                f"claim behind it is being applied where it does not hold.{shortfall}"
+            )
+        elif finding == "negative interaction":
+            notes.append(
+                f"- {where}: every change is at least as good as the reference on its own, "
+                f"but together they score below the best of them.{shortfall}"
+            )
+        else:
+            notes.append(f"- {where}: the combination scores below its best single change.")
+    lines.append("")
+    if notes:
+        lines += notes + [""]
+    return lines

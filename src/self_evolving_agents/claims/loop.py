@@ -221,8 +221,11 @@ class ActiveLoop:
     """Runs the propose -> test -> revise cycle within an episode budget.
 
     Args:
-        budget_episodes: stop once this many simulator episodes have actually been run
-            (cached episodes are free). The round in progress is allowed to finish.
+        budget_episodes: stop once the experiments have needed this many different
+            simulator episodes. Episodes found in the cache count too, so a study that
+            is interrupted and resumed stops where an uninterrupted one would; asking
+            for the same episode again within a study is free. The round in progress
+            is allowed to finish.
         per_round: how many proposals to execute before looking at the graph again.
         proposers: objects with ``propose(graph) -> list[Claim]``, asked for new
             hypotheses at the start of every round.
@@ -342,7 +345,8 @@ class ActiveLoop:
         return {
             "rounds": self.rounds,
             "experiments": len(self.experiments),
-            "episodes_run": self.tester.episodes,
+            "episodes_used": self.tester.episodes,
+            "episodes_simulated": self.tester.simulated,
             "budget": self.budget,
             "graph": self.graph.summary(),
         }

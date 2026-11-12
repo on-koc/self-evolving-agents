@@ -90,6 +90,11 @@ def partition(
     and threshold (between two adjacent tested values) that best separates the
     labels. Splitting stops when a region is pure, cannot be split, or the depth
     limit is reached; a region that is still impure is labelled ``mixed``.
+
+    A split is made even when it does not reduce the disagreement by itself, as long
+    as it separates tested points: with two variables, results can disagree in a
+    checkerboard that takes two splits to pull apart. Along a single variable some
+    split always reduces the disagreement, so this makes no difference there.
     """
     labels = {label for _, label in points}
     if len(labels) <= 1 or max_depth == 0:
@@ -105,7 +110,7 @@ def partition(
             score = (_impurity(left) * len(left) + _impurity(right) * len(right)) / len(points)
             if best is None or score < best[0] - 1e-12:
                 best = (score, var, t)
-    if best is None or best[0] >= _impurity(points) - 1e-12:
+    if best is None:
         return [Leaf(region, MIXED, points)]
     _, var, t = best
     left = [p for p in points if p[0][var] < t]
@@ -121,11 +126,24 @@ class ClaimGraph:
     Args:
         path: JSON file to persist to (``None`` keeps the graph in memory).
         store: provenance store to mirror claims, evidence and relations into.
+        max_depth: how many times in a row a family's condition space may be split
+            when its evidence disagrees. A region still holding conflicting results
+            at that depth becomes a ``contested`` claim, which is never applied.
+            Three is enough for one condition variable with a few changes of
+            verdict along it; use more with two or more variables.
     """
 
-    def __init__(self, path: str | Path | None = None, store: ProvenanceStore | None = None):
+    def __init__(
+        self,
+        path: str | Path | None = None,
+        store: ProvenanceStore | None = None,
+        max_depth: int = 3,
+    ):
+        if max_depth < 1:
+            raise ValueError("max_depth must be at least 1")
         self.path = Path(path) if path else None
         self.store = store
+        self.max_depth = int(max_depth)
         self.claims: dict[str, Claim] = {}
         self.relations: list[tuple[str, str, str]] = []
         self.log: list[dict[str, Any]] = []
@@ -362,7 +380,7 @@ class ClaimGraph:
         # inconclusive: a region where the claim could not be established gets no
         # claim, instead of being covered by whatever its neighbours showed.
         tested = [(dict(e.conditions), e.label) for e in pool]
-        leaves = partition(tested, root.scope) if decisive else []
+        leaves = partition(tested, root.scope, self.max_depth) if decisive else []
         labels = {leaf.label for leaf in leaves}
 
         if not decisive:
@@ -416,8 +434,17 @@ class ClaimGraph:
             else:
                 child = self._specialise(root, polarity, leaf)
             child.evidence = [self._view(e, polarity) for e in pool]
-            target = CONTESTED if leaf.label == MIXED else SUPPORTED
-            self._set_status(child, target, f"{len(leaf.points)} decisive test(s) in its region")
+            if leaf.label == MIXED:
+                self._set_status(
+                    child,
+                    CONTESTED,
+                    f"the {len(leaf.points)} test(s) in its region disagree and could not "
+                    "be separated",
+                )
+            else:
+                self._set_status(
+                    child, SUPPORTED, f"{len(leaf.points)} decisive test(s) in its region"
+                )
             self._mirror(child)
         for stale in unmatched:
             stale.evidence = [self._view(e, self._polarity(stale)) for e in pool]

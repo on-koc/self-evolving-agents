@@ -160,14 +160,25 @@ def composition_check(
     seeds: Sequence[int],
     *,
     policy_factory: PolicyFactory = scanning_policy,
+    tolerance: float = 0.01,
 ) -> list[dict[str, Any]]:
     """Check that settings supported one at a time still help when applied together.
 
     Each family was tested against the reference policy with only its own change. At
-    every given point this compares the fully assembled policy with the reference on
-    matched seeds, and with the best single recommended change, so that an
-    interaction between claims shows up as a combined policy that underperforms its
-    own parts.
+    every given point this runs, on matched seeds, the reference policy, the fully
+    assembled policy, and each recommended change on its own, and reports one of:
+
+    - ``consistent``: the combination scores at least as well as its best single
+      change (within ``tolerance``);
+    - ``unhelpful change``: the combination scores below its best single change, and
+      at least one recommended change scores below the reference on its own here.
+      A claim is being applied where it does not hold;
+    - ``negative interaction``: the combination scores below its best single change
+      although every change is at least as good as the reference on its own.
+
+    The verdict compares means on the given seeds and is a screen, not a test: the
+    best single change is picked on the same seeds it is then compared on, which
+    favours it. ``combined_minus_best_single`` carries the paired interval.
     """
     defaults = dict(getattr(policy_factory, "defaults", None) or policy_factory().params)
     out = []
@@ -184,7 +195,8 @@ def composition_check(
             o.score for o in _run(runner, domain, policy_factory, conditions, rec.settings, seeds)
         ]
         row["combined_minus_reference"] = paired_compare(combined, reference).to_dict()
-        singles = {}
+        singles: dict[str, float] = {}
+        series: dict[str, list[float]] = {}
         groups: dict[tuple[str, ...], dict[str, float]] = {}
         for reason in rec.reasons:
             groups.setdefault(tuple(sorted(reason["set"])), {}).update(
@@ -194,14 +206,24 @@ def composition_check(
             single = [
                 o.score for o in _run(runner, domain, policy_factory, conditions, settings, seeds)
             ]
+            series[",".join(group)] = single
             singles[",".join(group)] = round(float(np.mean(single)), 4)
         row["single_change_means"] = singles
         row["combined_mean"] = round(float(np.mean(combined)), 4)
         row["reference_mean"] = round(float(np.mean(reference)), 4)
         if singles:
-            best = max(singles.values())
-            row["interaction"] = (
-                "negative" if row["combined_mean"] < best - 0.01 else "none detected"
+            best = max(singles, key=lambda name: singles[name])
+            unhelpful = sorted(
+                name for name, mean in singles.items() if mean < row["reference_mean"] - tolerance
             )
+            row["best_single_change"] = best
+            row["combined_minus_best_single"] = paired_compare(combined, series[best]).to_dict()
+            row["unhelpful_alone"] = unhelpful
+            if row["combined_mean"] >= singles[best] - tolerance:
+                row["finding"] = "consistent"
+            elif unhelpful:
+                row["finding"] = "unhelpful change"
+            else:
+                row["finding"] = "negative interaction"
         out.append(row)
     return out

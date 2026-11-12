@@ -13,7 +13,7 @@ import multiprocessing as mp
 import os
 import sqlite3
 import time
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -83,6 +83,19 @@ class EpisodeCache:
     def commit(self) -> None:
         self._db.commit()
 
+    def wall_seconds(self, keys: Iterable[str]) -> float:
+        """Time the given episodes took to simulate, summed (whenever they were run)."""
+        wanted = list(keys)
+        total = 0.0
+        for start in range(0, len(wanted), 500):
+            chunk = wanted[start : start + 500]
+            marks = ",".join("?" * len(chunk))
+            row = self._db.execute(
+                f"SELECT COALESCE(SUM(wall_s), 0) FROM episodes WHERE key IN ({marks})", chunk
+            ).fetchone()
+            total += float(row[0])
+        return total
+
     def __len__(self) -> int:
         return self._db.execute("SELECT COUNT(*) FROM episodes").fetchone()[0]
 
@@ -148,7 +161,25 @@ class EpisodeRunner:
         self.on_progress = on_progress
         self.episodes_run = 0
         self.episodes_cached = 0
+        self._seen: set[str] = set()
         self._pool: Any = None
+
+    @property
+    def episodes_distinct(self) -> int:
+        """Different episodes asked for so far, whether simulated now or found in the cache.
+
+        Unlike ``episodes_run`` this does not depend on what the cache already held,
+        so it is the number to budget with.
+        """
+        return len(self._seen)
+
+    def simulation_seconds(self) -> float:
+        """Single-core simulation time of every episode asked for so far.
+
+        Read from the cache, so it is the same whether the episodes were simulated in
+        this process or reused.
+        """
+        return self.cache.wall_seconds(self._seen)
 
     def _ensure_pool(self) -> Any:
         if self._pool is None:
@@ -161,6 +192,7 @@ class EpisodeRunner:
         missing: dict[str, EpisodeSpec] = {}
         for spec in specs:
             key = spec.key
+            self._seen.add(key)
             if key in results or key in missing:
                 continue
             cached = self.cache.get(key)

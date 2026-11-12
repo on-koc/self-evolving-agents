@@ -79,7 +79,7 @@ def run_study(
         graph_path.unlink()  # the graph is a product of the run; episodes are what is cached
     store = ProvenanceStore(out / "provenance.sqlite")
     store.start_run("claim-study", config.get("name", out.name), config)
-    graph = ClaimGraph(graph_path, store=store)
+    graph = ClaimGraph(graph_path, store=store, **config.get("graph", {}))
     for spec in config.get("hypotheses", []):
         graph.add(claim_from_spec(spec, env_id=domain.env_id, conditions=list(domain.reference)))
 
@@ -127,12 +127,15 @@ def run_study(
         study = {
             "rounds": loop.rounds,
             "experiments": len(loop.experiments),
-            "episodes_run": tester.episodes,
+            "episodes_used": tester.episodes,
+            "episodes_simulated": tester.simulated,
             "budget": loop.budget,
+            "simulation_core_s": round(runner.simulation_seconds(), 1),
             "wall_s": round(time.time() - started, 1),
             "graph": graph.summary(),
             "confidence_per_look": round(tester.confidence, 4),
         }
+        used_by_study = runner.episodes_distinct
         (out / "study.json").write_text(json.dumps(study, indent=2))
         with (out / "experiments.jsonl").open("w") as fh:
             for x in loop.experiments:
@@ -141,6 +144,10 @@ def run_study(
         transfer = composition = None
         if evaluate and config.get("evaluation"):
             transfer, composition = _evaluate(config, out, runner, graph, domain, quiet)
+            study["evaluation_episodes"] = runner.episodes_distinct - used_by_study
+            study["evaluation_core_s"] = round(
+                runner.simulation_seconds() - study["simulation_core_s"], 1
+            )
             study["evaluation_wall_s"] = round(time.time() - started - study["wall_s"], 1)
         study["episodes_total"] = len(runner.cache)
 

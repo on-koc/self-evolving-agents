@@ -204,6 +204,43 @@ def test_partition_reports_unsplittable_disagreement_as_mixed():
     assert [leaf.label for leaf in leaves] == ["mixed"]
 
 
+def test_partition_pulls_a_checkerboard_apart():
+    """No single split helps here, but two do; it is not an unsplittable disagreement."""
+    grid = [
+        ({WH: 50.0, "panel_area_m2": 0.1}, A_BETTER),
+        ({WH: 50.0, "panel_area_m2": 0.25}, B_BETTER),
+        ({WH: 200.0, "panel_area_m2": 0.1}, B_BETTER),
+        ({WH: 200.0, "panel_area_m2": 0.25}, A_BETTER),
+    ]
+    leaves = partition(grid, Region())
+    assert sorted(leaf.label for leaf in leaves) == sorted([A_BETTER, B_BETTER] * 2)
+    assert all(len(leaf.points) == 1 and len(leaf.region.constrained) == 2 for leaf in leaves)
+    for conditions, label in grid:
+        (home,) = [leaf for leaf in leaves if leaf.region.contains(conditions)]
+        assert home.label == label
+
+
+FIVE_RUNS = (
+    (10, A_BETTER),
+    (20, INCONCLUSIVE),
+    (40, A_BETTER),
+    (80, INCONCLUSIVE),
+    (160, NO_BENEFIT),
+)
+
+
+def test_partition_depth_limit_leaves_a_mixed_region_that_more_depth_separates():
+    """Five runs of verdicts along one variable need four splits in a row.
+
+    This is the pattern that marked claims as contested for a while in the Basilisk
+    study, until further experiments changed the order of the splits.
+    """
+    shallow = partition(points(*FIVE_RUNS), Region(), max_depth=3)
+    assert "mixed" in [leaf.label for leaf in shallow]
+    deep = partition(points(*FIVE_RUNS), Region(), max_depth=6)
+    assert [leaf.label for leaf in deep] == [label for _, label in FIVE_RUNS]
+
+
 # --------------------------------------------------------------------------- graph revision
 
 
@@ -386,6 +423,30 @@ def test_unsplittable_disagreement_is_contested():
     graph.record(root.id, outcome(100, B_BETTER, background={}))
     (child,) = graph.children(root.id)
     assert child.status == CONTESTED and graph.applicable({WH: 100.0}) == []
+
+
+def test_graph_depth_decides_whether_a_crowded_family_is_separated():
+    def build(depth):
+        graph = ClaimGraph(max_depth=depth)
+        root = graph.add(claim())
+        for wh, label in FIVE_RUNS:
+            graph.record(root.id, outcome(wh, label))
+        return graph, root
+
+    graph, root = build(3)
+    contested = [c for c in graph.children(root.id) if c.status == CONTESTED]
+    assert len(contested) == 1 and contested[0].scope.contains({WH: 40.0})
+    assert graph.applicable({WH: 40.0}) == [], "a contested claim is never applied"
+    assert any("disagree and could not be separated" in e["detail"] for e in graph.log)
+
+    graph, root = build(6)
+    assert all(c.status == SUPPORTED for c in graph.children(root.id))
+    assert [c.scope.contains({WH: 40.0}) for c, _ in graph.applicable({WH: 40.0})] == [True]
+    assert graph.applicable({WH: 80.0}) == [], "the unresolved point still gets no claim"
+    assert len(root.origin["unresolved_regions"]) == 2
+
+    with pytest.raises(ValueError, match="max_depth"):
+        ClaimGraph(max_depth=0)
 
 
 def test_applicable_reports_distance_to_the_nearest_supporting_test():
@@ -929,9 +990,11 @@ def test_runner_caches_and_preserves_order(tmp_path):
         assert runner.episodes_run == 3 and [o.to_dict() for o in again] == [
             o.to_dict() for o in first
         ]
+        assert runner.episodes_distinct == 3
     with EpisodeRunner(EpisodeCache(tmp_path / "ep.sqlite")) as fresh:
         assert [o.score for o in fresh.run(specs)] == [o.score for o in first]
         assert fresh.episodes_run == 0 and len(fresh.cache) == 3
+        assert fresh.episodes_distinct == 3, "counted whether or not they were cached"
     assert specs[0].key != specs[1].key and specs[0].config_key == specs[1].config_key
     other = EpisodeSpec(scan_task("toy-scan", seed=3), scanning_policy(charge_below=0.4))
     assert other.key != specs[0].key
@@ -977,11 +1040,34 @@ def toy_study():
     return graph, domain, runner, tester, loop, result, events
 
 
+def test_budget_does_not_depend_on_what_is_cached(tmp_path):
+    """A resumed study must stop where an uninterrupted one would."""
+    config = json.loads((STUDIES / "toy_battery.json").read_text())
+
+    def study():
+        domain = Domain(variables={WH: [25, 50, 100, 200, 400]}, env_id="toy-scan")
+        graph = ClaimGraph()
+        for spec in config["hypotheses"]:
+            graph.add(claim_from_spec(spec, env_id="toy-scan"))
+        with EpisodeRunner(EpisodeCache(tmp_path / "ep.sqlite")) as runner:
+            tester = ClaimTester(runner, domain, **config["tester"])
+            planner = Planner(graph, domain, **config["planner"])
+            loop = ActiveLoop(graph, tester, planner, budget_episodes=400, per_round=4)
+            result = loop.run()
+        return result, [(x["kind"], tuple(x["conditions"].items())) for x in loop.experiments]
+
+    first, experiments = study()
+    again, repeated = study()
+    assert first["episodes_simulated"] == first["episodes_used"] >= 400
+    assert again["episodes_simulated"] == 0 and again["episodes_used"] == first["episodes_used"]
+    assert repeated == experiments and len(experiments) > 3
+
+
 def test_active_loop_runs_to_completion_within_budget(toy_study):
     graph, domain, runner, tester, loop, result, events = toy_study
     assert result["experiments"] == len(loop.experiments) > 10
-    assert 0 < result["episodes_run"] <= result["budget"] + 6 * 2 * tester.max_seeds
-    assert result["episodes_run"] == runner.episodes_run
+    assert 0 < result["episodes_used"] <= result["budget"] + 6 * 2 * tester.max_seeds
+    assert result["episodes_used"] == result["episodes_simulated"] == runner.episodes_run
     kinds = {x["kind"] for x in loop.experiments}
     assert {"test", "boundary", "coverage", "moderator"} <= kinds
     assert loop.experiments[0]["kind"] == "test"
@@ -1070,9 +1156,78 @@ def test_transfer_evaluation_and_composition_check(toy_study):
         )
 
     rows = composition_check(runner, graph, domain, [{WH: 280.0}], range(5000, 5012))
-    assert rows[0]["interaction"] in ("none detected", "negative")
+    assert rows[0]["finding"] in ("consistent", "unhelpful change", "negative interaction")
     assert set(rows[0]["single_change_means"]) <= {"charge_below", "desat_above"}
+    assert rows[0]["best_single_change"] in rows[0]["single_change_means"]
     assert rows[0]["combined_minus_reference"]["n"] == 12
+    assert rows[0]["combined_minus_best_single"]["n"] == 12
+
+
+@pytest.mark.parametrize(
+    "scores, finding, unhelpful",
+    [
+        # (reference, a alone, b alone, both)
+        ((0.50, 0.60, 0.55, 0.62), "consistent", []),
+        ((0.50, 0.60, 0.55, 0.595), "consistent", []),  # within the tolerance
+        ((0.50, 0.60, 0.47, 0.57), "unhelpful change", ["b"]),
+        ((0.50, 0.60, 0.55, 0.52), "negative interaction", []),
+        ((0.50, 0.60, 0.47, 0.61), "consistent", ["b"]),  # b costs nothing in combination
+    ],
+)
+def test_composition_check_tells_an_unhelpful_change_from_an_interaction(
+    monkeypatch, scores, finding, unhelpful
+):
+    """The verdicts, pinned down with made-up scores in place of a simulator."""
+    from types import SimpleNamespace
+
+    from self_evolving_agents.claims import evaluate
+    from self_evolving_agents.claims.policy import Recommendation
+
+    reference, a_alone, b_alone, both = scores
+    table = {(): reference, ("a",): a_alone, ("b",): b_alone, ("a", "b"): both}
+
+    def fake_run(runner, domain, policy_factory, conditions, settings, seeds):
+        base = table[tuple(sorted(settings))]
+        return [SimpleNamespace(score=base + 0.001 * (i % 3)) for i, _ in enumerate(seeds)]
+
+    def fake_recommend(graph, conditions, **kwargs):
+        return Recommendation(
+            settings={"a": 1.0, "b": 2.0}, reasons=[{"set": {"a": 1.0}}, {"set": {"b": 2.0}}]
+        )
+
+    def factory(**knobs):
+        return None
+
+    factory.defaults = {"a": 0.0, "b": 0.0}
+    monkeypatch.setattr(evaluate, "_run", fake_run)
+    monkeypatch.setattr(evaluate, "recommend", fake_recommend)
+    domain = Domain({WH: [50.0, 200.0]}, env_id="toy-scan")
+    (row,) = composition_check(
+        None, ClaimGraph(), domain, [{WH: 100.0}], range(8), policy_factory=factory
+    )
+    assert row["finding"] == finding and row["unhelpful_alone"] == unhelpful
+    assert row["best_single_change"] == "a"
+    assert row["combined_minus_best_single"]["diff"] == pytest.approx(both - a_alone)
+    text = render_report(ClaimGraph(), title="t", composition=[row])
+    assert f"| {finding} |" in text
+    if finding == "unhelpful change":
+        assert "applied where it does not hold" in text and "`b` (+0.471 against +0.501)" in text
+    if finding == "negative interaction":
+        assert "together they score below the best of them" in text
+
+
+def test_report_reads_composition_rows_written_before_findings_were_split():
+    old = {
+        "conditions": {WH: 600.0},
+        "combined_minus_reference": {"diff": 0.03, "ci_low": -0.02, "ci_high": 0.09},
+        "single_change_means": {"charge_below": 0.9, "desat_above": 0.83},
+        "combined_mean": 0.877,
+        "reference_mean": 0.843,
+        "interaction": "negative",
+    }
+    text = render_report(ClaimGraph(), title="t", composition=[old])
+    assert "| below best single change |" in text
+    assert "scores below its best single change" in text
 
 
 def test_report_renders_every_section(toy_study):

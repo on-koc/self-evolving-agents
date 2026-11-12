@@ -199,7 +199,10 @@ class ClaimTester:
         looks = min(max(math.ceil(max_seeds / batch), 1), 5)
         self.confidence = 1.0 - _POCOCK_ALPHA[looks]
         self.min_complete_pairs = 6
+        # Different episodes the experiments have needed, and how many of those had
+        # to be simulated now rather than read from the cache.
         self.episodes = 0
+        self.simulated = 0
 
     # ------------------------------------------------------------------ running
 
@@ -216,9 +219,10 @@ class ClaimTester:
         policy_c = self.policy_factory(**control)
         specs = [EpisodeSpec(self.domain.task(conditions, s), policy_t) for s in seeds]
         specs += [EpisodeSpec(self.domain.task(conditions, s), policy_c) for s in seeds]
-        before = self.runner.episodes_run
+        needed, simulated = self.runner.episodes_distinct, self.runner.episodes_run
         outcomes = self.runner.run(specs)
-        self.episodes += self.runner.episodes_run - before
+        self.episodes += self.runner.episodes_distinct - needed
+        self.simulated += self.runner.episodes_run - simulated
         return ABResult(
             conditions=dict(conditions),
             treatment_params=dict(policy_t.params),

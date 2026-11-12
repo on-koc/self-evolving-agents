@@ -129,29 +129,24 @@
       "panel_area_m2": 3.0
     }
   },
-  "budget": 7000,
+  "graph": {
+    "max_depth": 8
+  },
+  "budget": 10000,
   "per_round": 4,
   "evaluation": {
     "test_points": {
-      "interpolation (inside the studied range)": [
+      "interpolation: untested battery sizes at the small array": [
         {
           "battery_capacity_wh": 35,
-          "panel_area_m2": 0.16
+          "panel_area_m2": 0.1
         },
         {
           "battery_capacity_wh": 70,
-          "panel_area_m2": 0.16
+          "panel_area_m2": 0.1
         },
         {
           "battery_capacity_wh": 140,
-          "panel_area_m2": 0.16
-        },
-        {
-          "battery_capacity_wh": 280,
-          "panel_area_m2": 0.16
-        },
-        {
-          "battery_capacity_wh": 35,
           "panel_area_m2": 0.1
         },
         {
@@ -159,7 +154,25 @@
           "panel_area_m2": 0.1
         }
       ],
-      "extrapolation (outside the studied range)": [
+      "interpolation: array areas between the two studied": [
+        {
+          "battery_capacity_wh": 35,
+          "panel_area_m2": 0.16
+        },
+        {
+          "battery_capacity_wh": 70,
+          "panel_area_m2": 0.13
+        },
+        {
+          "battery_capacity_wh": 140,
+          "panel_area_m2": 0.2
+        },
+        {
+          "battery_capacity_wh": 280,
+          "panel_area_m2": 0.16
+        }
+      ],
+      "extrapolation: array areas outside the studied range": [
         {
           "battery_capacity_wh": 140,
           "panel_area_m2": 0.07

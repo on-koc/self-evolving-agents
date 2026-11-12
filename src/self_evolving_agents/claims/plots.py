@@ -6,7 +6,8 @@ Two figures, both static PNGs for documents:
   tested condition, with its interval, and the regions in which the graph ended up
   recommending the intervention, the baseline, or nothing.
 * ``plot_transfer`` – mean score of each way of using the graph at each held-out
-  condition, with the claim graph's result emphasised.
+  condition, with the claim graph's result emphasised. A comparison method that
+  lands on the same score is drawn as a small mark inside the claim graph's.
 
 The numbers behind both are in the study's ``report.md``, which is the table view of
 these figures. Colours: the blue/red pair was checked for colour-vision separation
@@ -253,7 +254,7 @@ _METHODS = {
     "flat": dict(marker="s", label="flat lessons"),
     "pooled": dict(marker="^", label="best single setting"),
     "conditional": dict(marker="o", label="claim graph"),
-    "oracle": dict(marker="|", label="oracle (ceiling)"),
+    "oracle": dict(marker="|", label="tuned for this condition (grid search)"),
 }
 
 
@@ -286,6 +287,7 @@ def plot_transfer(
                 ", ".join(f"{k.split('_')[0]} {v:g}" for k, v in sorted(row["conditions"].items()))
             )
             scores = {m: row["methods"][m]["mean_score"] for m in _METHODS if m in row["methods"]}
+            ours = scores.get("conditional")
             ax.plot(
                 [min(scores.values()), max(scores.values())],
                 [y, y],
@@ -306,7 +308,7 @@ def plot_transfer(
                         markerfacecolor=BLUE,
                         markeredgecolor=SURFACE,
                         markeredgewidth=1.6,
-                        zorder=4,
+                        zorder=3,
                     )
                     ax.annotate(
                         f"{score:+.2f}",
@@ -326,26 +328,30 @@ def plot_transfer(
                         linestyle="none",
                         markeredgecolor=INK,
                         markeredgewidth=1.6,
-                        zorder=3,
+                        zorder=5,
                     )
                 else:
+                    # A method that lands on the claim graph's result (usually because it
+                    # chose the same settings) is drawn small, on top of it, so that it
+                    # is not hidden behind the larger mark.
+                    coincides = ours is not None and abs(score - ours) < 0.006
                     ax.plot(
                         [score],
                         [y],
                         marker=style["marker"],
-                        markersize=7.5,
+                        markersize=4.0 if coincides else 7.5,
                         linestyle="none",
                         markerfacecolor=INK_MUTED,
                         markeredgecolor=SURFACE,
-                        markeredgewidth=1.4,
-                        zorder=2,
+                        markeredgewidth=0.8 if coincides else 1.4,
+                        zorder=4 if coincides else 2,
                     )
         ax.set_yticks(range(len(rows)))
         ax.set_yticklabels(labels[::-1], color=INK_SECONDARY)
         ax.set_ylim(-0.6, len(rows) - 0.25)
         ax.set_title(group, loc="left", fontsize=9.5, color=INK, pad=6)
     axes[-1, 0].set_xlabel(
-        "mean score on held-out seeds (1 = recording all the time, below 0 = spacecraft lost)"
+        "mean score on held-out seeds (recording all the time = 1; losing the spacecraft = -1)"
     )
 
     present = [
