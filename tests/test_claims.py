@@ -32,6 +32,7 @@ from self_evolving_agents.claims import (
     evaluate_transfer,
     load_hypotheses,
     partition,
+    policy_map,
     recommend,
 )
 from self_evolving_agents.claims.report import claims_as_memory, render_report
@@ -447,6 +448,67 @@ def test_graph_depth_decides_whether_a_crowded_family_is_separated():
 
     with pytest.raises(ValueError, match="max_depth"):
         ClaimGraph(max_depth=0)
+
+
+def test_policy_map_lists_the_recommendation_region_by_region():
+    graph = ClaimGraph()
+    lower = graph.add(claim())
+    for wh, label in ((50, B_BETTER), (200, A_BETTER), (400, A_BETTER)):
+        graph.record(lower.id, outcome(wh, label))
+    desat = graph.add(
+        claim(
+            statement="Unloading the wheels early helps.",
+            intervention={"desat_above": 0.3},
+            baseline={"desat_above": 0.6},
+        )
+    )
+    for wh, label in ((50, A_BETTER), (200, A_BETTER), (400, NO_BENEFIT)):
+        graph.record(desat.id, outcome(wh, label))
+
+    rows = policy_map(graph)
+    table = [(row["region"].bounds[WH], row["settings"]) for row in rows]
+    assert table == [
+        ((None, pytest.approx(100.0)), {"desat_above": 0.3}),
+        ((pytest.approx(100.0), pytest.approx(282.84, abs=0.01)), _both()),
+        ((pytest.approx(282.84, abs=0.01), None), {"charge_below": 0.1}),
+    ]
+    assert all(row["claims"] for row in rows)
+    for row in rows:  # the table agrees with asking the graph directly
+        low, high = row["region"].bounds[WH]
+        probe = {WH: (low or high / 2) * 1.01}
+        assert recommend(graph, probe).settings == row["settings"]
+
+    text = render_report(graph, title="t")
+    assert "## What the graph recommends, by condition" in text
+    assert "| below 100 | · | 0.3 |" in text and "| 282.8 and above | 0.1 | · |" in text
+    assert policy_map(ClaimGraph()) == [{"region": Region(), "settings": {}, "claims": []}], (
+        "an empty graph recommends the reference policy everywhere"
+    )
+    assert "What the graph recommends" not in render_report(ClaimGraph(), title="t")
+
+
+def _both():
+    return {"charge_below": 0.1, "desat_above": 0.3}
+
+
+def test_policy_map_merges_neighbouring_regions_with_the_same_recommendation():
+    graph = ClaimGraph()
+    lower = graph.add(claim())
+    graph.record(lower.id, outcome(50, A_BETTER))
+    graph.record(lower.id, outcome(200, A_BETTER))
+    desat = graph.add(
+        claim(
+            statement="Unloading the wheels early helps.",
+            intervention={"desat_above": 0.3},
+            baseline={"desat_above": 0.6},
+        )
+    )
+    # Supported on both sides of a stretch where it could not be established.
+    for wh, label in ((25, A_BETTER), (50, INCONCLUSIVE), (100, A_BETTER)):
+        graph.record(desat.id, outcome(wh, label))
+    rows = policy_map(graph)
+    assert [row["settings"] for row in rows] == [_both(), {"charge_below": 0.1}, _both()]
+    assert rows[0]["region"].bounds[WH][0] is None and rows[-1]["region"].bounds[WH][1] is None
 
 
 def test_applicable_reports_distance_to_the_nearest_supporting_test():

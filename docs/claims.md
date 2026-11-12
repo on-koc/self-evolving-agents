@@ -52,8 +52,11 @@ change. (Seed-to-seed variation is large: the orbit's inclination itself is rand
   |---|---|
   | entirely above 0 and mean >= d | intervention better |
   | entirely below 0 and mean <= -d | baseline better |
-  | entirely inside (-d, d) | equivalent |
-  | anything else | inconclusive |
+  | upper end below d, and not the case above | no meaningful benefit |
+  | anything else | inconclusive: more seeds are added |
+
+  A comparison that is still inconclusive at the largest sample is **unresolved**.
+  "No meaningful benefit" counts against the claim without supporting its reverse.
 
 An unsuccessful episode on its own is never evidence for a claim. Only a controlled
 comparison is.
@@ -93,16 +96,26 @@ revised (`ClaimGraph.revise`):
 | Pooled evidence says | Result |
 |---|---|
 | intervention better everywhere tested | root **supported** |
-| baseline better or equivalent everywhere tested | root **refuted**; a *reversed* claim is created where the baseline won |
-| different answers in different places | root **superseded**; the tested points are partitioned and each region gets its own claim |
+| no decisive result in its favour anywhere | root **refuted**; a *reversed* claim is created where the baseline won |
+| different answers in different places, or established in only part of the scope | root **superseded**; the tested points are partitioned and each region gets its own claim |
 
 Partitioning is a small decision tree over the tested points. It picks the variable
 and threshold (the geometric mean of two adjacent tested values) that best separates
-the labels, and recurses up to three levels.
+the labels, and recurses. Every tested point takes part, including unresolved ones.
 
 - A region where the intervention won keeps the claim, **narrowed** to that region.
 - A region where the baseline won gets the **reversed** claim.
-- A region where they were equivalent gets no claim: there is nothing to recommend.
+- A region with no meaningful benefit gets no claim: there is nothing to recommend.
+- A region whose tests stayed unresolved gets no claim either. It is listed as *not
+  established*, and is not covered by what its neighbours showed. This is what keeps
+  a claim from spreading over conditions where it was looked for and not found.
+
+How many times in a row the space may be split is limited (`max_depth`, three by
+default; `"graph": {"max_depth": N}` in a study file). A region that still holds
+conflicting results at the limit becomes a **contested** claim, which is never
+applied. Three is enough for one variable with a few changes of verdict along it. In
+the one-variable Basilisk study it was reached four times along the way, each time
+resolved by later experiments; the two-variable study uses eight.
 
 As boundary probes come in, existing claims are **re-scoped** in place rather than
 replaced, and a claim whose region the evidence no longer supports is **retired**.
@@ -117,12 +130,18 @@ written to the revision log and mirrored into the provenance store.
 1. **test** — a hypothesis nobody has tested, at the context it came from.
 2. **boundary** — two tested points on the same line gave different labels: probe
    their geometric midpoint. Repeats until the two sides are within a chosen ratio
-   (1.3 by default), i.e. bisection on a log scale.
+   (1.25 by default, settable per variable), i.e. bisection on a log scale.
+   "Unresolved" is a label like any other here, so both edges of an unresolved
+   stretch are closed in on. A probe within 3% of an existing test is skipped.
 3. **moderator** — a supported claim has an explanation with a moderator: sweep it.
 4. **coverage** — the untested grid point farthest from anything tested for this
    comparison.
 
-Budget is counted in simulator episodes actually run; cached episodes are free.
+The budget is counted in the different simulator episodes the experiments need.
+Asking for the same episode again within a study is free (a sequential test re-uses
+its first seeds). Episodes found in the on-disk cache are counted like simulated
+ones, so a study that is interrupted and resumed stops where an uninterrupted one
+would, and a finished study can be replayed from its cache in seconds.
 
 ## Where hypotheses come from
 
@@ -160,12 +179,23 @@ conditions that were never part of an experiment, on seeds that were never used:
 |---|---|
 | `reference` | the untuned policy |
 | `flat` | every lesson that held at the reference conditions, applied everywhere: a memory of unconditional lessons |
+| `pooled` | the best single setting given every test in the graph (per comparison, whichever side wins on average), applied everywhere. Same evidence as `conditional`, no conditioning: the control for whether the conditions matter |
 | `conditional` | the claim graph: a lesson is applied only inside its scope |
-| `oracle` | for each test point, the best of a grid of settings chosen on separate tuning seeds: a ceiling |
+| `oracle` | for each test point, the best of a grid of settings, chosen on separate tuning seeds at that very point. A yardstick, not a ceiling: the grid covers only the parameters it lists |
 
-`composition_check` then verifies that settings supported one at a time still help
+`composition_check` then looks at whether settings supported one at a time still help
 when combined, since each family is tested against the reference policy with only its
-own change.
+own change. On the held-out seeds it runs the reference, each recommended change on
+its own, and all of them together, and reports:
+
+| Finding | Meaning |
+|---|---|
+| consistent | the combination is at least as good as its best single change |
+| unhelpful change | the combination is below its best single change, and one of the changes is below the reference on its own: a claim is being applied where it does not hold |
+| negative interaction | the combination is below its best single change although every change helps on its own |
+
+These compare means with a tolerance of 0.01 and are a screen, not a test; the paired
+interval against the best single change is reported alongside.
 
 ## Limits of the current design
 

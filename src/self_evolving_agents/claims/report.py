@@ -129,9 +129,9 @@ def render_report(
         f"({', '.join(f'{n} {s}' for s, n in sorted(summary['by_status'].items()))}); "
         f"{summary['relations']} relations between claims.",
         "",
-        "## Claims by comparison",
-        "",
     ]
+    lines += _policy_map_section(graph)
+    lines += ["## Claims by comparison", ""]
     for root in graph.roots():
         author = root.origin.get("author", "?")
         lines += [
@@ -252,6 +252,43 @@ def render_report(
     if composition:
         lines += _composition_section(composition)
     return "\n".join(lines)
+
+
+def _interval(low: float | None, high: float | None) -> str:
+    if low is None and high is None:
+        return "any"
+    if low is None:
+        return f"below {high:.4g}"
+    if high is None:
+        return f"{low:.4g} and above"
+    return f"{low:.4g} to {high:.4g}"
+
+
+def _policy_map_section(graph: ClaimGraph) -> list[str]:
+    """The graph's recommendation in each region its supported claims tell apart."""
+    from .policy import policy_map
+
+    rows = policy_map(graph)
+    parameters = sorted({p for row in rows for p in row["settings"]})
+    if not parameters:
+        return []
+    variables = list(rows[0]["region"].bounds)
+    lines = [
+        "## What the graph recommends, by condition",
+        "",
+        "Settings that differ from the reference policy, in every region of conditions the "
+        "supported claims tell apart. A dot keeps the reference value: either nothing was "
+        "found to beat it there, or nothing could be established.",
+        "",
+        "| " + " | ".join(variables + [f"`{p}`" for p in parameters]) + " |",
+        "|" + "---|" * (len(variables) + len(parameters)),
+    ]
+    for row in rows:
+        where = [_interval(*row["region"].bounds.get(v, (None, None))) for v in variables]
+        values = [f"{row['settings'][p]:g}" if p in row["settings"] else "·" for p in parameters]
+        lines.append("| " + " | ".join(where + values) + " |")
+    lines.append("")
+    return lines
 
 
 def _finding(row: dict[str, Any]) -> str:

@@ -4,6 +4,22 @@
 
 **8 comparisons, 21 claims** (2 refuted, 6 superseded, 13 supported); 29 relations between claims.
 
+## What the graph recommends, by condition
+
+Settings that differ from the reference policy, in every region of conditions the supported claims tell apart. A dot keeps the reference value: either nothing was found to beat it there, or nothing could be established.
+
+| battery_capacity_wh | `charge_below` | `charge_margin` | `desat_above` | `precharge_below` | `precharge_window_s` |
+|---|---|---|---|---|---|
+| below 28.46 | 0.6 | 0.25 | · | 0.6 | 900 |
+| 28.46 to 36.89 | 0.6 | 0.25 | 0.3 | 0.6 | 900 |
+| 36.89 to 45.88 | 0.4 | 0.25 | 0.3 | 0.6 | 900 |
+| 45.88 to 54.54 | 0.4 | · | 0.3 | · | · |
+| 54.54 to 62.07 | 0.4 | · | 0.3 | 0.6 | 900 |
+| 62.07 to 64.86 | · | · | 0.3 | 0.6 | 900 |
+| 64.86 to 135.4 | · | 0.25 | 0.3 | 0.6 | 900 |
+| 135.4 to 175.5 | · | · | 0.3 | · | · |
+| 175.5 and above | 0.1 | · | 0.3 | · | · |
+
 ## Claims by comparison
 
 ### A lower charge threshold collects more data.

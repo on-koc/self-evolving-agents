@@ -16,12 +16,14 @@ Four ways of using what was learned are provided so that they can be compared:
 
 from __future__ import annotations
 
+import itertools
+import math
 from dataclasses import dataclass
 from typing import Any
 
 from ..policies import RulePolicy, scanning_policy
 from .graph import ClaimGraph
-from .schema import A_BETTER, SUPPORTED, Claim
+from .schema import A_BETTER, SUPPORTED, Claim, Region
 from .testing import Domain, PolicyFactory
 
 MODES = ("reference", "flat", "pooled", "conditional")
@@ -149,3 +151,57 @@ def assemble_policy(
         graph, conditions, mode=mode, domain=domain, defaults=defaults, max_distance=max_distance
     )
     return policy_factory(name=mode, **rec.settings), rec
+
+
+def _inside(low: float | None, high: float | None) -> float:
+    """A value inside ``[low, high)``, for either bound possibly open."""
+    if low is None and high is None:
+        return 1.0
+    if low is None:
+        assert high is not None
+        return high / 1.5 if high > 0 else high - 1.0
+    if high is None:
+        return low * 1.5 if low > 0 else low + 1.0
+    return math.sqrt(low * high) if low > 0 else (low + high) / 2.0
+
+
+def policy_map(
+    graph: ClaimGraph, *, defaults: dict[str, float] | None = None
+) -> list[dict[str, Any]]:
+    """What the graph recommends in every region of condition space its claims tell apart.
+
+    The bounds of all supported claims cut each condition variable into intervals;
+    inside one cell of the resulting grid the same claims apply, so the recommendation
+    is evaluated once per cell, at a point inside it. Neighbouring cells along the
+    most finely cut variable are merged when they recommend the same settings. A row
+    with no settings is where the graph recommends leaving the reference policy alone.
+    """
+    cuts: dict[str, set[float]] = {}
+    for claim in graph.claims.values():
+        if claim.status != SUPPORTED:
+            continue
+        for var, (low, high) in claim.scope.bounds.items():
+            cuts.setdefault(var, set()).update(b for b in (low, high) if b is not None)
+    # The variable with the most cuts goes last, so that it is the one merged along.
+    variables = sorted(cuts, key=lambda var: (len(cuts[var]), var))
+    axes: list[list[tuple[float | None, float | None]]] = []
+    for var in variables:
+        edges = sorted(cuts[var])
+        axes.append([(None, edges[0]), *itertools.pairwise(edges), (edges[-1], None)])
+    rows: list[dict[str, Any]] = []
+    for cell in itertools.product(*axes):
+        bounds = dict(zip(variables, cell, strict=True))
+        point = {var: _inside(low, high) for var, (low, high) in bounds.items()}
+        rec = recommend(graph, point, mode="conditional", defaults=defaults)
+        claims = [reason["claim"] for reason in rec.reasons]
+        previous = rows[-1] if rows else None
+        if previous is not None and variables and previous["settings"] == rec.settings:
+            last = variables[-1]
+            before, low_high = previous["region"].bounds, bounds[last]
+            same_elsewhere = all(before[var] == bounds[var] for var in variables[:-1])
+            if same_elsewhere and before[last][1] == low_high[0]:
+                previous["region"] = Region({**before, last: (before[last][0], low_high[1])})
+                previous["claims"] += [c for c in claims if c not in previous["claims"]]
+                continue
+        rows.append({"region": Region(bounds), "settings": rec.settings, "claims": claims})
+    return rows
