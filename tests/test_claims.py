@@ -636,7 +636,7 @@ def test_claim_from_spec_fills_defaults_and_validates():
 
 
 def test_load_hypotheses_from_the_shipped_study_files():
-    for name in ("toy_battery.json", "bsk_battery.json"):
+    for name in ("toy_battery.json", "bsk_battery.json", "bsk_battery_panel.json"):
         config = json.loads((STUDIES / name).read_text())
         claims = [
             claim_from_spec(spec, env_id=config["domain"]["env_id"])
@@ -1148,3 +1148,37 @@ def test_pipeline_can_hand_applicable_claims_to_an_llm_agent(tmp_path):
     used_small = [e["dst"] for e in store.edges(src=small.trajectory_ids[0], relation="used")]
     assert store.edges(src=used_small[0], relation="wasDerivedFrom")[0]["dst"] == reverse.id
     assert big.retrieved_item_ids == [], "claims are not bank items and do not touch its statistics"
+
+
+def test_planner_resolves_each_variable_to_its_own_ratio():
+    """Two explored conditions: bisect one finely, leave the other at its grid levels."""
+    domain = Domain(variables={WH: [50, 200], "panel_area_m2": [0.1, 0.25]}, env_id="toy-scan")
+    graph = ClaimGraph()
+    root = graph.add(claim())
+
+    def at(wh, area, label):
+        e = outcome(wh, label)
+        e.conditions = {WH: float(wh), "panel_area_m2": float(area)}
+        e.experiment_id = f"xp_{wh}_{area}"
+        return e
+
+    graph.record(root.id, at(200, 0.25, A_BETTER))
+    graph.record(root.id, at(50, 0.25, B_BETTER))
+    graph.record(root.id, at(200, 0.1, B_BETTER))
+
+    fine = Planner(graph, domain, coverage=False).propose()
+    assert {(p.conditions[WH], p.conditions["panel_area_m2"]) for p in fine} == {
+        (100.0, 0.25),
+        (200.0, 0.158),
+    }
+    coarse = Planner(
+        graph, domain, coverage=False, boundary_ratios={"panel_area_m2": 3.0}
+    ).propose()
+    assert [(p.conditions[WH], p.conditions["panel_area_m2"]) for p in coarse] == [(100.0, 0.25)]
+
+    kids = graph.children(root.id)
+    narrowed = next(c for c in kids if c.intervention == root.intervention)
+    assert narrowed.scope.contains({WH: 200.0, "panel_area_m2": 0.25})
+    assert not narrowed.scope.contains({WH: 200.0, "panel_area_m2": 0.1})
+    assert not narrowed.scope.contains({WH: 50.0, "panel_area_m2": 0.25})
+    assert len(narrowed.scope.constrained) == 2, "the scope is a box in both conditions"

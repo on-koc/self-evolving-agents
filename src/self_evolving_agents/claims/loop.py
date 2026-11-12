@@ -64,6 +64,8 @@ class Planner:
     Args:
         boundary_ratio: stop bisecting once two disagreeing neighbours are within this
             factor of each other (1.25 locates a boundary to within 25%).
+        boundary_ratios: per-variable overrides of ``boundary_ratio``, for studies that
+            want one condition resolved finely and another only coarsely.
         coverage: whether to propose untested grid points once nothing more urgent
             is left.
         sweeps: levels to use for moderator sweeps over conditions that are not
@@ -76,12 +78,14 @@ class Planner:
         domain: Domain,
         *,
         boundary_ratio: float = 1.25,
+        boundary_ratios: dict[str, float] | None = None,
         coverage: bool = True,
         sweeps: dict[str, list[float]] | None = None,
     ):
         self.graph = graph
         self.domain = domain
         self.boundary_ratio = boundary_ratio
+        self.boundary_ratios = dict(boundary_ratios or {})
         self.coverage = coverage
         self.sweeps = {k: sorted(v) for k, v in (sweeps or {}).items()}
         self.skip: set[tuple[Any, ...]] = set()
@@ -112,6 +116,7 @@ class Planner:
         if not any(e.label in DECISIVE for e in pool):
             return out
         for var in self.domain.variables:
+            ratio = self.boundary_ratios.get(var, self.boundary_ratio)
             lines: dict[tuple[Any, ...], list[Evidence]] = {}
             for e in pool:
                 others = tuple(sorted((k, v) for k, v in e.conditions.items() if k != var))
@@ -121,7 +126,7 @@ class Planner:
                 values = [e.conditions[var] for e in members]
                 for a, b in zip(members, members[1:], strict=False):
                     low, high = a.conditions[var], b.conditions[var]
-                    if a.label == b.label or low <= 0 or high / low <= self.boundary_ratio:
+                    if a.label == b.label or low <= 0 or high / low <= ratio:
                         continue
                     mid = _round_sig(math.sqrt(low * high))
                     if not low < mid < high or any(abs(math.log(v / mid)) < 0.03 for v in values):
