@@ -172,7 +172,7 @@ src/self_evolving_agents/
 protocols/     comparison protocols (model-dependent; not yet run with a model)
 studies/       claim-study configurations
 results/       compact outputs of the studies run on Basilisk
-tests/         260 tests
+tests/         262 tests
 ```
 
 ## Limits

@@ -56,6 +56,31 @@ def test_bsk_episode_is_exactly_reproducible(bsk_ready):
 
 @requires_bsk
 @pytest.mark.bsk
+def test_bsk_reproduces_episodes_of_the_recorded_study(bsk_ready):
+    """A fresh installation gives the recorded outcomes, to the last stored digit.
+
+    If this fails while the other Basilisk tests pass, the simulator is working but
+    is not the one the recorded results came from (another version of Basilisk,
+    BSK-RL or the SPICE kernels): numbers in ``results/`` will not be reproduced.
+    """
+    import json
+    from pathlib import Path
+
+    from self_evolving_agents.methods.claim_graph.testing import Domain
+
+    recorded = json.loads(
+        (Path(__file__).parent / "data" / "bsk_recorded_episodes.json").read_text()
+    )
+    domain = Domain(variables={"battery_capacity_wh": [25, 50, 100, 200, 400]})
+    assert len(recorded["episodes"]) == 9
+    for row in recorded["episodes"]:
+        conditions = domain.conditions(battery_capacity_wh=row["battery_capacity_wh"])
+        traj = play(domain.task(conditions, row["seed"]), scanning_policy(**row["knobs"]))
+        assert traj.outcome.to_dict() == row["outcome"], (row["battery_capacity_wh"], row["seed"])
+
+
+@requires_bsk
+@pytest.mark.bsk
 def test_bsk_same_seed_gives_matched_initial_conditions_across_policies(bsk_ready):
     task = scan_task("bsk-scan", "nominal", seed=4)
     a, b = play(task, always("scan")), play(task, scanning_policy(charge_below=0.6))

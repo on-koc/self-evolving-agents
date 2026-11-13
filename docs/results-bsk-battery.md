@@ -74,8 +74,12 @@ measurable quantity:
 | Unloading the wheels early improves the score | `desat_above` 0.3 instead of 0.6 | it keeps the wheels from their speed limit; slower wheels draw less power |
 | Charging in longer blocks improves the score | `charge_margin` 0.25 instead of 0 | fewer mode switches waste less scan time |
 
-They were written after an exploratory look at the simulator (24 seeds, none of them
-used below), so they are informed guesses, not blind ones. Four more comparisons were
+They were written after an exploratory sweep of the simulator (seeds 100 to 123, none
+of them used below) that had already shown the effect of the charge threshold
+reversing between large and small batteries. They are informed guesses, not blind
+ones, and the condition to vary was chosen knowing that it mattered. What the study
+tests is whether the system, starting from the unqualified statements in the table,
+finds and bounds such reversals on its own. Four more comparisons were
 proposed during the study by a rule that walks a ladder of `charge_below` values
 (0.05 to 0.8): try the next step when a step helped, and try a step outward when both
 settings lose the spacecraft often.

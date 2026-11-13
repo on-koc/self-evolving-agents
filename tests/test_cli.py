@@ -412,6 +412,37 @@ def test_rerunning_a_study_simulates_nothing_and_finds_the_same_claims(study, ca
     assert claims() == before
 
 
+def test_claims_verify_accepts_a_rerun_and_reports_a_changed_number(study, tmp_path, capsys):
+    # The same configuration, run again from an empty cache.
+    again = tmp_path / "again"
+    code = main(
+        ["claims", "study", "--config", str(study.parent / "config.json"), "--out", str(again)]
+        + ["--budget", "600"]
+    )
+    assert code == 0
+    first = json.loads((study / "graph.json").read_text())["claims"][0]["id"]
+    second = json.loads((again / "graph.json").read_text())["claims"][0]["id"]
+    assert first != second, "identifiers are random, so a plain diff would always differ"
+
+    code, out = sea(capsys, "claims", "verify", study, again)
+    assert code == 0, out
+    assert out.count(": identical") == 6 and "6 of 6 files identical" in out
+
+    transfer = json.loads((again / "transfer.json").read_text())
+    transfer["held out"]["overall"]["conditional"]["mean_score"] += 0.001
+    (again / "transfer.json").write_text(json.dumps(transfer))
+    code, out = sea(capsys, "claims", "verify", study, again)
+    assert code == 1
+    assert "transfer.json: DIFFERS" in out and "overall.conditional.mean_score" in out
+    assert "5 of 6 files identical" in out
+    code, out = sea(capsys, "claims", "verify", study, again, "--tolerance", "0.01")
+    assert code == 0, "a tolerance for numbers, for runs on another machine"
+
+    (again / "composition.json").unlink()
+    code, out = sea(capsys, "claims", "verify", study, again, "--tolerance", "0.01")
+    assert code == 1 and "composition.json: DIFFERS" in out and "missing in" in out
+
+
 def test_claims_replicate_runs_each_seed_base_and_summarises(study, tmp_path, capsys):
     config = json.loads((study / "config.json").read_text())
     config["budget"] = 300

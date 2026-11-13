@@ -243,6 +243,30 @@ def cmd_compare(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_verify(args: argparse.Namespace) -> int:
+    """Check that two runs of a study agree, apart from random identifiers and timings."""
+    from .verify import verify_runs
+
+    result = verify_runs(Path(args.run_a), Path(args.run_b), tolerance=args.tolerance)
+    differing = 0
+    for name, found in result.items():
+        if found is None:
+            print(f"{name}: in neither run")
+        elif not found:
+            print(f"{name}: identical")
+        else:
+            differing += 1
+            print(f"{name}: DIFFERS")
+            for line in found:
+                print(f"    {line}")
+    compared = sum(found is not None for found in result.values())
+    print(
+        f"{compared - differing} of {compared} files identical"
+        " (identifiers and timings are not compared)"
+    )
+    return 1 if differing else 0
+
+
 def _load_graph(run: str) -> Any:
     from .graph import ClaimGraph
 
@@ -434,6 +458,19 @@ def add_claims_commands(sub: Any) -> None:
     compare.add_argument("--workers", type=int, default=0, help="parallel simulator processes")
     compare.add_argument("--out", help="write the comparison as JSON")
     compare.set_defaults(func=cmd_compare)
+
+    verify = claims.add_parser(
+        "verify", help="check that two runs of a study agree (e.g. a rerun against results/)"
+    )
+    verify.add_argument("run_a")
+    verify.add_argument("run_b")
+    verify.add_argument(
+        "--tolerance",
+        type=float,
+        default=0.0,
+        help="largest difference between two numbers that still counts as equal (default 0)",
+    )
+    verify.set_defaults(func=cmd_verify)
 
     show = claims.add_parser("show", help="print claims, evidence and explanations")
     show.add_argument("run")
