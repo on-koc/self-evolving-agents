@@ -59,7 +59,11 @@ checks for the prompts.
 Everything in the two tables above. Judge, consolidation by appending, the memory
 instruction, the item format and the loop are unchanged.
 
-## Assumptions
+## Assumptions and dependencies
+
+Depends on `methods/reasoningbank`, whose bank, extractor and judge it extends, on
+the shared loop, on an embedder and on a language model. Its parameters are the
+options in the two tables above, plus the baseline's.
 
 - Tasks carry their operating conditions as named numbers (`Task.conditions`). An
   environment without them gains nothing from `condition_weight`.

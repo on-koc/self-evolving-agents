@@ -86,6 +86,17 @@ All of the baseline's, plus:
 | `scaling_k` | 5 | attempts per task; the paper's headline result uses 5, its figure 4 varies 1 to 5 |
 | `memory` | true | false scales without memory |
 
+## Assumptions and dependencies
+
+- Several attempts at one task differ in ways that carry information. Here they
+  differ only by the model's sampling, on the same seed.
+- A model shown all attempts can pick a good one without knowing the outcome.
+- For `restart` only: the task can be started again from the same initial state. A
+  seeded simulator allows that; a live website does not.
+
+Depends on `methods/reasoningbank` (bank, extractor, judge) and the shared loop. It
+needs a language model, and k times the episodes of the baseline.
+
 ## What is reported
 
 `mean_score` and `success_rate` are of the selected attempt (the paper's Best-of-N).

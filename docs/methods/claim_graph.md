@@ -281,6 +281,39 @@ A study is described by a JSON file (`studies/`):
 Fixed in code: the smallest effect that counts (0.02 of score), the per-look
 confidence (97.79% for three looks), the tolerance of the composition screen (0.01).
 
+## Assumptions and dependencies
+
+- **A simulator that repeats an episode exactly from a seed.** Matched seeds are
+  what makes sixteen episodes per arm enough. The Basilisk adapter has this property
+  and a test checks it.
+- **Operating conditions that are known numbers** and can be set. Scopes are boxes
+  over them.
+- **Strategies that are parameters of one executable policy.** A claim compares two
+  settings of it.
+- **The sign of an effect changes at few boundaries.** A scope is drawn around tests
+  that agree; an effect that flips many times cannot be covered by a few boxes.
+- **Someone proposes the comparisons.** The method tests hypotheses; it does not
+  invent strategies outside the policy's parameters.
+
+It depends on the shared episode runner, statistics, rule policies and environments,
+and on no other method. It needs no language model. A model is optional, as a source
+of hypotheses (`--llm`).
+
+## Expected behaviour
+
+What a study produces, from the runs recorded here (`../comparison.md`, Part B):
+
+- 71 to 157 experiments at a cost of 2,224 to 5,648 simulator episodes; in the first
+  study 53 of 76 comparisons were settled with the first 16 seeds per arm;
+- hypotheses that were stated without conditions come back as claims with
+  boundaries, some reversed in part of the range, with the unresolved stretches left
+  without a recommendation;
+- recommendations that, inside the studied range, score close to tuning at each
+  condition, and above any single setting; outside the range they fall behind
+  tuning;
+- a held-out score that changes little when the study is repeated with other seeds,
+  and individual claims that change more (see the limits below).
+
 ## Running it
 
 A study on the toy surrogate (seconds; checks the machinery, says nothing about a

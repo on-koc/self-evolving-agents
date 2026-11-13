@@ -87,6 +87,22 @@ Chosen outside the method: the model (`--llm`), the agent (`--agent stepwise` is
 paper's) and the embedder (`--embedder gemini` is the paper's `gemini-embedding-001`;
 the default `hashing` works offline and measures word overlap, not meaning).
 
+## Differences from the published method
+
+This is the baseline, so there is no baseline to differ from. What matters instead
+is how it differs from the system the paper evaluated. In short: the procedure and
+the prompts are the published ones with the domain substituted; the environments,
+the models and their decoding settings are not; the default embedder is an offline
+stand-in unless the paper's is selected; sequential test-time scaling is not
+reproduced. The full list, row by row, with what was corrected after an audit, is in
+[`../reasoningbank-fidelity.md`](../reasoningbank-fidelity.md). Equivalence with the
+published system is not claimed.
+
+## Dependencies
+
+The shared stream loop and step-by-step agent, a language model (for acting, judging
+and extracting), and an embedder. It imports from no other method.
+
 ## Assumptions the method makes, and where they bite here
 
 - **A task is identified by its query.** Retrieval looks at nothing else. On the

@@ -34,6 +34,11 @@ Everything else is identical, which is what makes the comparison meaningful.
 |---|---|---|
 | `judge` | `none` | `none`: no judge calls. `llm` or `env`: judge the episodes anyway, to measure how well a judge agrees with the simulator without any memory being built from its labels |
 
+## Assumptions and dependencies
+
+None of its own. It uses the shared agent, environments and loop, and a language
+model.
+
 ## Running it
 
 ```bash

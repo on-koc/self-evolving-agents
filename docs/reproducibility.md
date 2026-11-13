@@ -162,15 +162,16 @@ reported; they are collected here so that none is overlooked.
 | Decision rules were revised after the first pass of study 1 | made from the training evidence, before held-out scores were looked at; both versions recorded | `comparison.md` B.7 |
 | The rule for when a claim applies was corrected after held-out numbers of study 2 had been seen | the held-out data of study 2 are not a clean test of that rule; all three versions are reported, and the default is the one that scores *lower* | `comparison.md` B.7 |
 | Held-out conditions were chosen by hand | results hold for those 16 conditions; nothing is inferred about others | `metrics.md` 4.2 |
-| The same 32 held-out seeds serve every condition and every replicate | intervals resample seeds; variability from the choice of held-out seeds is not in the replication spread | `metrics.md` 4.2, `protocols/robustness.md` |
+| The same 32 held-out seeds serve every condition and every replicate | intervals resample seeds; variability from the choice of held-out seeds is not in the replication spread | `metrics.md` 4.2, [`protocols/robustness.md`](protocols/robustness.md) |
 | `flat` and `pooled` are derived from the claim graph's own experiments | they are controls on how evidence is used, not independent learners | `comparison.md` B.2 |
 | The grid search tunes two parameters; the claim graph sets five | the grid search is a reference, not an upper bound | `metrics.md` 5.5 |
 | One simulator, one task, one rule-policy family | no generality beyond it is shown | `discussion.md` |
 | Many tests, each controlled at 5%, none corrected across tests | some claims are false positives; replication measures how often verdicts disagree | `comparison.md` B.5, B.9 |
 
 **Pre-registration.** The robustness experiments were specified in
-`protocols/robustness.md` and committed (`3b40312`) before they were started. The
-language-model comparison is specified in `protocols/model-comparison.md` and has
+[`protocols/robustness.md`](protocols/robustness.md) and committed (`3b40312`) before
+they were started. The language-model comparison is specified in
+[`protocols/model-comparison.md`](protocols/model-comparison.md) and has
 not been run. The two original studies were *not* pre-registered: their held-out
 conditions and seeds were fixed in their configuration files before the experiments
 ran, but the analysis rules changed as described above.

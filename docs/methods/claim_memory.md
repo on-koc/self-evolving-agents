@@ -63,7 +63,11 @@ It depends on `methods/claim_graph` (to read a graph) and on
 | `max_claims` | 8 | cap on claims shown |
 | `with_reasoningbank` | false | also retrieve from and learn into a ReasoningBank |
 
-## Assumptions
+## Assumptions and dependencies
+
+Depends on a finished claim study (`methods/claim_graph`), on the item format of
+`methods/reasoningbank` (and optionally its bank), on the shared loop and on a
+language model.
 
 - A claim graph exists for the task family and its conditions. Building one costs
   simulator time, not model calls (`claim_graph.md`).
