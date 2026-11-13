@@ -6,18 +6,19 @@ import json
 
 import pytest
 
-from self_evolving_agents.agents import (
-    PolicyAgent,
-    PolicyProgramAgent,
-    StepwiseAgent,
-    extract_json_object,
-    parse_reply,
-)
+from self_evolving_agents.agents import MemoryBlock, PolicyAgent, StepwiseAgent, parse_reply
 from self_evolving_agents.envs import ActionParseError, available_envs, make_env, scan_task
 from self_evolving_agents.envs import scanning as sc
 from self_evolving_agents.envs.base import match_action_name
-from self_evolving_agents.llm import Budget, BudgetExceeded, LLMRefusal, ScriptedLLM, TrackedLLM
-from self_evolving_agents.methods.reasoningbank.schema import MemoryItem
+from self_evolving_agents.llm import (
+    Budget,
+    BudgetExceeded,
+    LLMRefusal,
+    ScriptedLLM,
+    TrackedLLM,
+    extract_json_object,
+)
+from self_evolving_agents.methods.policy_program import PolicyProgramAgent
 from self_evolving_agents.policies import always, scanning_policy
 from self_evolving_agents.types import Action, Task
 
@@ -219,32 +220,31 @@ def test_policy_agent_records_a_complete_trajectory():
 
 
 def test_stepwise_agent_prompts_contain_task_memory_and_history():
+    """The agent knows no memory method: it is handed text and puts it in the system prompt."""
     llm = ScriptedLLM("<think>go</think><action>scan</action>")
-    item = MemoryItem("Keep a reserve", "when low", "charge early")
+    block = MemoryBlock(text="REMEMBER: keep a reserve", item_ids=["mem_1", "mem_2"])
     traj = StepwiseAgent(llm, history_window=2).run(
-        make_env(short_task()), memory=[item], notes="be careful"
+        make_env(short_task()), memory=block, notes="be careful"
     )
 
     first, later = llm.requests[0], llm.requests[-1]
-    assert first.purpose == "act"
+    assert first.purpose == "act" and first.temperature == 0.7, "the paper's decoding temperature"
     assert first.system == later.system, "the system prompt must stay fixed so it can be cached"
-    for needle in (
-        "## Actions",
-        "## Task",
-        "50 Wh" if False else "200 Wh",
-        "<action>",
-        "Keep a reserve",
-        "be careful",
-        "explicitly discuss if you want to use each memory item",
-    ):
+    for needle in ("## Actions", "## Task", "200 Wh", "<action>", "REMEMBER: keep a reserve"):
         assert needle in first.system
+    assert first.system.rstrip().endswith("be careful")
+    assert first.system.index("## Response format") < first.system.index("REMEMBER")
+    assert traj.memory_item_ids == ["mem_1", "mem_2"]
+    assert not MemoryBlock() and not MemoryBlock(text="  \n"), "an empty block adds nothing"
+    bare = ScriptedLLM("<think>go</think><action>scan</action>")
+    StepwiseAgent(bare).run(make_env(short_task()))
+    assert "REMEMBER" not in bare.requests[0].system
     assert "## Recent steps" not in first.messages[0]["content"]
     content = later.messages[0]["content"]
     assert "## Recent steps" in content and "earlier steps not shown" in content
     assert content.count("\nstep ") + content.count("step ") >= 2
     assert "your reasoning then: go" in content
     assert "## Current observation" in content
-    assert traj.memory_item_ids == [item.id]
     assert all(s.thought == "go" and s.llm_call_id is None for s in traj.steps), (
         "bare backends give no call ids"
     )
@@ -311,6 +311,17 @@ def test_policy_program_agent_executes_the_models_policy():
     assert traj.meta["policy_rationale"].startswith("Rationale")
     assert "policy_error" not in traj.meta
     assert {s.action for s in traj.steps} <= {"scan", "charge"}
+    header = traj.meta["trajectory_header"]
+    assert "committed to this policy" in header and "Rationale: keep a reserve." in header
+
+
+def test_policy_program_agent_puts_memory_and_notes_in_its_system_prompt():
+    llm = ScriptedLLM("```json\n" + json.dumps(VALID_POLICY) + "\n```")
+    block = MemoryBlock(text="REMEMBER: keep a reserve", item_ids=["mem_9"])
+    traj = PolicyProgramAgent(llm).run(make_env(short_task()), memory=block, notes="be careful")
+    system = llm.requests[0].system
+    assert "REMEMBER: keep a reserve" in system and system.rstrip().endswith("be careful")
+    assert traj.memory_item_ids == ["mem_9"]
 
 
 def test_policy_program_agent_feeds_validation_errors_back():

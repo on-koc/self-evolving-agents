@@ -1,38 +1,59 @@
-"""Turn trajectories into text for the judge, the extractor and the selector.
+"""Text shown to the extractor, the judge and the agent.
 
-Only agent-visible information is rendered: what the agent was shown, what it
-thought, what it did and the feedback it got. Ground-truth outcome metrics are
-never included, because at test time nobody hands the agent the answer.
+The paper's extractor sees, for each step, the agent's reasoning and its action, and
+nothing else ("we use the thinking process ... as the approximation of [the
+observations]", section 3.1). That is the default here. Methods built on top can ask
+for the observation summary and the action's feedback as well (``observations=True``),
+which matters for agents that produce no step-by-step reasoning.
+
+Ground-truth outcome metrics are never rendered: at test time nobody hands the agent
+the answer.
 """
 
 from __future__ import annotations
 
 from collections.abc import Sequence
 
+from ...agents.base import MemoryBlock
 from ...types import Step, Trajectory
+from . import prompts
 from .schema import MemoryItem
 
 
-def render_memory(items: Sequence[MemoryItem]) -> str:
-    """Memory block for a system prompt, in the reference implementation's layout."""
-    return "\n\n".join(item.render(i) for i, item in enumerate(items, 1))
+def render_memory(items: Sequence[MemoryItem], with_description: bool = False) -> str:
+    return "\n\n".join(item.render(i, with_description) for i, item in enumerate(items, 1))
 
 
-def _step_text(step: Step, with_thought: bool = True) -> str:
-    lines = [f"[step {step.index + 1}] {step.brief}"]
-    if with_thought and step.thought:
-        lines.append(f"<think>{step.thought.strip()}</think>")
-    lines.append(f"<action>{step.action}</action>")
-    if step.result:
-        lines.append(f"-> {step.result}")
-    return "\n".join(lines)
+def memory_block(
+    items: Sequence[MemoryItem],
+    *,
+    instruction: str = prompts.MEMORY_INSTRUCTION,
+    with_description: bool = False,
+) -> MemoryBlock:
+    """The retrieved items as they go into the agent's system prompt (Appendix A.2)."""
+    if not items:
+        return MemoryBlock()
+    return MemoryBlock(
+        text=instruction + "\n\n" + render_memory(items, with_description),
+        item_ids=[item.id for item in items],
+    )
 
 
-def _collapse(steps: Sequence[Step]) -> list[str]:
-    """Render steps, merging runs of an identical action that carry no reasoning.
+def render_step(step: Step, observations: bool = False) -> str:
+    """One step as ``<think>...</think><action>...</action>``, the reference code's layout."""
+    text = f"<think>\n{step.thought.strip()}\n</think>\n<action>\n{step.action}\n</action>"
+    if not observations:
+        return text
+    feedback = f"\n<feedback>\n{step.result}\n</feedback>" if step.result else ""
+    return f"<observation>\n{step.brief}\n</observation>\n{text}{feedback}"
 
-    A rule policy can repeat one action for dozens of steps; showing the first and
-    last of each run keeps what changed without the repetition.
+
+def _collapse(steps: Sequence[Step], observations: bool) -> list[str]:
+    """Render steps, merging long runs of one identical action that carry no reasoning.
+
+    A rule policy can repeat an action for dozens of steps. The first and last step
+    of such a run are kept and the rest is summarised in one line. Steps with
+    reasoning are never merged, so a step-by-step agent's trajectory is unaffected.
     """
     out: list[str] = []
     i = 0
@@ -46,30 +67,26 @@ def _collapse(steps: Sequence[Step]) -> list[str]:
         ):
             j += 1
         if j - i >= 3:
-            total = sum(s.reward for s in steps[i : j + 1])
-            out.append(_step_text(steps[i]))
-            out.append(
-                f"[steps {steps[i].index + 2}-{steps[j].index}] {steps[i].action} repeated "
-                f"{j - i - 1} more times"
-            )
-            out.append(_step_text(steps[j]))
-            out.append(
-                f"(reward over steps {steps[i].index + 1}-{steps[j].index + 1}: {total:+.4f})"
-            )
+            out.append(render_step(steps[i], observations))
+            out.append(f"[{steps[i].action} repeated {j - i - 1} more times]")
+            out.append(render_step(steps[j], observations))
         else:
-            out.extend(_step_text(s) for s in steps[i : j + 1])
+            out.extend(render_step(s, observations) for s in steps[i : j + 1])
         i = j + 1
     return out
 
 
-def render_trajectory(traj: Trajectory, max_chars: int = 24000) -> str:
-    """Step-by-step account of an episode, shortened from the middle if it is too long.
+def render_trajectory(
+    traj: Trajectory, *, observations: bool = False, max_chars: int = 60000
+) -> str:
+    """The trajectory as the extractor sees it.
 
-    The beginning (how the agent set out) and the end (how it finished or failed) are
-    kept in full; steps in between are dropped with an explicit marker saying how
-    many were left out.
+    Trajectories longer than ``max_chars`` are shortened from the middle: the
+    beginning and the end are kept in full and a marker says how many step records
+    were left out. The paper's episodes are at most 30 steps and need no such limit;
+    simulated episodes here can run to well over a hundred.
     """
-    blocks = _collapse(traj.steps)
+    blocks = _collapse(traj.steps, observations)
     text = "\n\n".join(blocks)
     if len(text) > max_chars and len(blocks) > 8:
         head: list[str] = []
@@ -92,44 +109,27 @@ def render_trajectory(traj: Trajectory, max_chars: int = 24000) -> str:
         omitted = hi - lo + 1
         middle = [f"[... {omitted} step records omitted for length ...]"] if omitted > 0 else []
         text = "\n\n".join(head + middle + tail[::-1])
-
-    header = []
-    strategy = traj.meta.get("policy_text")
-    if strategy:
-        header.append("The agent committed to this policy before the episode:\n" + strategy)
-        rationale = traj.meta.get("policy_rationale")
-        if rationale:
-            header.append("Its stated rationale: " + rationale)
-    footer = [f"Total reward received: {traj.total_reward:+.4f} over {len(traj.steps)} steps."]
-    return "\n\n".join(header + [text] + footer)
+    header = traj.meta.get("trajectory_header", "")
+    return f"{header}\n\n{text}" if header else text
 
 
-def render_task(query: str, traj: Trajectory | None = None) -> str:
-    return f"**Task:** {query}"
-
-
-def render_for_extraction(
-    query: str, traj: Trajectory, verdict_thoughts: str = "", verdict_label: str = ""
-) -> str:
-    """User message for single-trajectory extraction.
-
-    As in the reference implementation, the judge's reasoning is appended so that
-    the extractor knows why the episode was labelled the way it was.
-    """
-    text = f"**Task:** {query}\n\n**Trajectory:**\n{render_trajectory(traj)}"
-    if traj.final_observation:
-        text += f"\n\n**Final state:**\n{traj.final_observation}"
-    if verdict_thoughts and verdict_label:
-        outcome = "succeeded" if verdict_label == "success" else "failed"
-        text += f"\n\nThe task {outcome} because: {verdict_thoughts}"
+def render_actions(traj: Trajectory, max_chars: int = 20000) -> str:
+    """The agent's action history, one action per line, as the judge sees it."""
+    lines = [f"{step.index + 1}. {step.action}" for step in traj.steps]
+    text = "\n".join(lines)
+    if len(text) > max_chars:
+        keep = max(4, max_chars // (2 * max(len(max(lines, key=len)), 1)))
+        omitted = len(lines) - 2 * keep
+        if omitted > 0:
+            text = "\n".join(
+                lines[:keep] + [f"[... {omitted} actions omitted ...]"] + lines[-keep:]
+            )
     return text
 
 
-def render_many(query: str, trajs: Sequence[Trajectory], per_traj_chars: int = 12000) -> str:
-    """User message showing several attempts at the same task."""
-    parts = [f"**Task:** {query}"]
-    for i, traj in enumerate(trajs, 1):
-        body = render_trajectory(traj, max_chars=per_traj_chars)
-        final = f"\n\nFinal state:\n{traj.final_observation}" if traj.final_observation else ""
-        parts.append(f"**Trajectory {i}:**\n{body}{final}")
-    return "\n\n".join(parts)
+def final_state(traj: Trajectory) -> str:
+    """The last observation, and the feedback to the last action (which says how it ended)."""
+    parts = [traj.final_observation.strip()]
+    if traj.steps and traj.steps[-1].result:
+        parts.append(f"Feedback to the last action: {traj.steps[-1].result}")
+    return "\n".join(p for p in parts if p)

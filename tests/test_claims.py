@@ -45,7 +45,7 @@ from self_evolving_agents.methods.claim_graph import (
     policy_map,
     recommend,
 )
-from self_evolving_agents.methods.claim_graph.report import claims_as_memory, render_report
+from self_evolving_agents.methods.claim_graph.report import render_report
 from self_evolving_agents.methods.claim_graph.schema import (
     A_BETTER,
     B_BETTER,
@@ -62,6 +62,7 @@ from self_evolving_agents.methods.claim_graph.schema import (
     log_distance,
 )
 from self_evolving_agents.methods.claim_graph.testing import ABResult, classify_effect, metric_value
+from self_evolving_agents.methods.claim_memory import ClaimMemory, claims_as_memory
 from self_evolving_agents.policies import scanning_policy
 from self_evolving_agents.provenance import ProvenanceStore
 from self_evolving_agents.types import Outcome
@@ -1439,16 +1440,12 @@ def test_report_renders_every_section(toy_study):
         assert needle in text, needle
 
 
-def test_pipeline_can_hand_applicable_claims_to_an_llm_agent(tmp_path):
+def test_claim_memory_hands_applicable_claims_to_an_llm_agent(tmp_path):
     """Claims reach the agent's prompt, scoped to the task's conditions, and are traceable."""
     from self_evolving_agents.agents import StepwiseAgent
     from self_evolving_agents.envs import scan_task
     from self_evolving_agents.llm import TrackedLLM
-    from self_evolving_agents.methods.reasoningbank.induction import EnvJudge
-    from self_evolving_agents.methods.reasoningbank.pipeline import (
-        PipelineConfig,
-        ReasoningBankPipeline,
-    )
+    from self_evolving_agents.methods.stream import EnvJudge, StreamLoop
 
     graph = ClaimGraph()
     root = graph.add(claim())
@@ -1459,15 +1456,17 @@ def test_pipeline_can_hand_applicable_claims_to_an_llm_agent(tmp_path):
 
     scripted = ScriptedLLM("<think>ok</think><action>charge</action>")
     store = ProvenanceStore()
-    pipeline = ReasoningBankPipeline(
+    memory = ClaimMemory(graph, store=store)
+    assert not memory.learns, "the agent's own episodes add nothing to the claims"
+    pipeline = StreamLoop(
         StepwiseAgent(TrackedLLM(scripted, store=store)),
-        EnvJudge(),
+        memory=memory,
+        judge=EnvJudge(),
         store=store,
-        config=PipelineConfig(memory="none"),
-        extra_memory=lambda task: claims_as_memory(graph, task.conditions),
     )
     big = pipeline.run_task(scan_task("toy-scan", "nominal", seed=0, duration_s=600.0))
     small = pipeline.run_task(scan_task("toy-scan", "small_battery", seed=0, duration_s=600.0))
+    assert big.new_item_ids == [] and len(big.retrieved_item_ids) == 1
 
     systems = [r.system for r in scripted.requests]
     assert "`charge_below` = 0.1 instead of 0.25" in systems[0]
@@ -1482,7 +1481,6 @@ def test_pipeline_can_hand_applicable_claims_to_an_llm_agent(tmp_path):
     assert store.edges(src=used[0], relation="wasDerivedFrom")[0]["dst"] == narrowed.id
     used_small = [e["dst"] for e in store.edges(src=small.trajectory_ids[0], relation="used")]
     assert store.edges(src=used_small[0], relation="wasDerivedFrom")[0]["dst"] == reverse.id
-    assert big.retrieved_item_ids == [], "claims are not bank items and do not touch its statistics"
 
 
 def test_planner_resolves_each_variable_to_its_own_ratio():

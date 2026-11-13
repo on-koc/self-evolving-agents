@@ -15,6 +15,7 @@ from .base import (
     user,
 )
 from .factory import make_backend
+from .parsing import extract_json_object
 from .scripted import ScriptedLLM
 
 __all__ = [
@@ -30,6 +31,7 @@ __all__ = [
     "Usage",
     "assistant",
     "estimate_cost_usd",
+    "extract_json_object",
     "make_backend",
     "user",
 ]

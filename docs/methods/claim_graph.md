@@ -1,6 +1,14 @@
-# Conditional claims, tested in simulation
+# Conditional claim graph (extension)
 
-ReasoningBank stores lessons as free text and trusts them once written. This layer
+**Origin:** this project. **Code:** `methods/claim_graph/`.
+**Evidence in this repository:** evaluated on the Basilisk simulator, with no
+language model involved: two studies, a five-fold replication and an ablation of
+active experiment selection. See [`../comparison.md`](../comparison.md) and
+[`../results-bsk-battery.md`](../results-bsk-battery.md).
+
+## Motivation
+
+ReasoningBank stores lessons as free text and trusts them once written. This method
 asks more of a lesson before it is acted on: it has to say *where* it applies, it
 has to survive a controlled test there, and the reason given for it is checked
 separately from whether it works.
@@ -10,6 +18,25 @@ The question it is built to answer is the one posed for this project:
 > Can an agent build an increasingly reliable, conditional model of which strategies
 > work, use it to choose informative experiments, and transfer that knowledge to
 > unfamiliar simulation conditions?
+
+## Differences from the ReasoningBank baseline
+
+| | ReasoningBank | Claim graph |
+|---|---|---|
+| Unit of memory | a free-text item: title, description, content | a comparative claim: within a scope, this setting beats that one by at least a margin |
+| Where it comes from | a model reading one trajectory | a hypothesis (from a person, a rule or a model), then experiments |
+| What makes it trusted | being written | a matched-seed experiment whose interval excludes zero |
+| Scope | whatever the text says | an explicit region of condition space, drawn around the tests that agree |
+| What disagreement does | nothing: items accumulate | the claim is narrowed or reversed, and the counterexamples are kept |
+| Explanations | part of the text | separate predictions about measured quantities, tested on their own |
+| Choosing what to try next | not part of the method | a planner ranks experiments by what the graph does not yet know |
+| What it needs | a language model, and tasks | a simulator that can rerun a seed, and strategies that can be executed |
+| What it costs | model calls per task | simulator episodes (thousands), no model calls |
+
+The two are not alternatives for the same job. ReasoningBank works wherever an agent
+acts and a model can read the result. The claim graph works only where a strategy is
+an executable object and an episode can be repeated exactly. `claim_memory.md`
+describes how its output can be given to a language-model agent.
 
 ## The unit of memory: a conditional, comparative claim
 
@@ -209,6 +236,68 @@ its own, and all of them together, and reports:
 
 These compare means with a tolerance of 0.01 and are a screen, not a test; the paired
 interval against the best single change is reported alongside.
+
+## Implementation
+
+| Module | Contents |
+|---|---|
+| `schema.py` | `Claim`, `Region`, `Evidence`, `Mechanism`; statuses and labels |
+| `testing.py` | `Domain`, `ClaimTester`: matched-seed A/B with sequential looks; mediator and moderator tests |
+| `graph.py` | `ClaimGraph`: evidence, partition into regions, revision, applicability |
+| `loop.py` | `Planner`, `ActiveLoop`, `LadderProposer` |
+| `hypotheses.py` | hypotheses from a study file, and `LLMProposer` |
+| `policy.py` | `recommend`, `assemble_policy`, `policy_map`; the reference, flat and pooled controls |
+| `evaluate.py` | `evaluate_transfer`, `composition_check` |
+| `replicate.py` | replication across training seeds; paired comparison of two runs |
+| `report.py`, `plots.py` | the Markdown report and the figures |
+| `cli.py` | `sea claims study, replicate, compare, evaluate, show, recommend, report, plot` |
+
+It uses the shared episode runner and statistics (`experiments/`), the rule policies
+(`policies.py`) and the environments. It imports from no other method folder.
+
+## Parameters
+
+A study is described by a JSON file (`studies/`):
+
+| Key | Meaning | Value in the recorded battery study |
+|---|---|---|
+| `domain.variables` | the conditions explored and their grid | battery capacity: 25, 50, 100, 200, 400 Wh |
+| `hypotheses` | starting claims with their explanations | four, written by hand |
+| `ladders` | parameter values the ladder rule may propose steps along | `charge_below`: 0.05 to 0.8 |
+| `sweeps` | levels for moderator tests | wheel speed limit: 1500, 3000, 6000 rpm |
+| `tester.batch`, `tester.max_seeds` | seeds per look, and at most | 16, 48 |
+| `tester.seed_base` | first training seed | 1000 |
+| `planner.boundary_ratio` | stop bisecting when two disagreeing tests are this close | 1.3 |
+| `planner.boundaries` | probe between disagreeing tests (false: fixed grid only) | true |
+| `graph.max_depth` | how deep a family's condition space may be split | 3 (8 in the two-variable study) |
+| `budget` | different episodes the experiments may use | 4,500 |
+| `evaluation` | held-out conditions, held-out seeds, grid and seeds for the tuned yardstick | six conditions, seeds 5000 to 5031 |
+
+Fixed in code: the smallest effect that counts (0.02 of score), the per-look
+confidence (97.79% for three looks), the tolerance of the composition screen (0.01).
+
+## Running it
+
+A study on the toy surrogate (seconds; checks the machinery, says nothing about a
+real simulator):
+
+```bash
+sea claims study --config studies/toy_battery.json --out runs/toy-claims
+```
+
+The recorded battery study on Basilisk (about 30 minutes on four cores):
+
+```bash
+sea claims study --config studies/bsk_battery.json --out runs/bsk-battery --workers 4
+```
+
+What the recorded graph recommends for a spacecraft it has not seen:
+
+```bash
+sea claims recommend results/bsk-battery --condition battery_capacity_wh=70
+```
+
+Replication and the ablation are in `../protocols/robustness.md`.
 
 ## Limits of the current design
 

@@ -10,9 +10,10 @@ expressions:
 * acting: it scans unless a memory item in its prompt tells it otherwise. Memory
   items carry machine-readable tags such as ``(rule: charge_below=0.35)``, which it
   reads back and obeys.
-* judging: "spacecraft lost" in the trajectory means failure.
-* extracting: a lost spacecraft produces a canned lesson with a tag; a surviving
-  one produces a canned lesson about downlinking.
+* judging: "spacecraft lost" in the final state means failure.
+* selecting: the attempt with the most steps (the one that flew longest) is "best".
+* extracting: the failure prompt produces a canned lesson with a tag; the success
+  prompt produces a canned lesson about downlinking.
 
 So an offline run does show memory changing behaviour, but only because both ends
 of that loop were written by hand to agree with each other.
@@ -31,7 +32,6 @@ _PERCENT = {
     "storage": re.compile(r"data buffer (\d+)% full"),
     "wheels": re.compile(r"wheels at (\d+)% of limit"),
 }
-_TOTAL = re.compile(r"Total reward received: ([+-]?[0-9.]+)")
 
 
 def _rules(text: str) -> dict[str, float]:
@@ -113,21 +113,21 @@ class OfflineDemoLLM:
         text = request.messages[0]["content"]
         if "spacecraft lost" in text:
             return 'Thoughts: The trajectory ends with the spacecraft lost.\nStatus: "failure"'
-        total = _TOTAL.findall(text)
-        if total and float(total[-1]) < 0.2:
-            return 'Thoughts: The spacecraft survived but recorded very little.\nStatus: "failure"'
-        return 'Thoughts: The spacecraft survived and recorded data.\nStatus: "success"'
+        return 'Thoughts: The spacecraft survived to the end of the episode.\nStatus: "success"'
 
     def _select(self, request: LLMRequest) -> str:
-        totals = [float(t) for t in _TOTAL.findall(request.messages[0]["content"])]
-        best = max(range(len(totals)), key=totals.__getitem__) + 1 if totals else 1
-        return f"Thoughts: Comparing total reward across attempts.\nBest: {best}"
+        blocks = re.split(r"^Trajectory \d+:", request.messages[0]["content"], flags=re.MULTILINE)
+        lengths = [block.count("step_num:") for block in blocks[1:]]
+        best = max(range(len(lengths)), key=lengths.__getitem__) + 1 if lengths else 1
+        answer = {"index": [best], "analysis": "The attempt that kept flying longest."}
+        return "```\n" + json.dumps(answer) + "\n```"
 
     # -- learning ---------------------------------------------------------------
 
-    def _lessons(self, text: str) -> list[tuple[str, str, str]]:
+    def _lessons(self, text: str, failed: bool = False) -> list[tuple[str, str, str]]:
         lessons = []
-        if "battery was fully depleted" in text:
+        wheels = "reaction wheel exceeded" in text
+        if "battery was fully depleted" in text or (failed and not wheels):
             lessons.append(
                 (
                     "Keep a battery reserve",
@@ -136,7 +136,7 @@ class OfflineDemoLLM:
                     "(rule: charge_below=0.35). Hypothesis: the reserve has to cover an eclipse.",
                 )
             )
-        if "reaction wheel exceeded" in text:
+        if wheels:
             lessons.append(
                 (
                     "Unload the wheels in time",
@@ -157,8 +157,10 @@ class OfflineDemoLLM:
 
     def _extract(self, request: LLMRequest) -> str:
         blocks = []
+        # The failure prompt is the only cue when the trajectory text carries no feedback.
+        failed = "attempted to resolve the task but failed" in request.system
         for i, (title, description, content) in enumerate(
-            self._lessons(request.messages[0]["content"]), 1
+            self._lessons(request.messages[0]["content"], failed), 1
         ):
             blocks.append(
                 f"# Memory Item {i}\n## Title {title}\n## Description {description}\n## Content {content}"

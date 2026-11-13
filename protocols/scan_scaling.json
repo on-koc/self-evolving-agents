@@ -1,0 +1,61 @@
+{
+  "name": "scan-scaling",
+  "title": "Test-time scaling on the scanning task, policy-writing agent",
+  "stream": {
+    "env": "bsk-scan",
+    "regimes": [
+      "nominal",
+      "small_battery"
+    ],
+    "order": "interleaved",
+    "seeds": "0:10"
+  },
+  "agent": "policy_program",
+  "model": {
+    "llm": "anthropic:claude-opus-5-5",
+    "effort": null,
+    "embedder": "hashing"
+  },
+  "budget": {
+    "max_cost_usd_per_run": 10
+  },
+  "repeats": 3,
+  "baseline": "reasoningbank",
+  "arms": {
+    "reasoningbank": {
+      "method": "reasoningbank"
+    },
+    "matts_parallel_k3": {
+      "method": "matts",
+      "options": {
+        "scaling": "parallel",
+        "scaling_k": 3
+      }
+    },
+    "no_aggregation_k3": {
+      "method": "matts",
+      "options": {
+        "scaling": "vanilla",
+        "scaling_k": 3
+      }
+    },
+    "scaling_without_memory_k3": {
+      "method": "matts",
+      "options": {
+        "scaling": "parallel",
+        "scaling_k": 3,
+        "memory": false
+      }
+    },
+    "restart_k3": {
+      "method": "matts",
+      "options": {
+        "scaling": "restart",
+        "scaling_k": 3
+      }
+    },
+    "no_memory": {
+      "method": "no_memory"
+    }
+  }
+}

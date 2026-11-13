@@ -44,7 +44,7 @@ def scripted():
             "judge": judge,
             "extract": ITEM,
             "refine": "- charge earlier",
-            "select": "Thoughts: compared.\nBest: 1",
+            "select": '```\n{"index": [1], "analysis": "compared them"}\n```',
         }
     )
 
@@ -112,3 +112,39 @@ def fake_anthropic():
 @pytest.fixture
 def tmp_run(tmp_path: Path) -> Path:
     return tmp_path
+
+
+class _FakeGemini(BaseHTTPRequestHandler):
+    """Minimal stand-in for the Gemini batch-embedding endpoint."""
+
+    def log_message(self, *args):
+        pass
+
+    def do_POST(self):
+        length = int(self.headers.get("content-length", 0))
+        body = json.loads(self.rfile.read(length) or b"{}")
+        self.server.requests.append((self.path, body))
+        count = len(body.get("requests", [])) or 1
+        payload = {"embeddings": [{"values": [0.1 * (i + 1), 0.2, 0.3]} for i in range(count)]}
+        data = json.dumps(payload).encode()
+        self.send_response(200)
+        self.send_header("content-type", "application/json")
+        self.send_header("content-length", str(len(data)))
+        self.end_headers()
+        self.wfile.write(data)
+
+
+@pytest.fixture
+def fake_gemini():
+    """A local HTTP server that answers the official Google SDK's embedding request."""
+    pytest.importorskip("google.genai")
+    server = HTTPServer(("127.0.0.1", 0), _FakeGemini)
+    server.requests = []
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    server.base_url = f"http://127.0.0.1:{server.server_port}"
+    try:
+        yield server
+    finally:
+        server.shutdown()
+        server.server_close()

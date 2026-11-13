@@ -1,89 +1,25 @@
-"""Agents that execute a rule policy, with or without a language model writing it."""
+"""An agent that has the model write one rule policy per episode and then executes it."""
 
 from __future__ import annotations
 
-import json
-import re
-from collections.abc import Sequence
 from typing import Any
 
-from ..envs.base import TextEnv
-from ..llm import BudgetExceeded, LLMError, LLMRequest, assistant, user
-from ..methods.reasoningbank import prompts
-from ..methods.reasoningbank.render import render_memory
-from ..methods.reasoningbank.schema import MemoryItem
-from ..policies import PolicyError, RulePolicy, always
-from ..types import Action, Observation, Step, Trajectory
-from .base import Agent, run_episode
-
-
-class PolicyAgent(Agent):
-    """Runs a fixed :class:`RulePolicy`. No language model is involved."""
-
-    def __init__(self, policy: RulePolicy):
-        self.policy = policy
-
-    @property
-    def descriptor(self) -> dict[str, Any]:
-        return {
-            "id": f"policy:{self.policy.fingerprint}",
-            "type": "rule-policy",
-            "policy": self.policy.to_dict(),
-        }
-
-    def run(
-        self,
-        env: TextEnv,
-        *,
-        first_observation: Observation | None = None,
-        memory: Sequence[MemoryItem] = (),
-        notes: str = "",
-        sample: int = 0,
-        meta: dict[str, Any] | None = None,
-    ) -> Trajectory:
-        policy = self.policy
-
-        def decide(observation: Observation, steps: list[Step]):
-            name, rule = policy.explain(observation.features)
-            return "", Action(name), None, {"rule": rule}
-
-        return run_episode(
-            env,
-            decide,
-            agent=self.descriptor,
-            first_observation=first_observation,
-            memory=memory,
-            meta={"policy_text": policy.describe(), **(meta or {})},
-        )
-
-
-_JSON_BLOCK = re.compile(r"```(?:json)?\s*(\{.*?\})\s*```", re.DOTALL)
-
-
-def extract_json_object(text: str) -> dict[str, Any]:
-    """Pull the last JSON object out of a model reply (fenced block preferred)."""
-    candidates = _JSON_BLOCK.findall(text)
-    if not candidates:
-        start, end = text.find("{"), text.rfind("}")
-        if start == -1 or end <= start:
-            raise ValueError("no JSON object found in the reply")
-        candidates = [text[start : end + 1]]
-    try:
-        data = json.loads(candidates[-1])
-    except json.JSONDecodeError as exc:
-        raise ValueError(f"the JSON is not valid ({exc.msg} at position {exc.pos})") from None
-    if not isinstance(data, dict):
-        raise ValueError("the JSON must be an object")
-    return data
+from ...agents.base import Agent, MemoryBlock, run_episode
+from ...envs.base import TextEnv
+from ...llm import BudgetExceeded, LLMError, LLMRequest, assistant, user
+from ...llm.parsing import extract_json_object
+from ...policies import PolicyError, RulePolicy, always
+from ...types import Action, Observation, Step, Trajectory
+from . import prompts
 
 
 class PolicyProgramAgent(Agent):
     """Asks the model for one rule policy per episode and then executes it.
 
-    This is the cheap way to put a language model in charge of a long simulation:
-    one call instead of one per step. It also makes the strategy explicit, so the
-    memory extractor sees exactly which rule produced which behaviour, and the same
-    strategy can be rerun on other seeds.
+    One model call instead of one per step. The strategy is explicit, so the memory
+    extractor sees exactly which rule produced which behaviour, and the same strategy
+    can be rerun on other seeds. What it cannot do is react to anything the rules do
+    not anticipate.
 
     If the model cannot produce a valid policy within ``max_attempts`` replies, the
     episode runs the environment's fallback action throughout and is flagged with
@@ -103,7 +39,7 @@ class PolicyProgramAgent(Agent):
             "model": self.llm.model,
         }
 
-    def system_prompt(self, env: TextEnv, memory: Sequence[MemoryItem], notes: str) -> str:
+    def system_prompt(self, env: TextEnv, memory: MemoryBlock | None, notes: str) -> str:
         spec = env.spec
         features = "\n".join(f"- `{name}`: {doc}" for name, doc in spec.feature_docs.items())
         parts = [
@@ -114,13 +50,13 @@ class PolicyProgramAgent(Agent):
             "## Your job\n" + prompts.POLICY_FORMAT,
         ]
         if memory:
-            parts.append(prompts.MEMORY_INSTRUCTION_POLICY + "\n\n" + render_memory(memory))
+            parts.append(memory.text.strip())
         if notes:
-            parts.append(prompts.REFINEMENT_NOTES_HEADER + "\n" + notes)
+            parts.append(notes.strip())
         return "\n\n".join(parts)
 
     def write_policy(
-        self, env: TextEnv, memory: Sequence[MemoryItem], notes: str, sample: int
+        self, env: TextEnv, memory: MemoryBlock | None, notes: str, sample: int
     ) -> tuple[RulePolicy, dict[str, Any]]:
         """Obtain a validated policy from the model. Returns ``(policy, info)``."""
         spec = env.spec
@@ -176,7 +112,7 @@ class PolicyProgramAgent(Agent):
         env: TextEnv,
         *,
         first_observation: Observation | None = None,
-        memory: Sequence[MemoryItem] = (),
+        memory: MemoryBlock | None = None,
         notes: str = "",
         sample: int = 0,
         meta: dict[str, Any] | None = None,
@@ -188,15 +124,21 @@ class PolicyProgramAgent(Agent):
             name, rule = policy.explain(observation.features)
             return "", Action(name), None, {"rule": rule}
 
+        # There is no step-by-step reasoning to show an extractor, so the policy and
+        # its rationale are put in front of the trajectory instead.
+        header = "The agent committed to this policy before the episode:\n" + policy.describe()
+        if info.get("policy_rationale"):
+            header += "\n\nIts stated rationale: " + info["policy_rationale"]
         return run_episode(
             env,
             decide,
             agent=self.descriptor,
             first_observation=first,
-            memory=memory,
+            memory_item_ids=memory.item_ids if memory else (),
             meta={
                 "policy": policy.to_dict(),
                 "policy_text": policy.describe(),
+                "trajectory_header": header,
                 "sample": sample,
                 **info,
                 **(meta or {}),

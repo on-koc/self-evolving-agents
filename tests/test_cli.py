@@ -50,7 +50,27 @@ def test_policy_run_refuses_an_environment_without_features():
         main(["policy", "run", "--env", "discoveryworld"])
 
 
-# --------------------------------------------------------------------------- ReasoningBank
+# --------------------------------------------------------------------------- stream methods
+
+
+def test_methods_lists_every_method_with_its_origin_and_evidence(capsys):
+    code, out = sea(capsys, "methods")
+    assert code == 0
+    for line in (
+        "reasoningbank  (paper)  ReasoningBank",
+        "no_memory  (reference point)",
+        "matts  (paper)",
+        "conditioned_retrieval  (adaptation)",
+        "policy_program  (adaptation)",
+        "claim_memory  (extension)",
+        "claim_graph  (extension)",
+        "never run with a language model",
+        "run with: sea claims study",
+        "documentation: docs/methods/reasoningbank.md",
+    ):
+        assert line in out, line
+    code, out = sea(capsys, "methods", "--options")
+    assert "retrieve_k = 1" in out and "scaling_k = 5" in out and "condition_weight = 0.5" in out
 
 
 @pytest.fixture(scope="module")
@@ -58,51 +78,99 @@ def rb_run(tmp_path_factory) -> Path:
     out = tmp_path_factory.mktemp("rb") / "dry"
     code = main(
         [
-            *("rb", "run", "--env", "toy-scan", "--regime", "small_battery", "--seeds", "0:4"),
-            *("--llm", "offline-demo", "--retrieval", "item", "--out", str(out)),
+            *("run", "--method", "reasoningbank", "--set", "tie_break=newest"),
+            *("--env", "toy-scan", "--regime", "small_battery", "--seeds", "0:4"),
+            *("--llm", "offline-demo", "--out", str(out)),
         ]
     )
     assert code == 0
     return out
 
 
-def test_rb_run_writes_a_complete_run_directory(rb_run):
+def test_run_writes_a_complete_run_directory(rb_run):
     for name in ("config.json", "provenance.sqlite", "bank.jsonl", "records.jsonl", "summary.json"):
         assert (rb_run / name).exists(), name
     summary = json.loads((rb_run / "summary.json").read_text())
-    assert summary["pipeline"]["tasks"] == 4
-    assert summary["bank"]["items"] >= 1 and summary["bank"]["items_used"] >= 1
+    assert summary["method"] == "reasoningbank" and summary["stand_in_model"] is True
+    assert summary["completed"] == summary["planned"] == summary["metrics"]["tasks"] == 4
+    assert summary["memory"]["items"] >= 1 and summary["memory"]["embedder"] == "hashing-1024-c3"
     assert summary["llm"]["model"] == "offline-demo" and summary["llm"]["calls"] > 4
     records = [json.loads(line) for line in (rb_run / "records.jsonl").read_text().splitlines()]
     assert len(records) == 4
-    assert json.loads((rb_run / "config.json").read_text())["env"] == "toy-scan"
+    config = json.loads((rb_run / "config.json").read_text())
+    assert config["method"] == "reasoningbank" and config["origin"] == "paper"
+    assert config["config"]["tie_break"] == "newest" and config["config"]["retrieve_k"] == 1
+    assert config["agent"]["type"] == "stepwise" and config["llm"] == "offline-demo"
+    assert [t["seed"] for t in config["tasks"]] == [0, 1, 2, 3], "the exact stream is recorded"
+    assert config["judge"] == "llm" and config["scaling"] == {"name": "none", "k": 1}
 
 
-def test_rb_run_with_the_policy_writing_agent(tmp_path, capsys):
-    code, out = sea(
+def test_run_rejects_an_option_the_method_does_not_have(tmp_path):
+    with pytest.raises(SystemExit, match="reasoningbank has no option condition_weight"):
+        main(
+            [
+                *("run", "--method", "reasoningbank", "--set", "condition_weight=0.5"),
+                *("--env", "toy-scan", "--llm", "offline-demo", "--out", str(tmp_path / "x")),
+            ]
+        )
+
+
+@pytest.mark.parametrize(
+    "method, extra, expect",
+    [
+        ("no_memory", [], {"memory": {}, "judge": "none"}),
+        ("matts", ["--set", "scaling_k=2"], {"scaling": {"name": "parallel", "k": 2}}),
+        ("matts", ["--set", "scaling=restart", "--set", "scaling_k=2"], {"judge": "llm"}),
+        ("conditioned_retrieval", ["--set", "judge=env"], {"judge": "env"}),
+        ("policy_program", [], {"judge": "llm"}),
+    ],
+)
+def test_run_every_stream_method_with_the_stand_in_model(tmp_path, capsys, method, extra, expect):
+    out = tmp_path / "run"
+    code, _ = sea(
         capsys,
-        *("rb", "run", "--env", "toy-scan", "--regime", "nominal,small_battery"),
-        *("--order", "interleaved", "--seeds", "0:2", "--agent", "policy"),
-        *("--llm", "offline-demo", "--out", tmp_path / "run"),
+        *("run", "--method", method, *extra, "--env", "toy-scan"),
+        *("--regime", "nominal,small_battery", "--order", "interleaved", "--seeds", "0:1"),
+        *("--llm", "offline-demo", "--out", out),
     )
     assert code == 0
-    summary = json.loads((tmp_path / "run" / "summary.json").read_text())
-    assert summary["pipeline"]["tasks"] == 4
-    assert summary["llm"]["calls"] < 40, "one call per episode plus judging and extraction"
+    summary = json.loads((out / "summary.json").read_text())
+    config = json.loads((out / "config.json").read_text())
+    assert summary["metrics"]["tasks"] == 2 and config["method"] == method
+    for key, value in expect.items():
+        assert (summary.get(key) if key == "memory" else config[key]) == value
+    if method == "policy_program":
+        assert config["agent"]["type"] == "policy-program"
+        assert summary["llm"]["calls"] < 20, "one call per episode plus judging and extraction"
 
 
-def test_rb_show_then_lineage_in_both_directions(rb_run, capsys):
-    code, out = sea(capsys, "rb", "show", rb_run)
+def test_run_claim_memory_from_a_recorded_study(tmp_path, capsys):
+    out = tmp_path / "run"
+    code, _ = sea(
+        capsys,
+        *("run", "--method", "claim_memory", "--set", "claims=results/bsk-battery"),
+        *("--env", "toy-scan", "--regime", "small_battery", "--seeds", "0:1"),
+        *("--llm", "offline-demo", "--out", out),
+    )
+    assert code == 0
+    summary = json.loads((out / "summary.json").read_text())
+    assert summary["memory"] == {"claims": 21}
+    record = json.loads((out / "records.jsonl").read_text().splitlines()[0])
+    assert len(record["retrieved_item_ids"]) >= 2 and record["new_item_ids"] == []
+
+
+def test_show_then_lineage_in_both_directions(rb_run, capsys):
+    code, out = sea(capsys, "show", rb_run)
     assert code == 0 and "memory items in" in out
-    used = re.search(r"\[(mem_[0-9a-f]+)\] \([^)]*used \d+x", out)
-    assert used, "the dry run reuses at least one item"
-    item = used.group(1)
+    item = re.search(r"\[(mem_[0-9a-f]+)\]", out).group(1)
 
     code, out = sea(capsys, "prov", "lineage", rb_run, item)
     assert code == 0 and "derived from:" in out
     assert "trajectory" in out, "an item traces back to the episode it was distilled from"
 
-    code, out = sea(capsys, "prov", "lineage", rb_run, item, "--down")
+    records = [json.loads(line) for line in (rb_run / "records.jsonl").read_text().splitlines()]
+    used = next(i for r in records for i in r["retrieved_item_ids"])
+    code, out = sea(capsys, "prov", "lineage", rb_run, used, "--down")
     assert code == 0 and "influenced:" in out
     assert "trajectory" in out, "and forward to the episodes that were given it"
 
@@ -116,6 +184,110 @@ def test_prov_export_writes_prov_json(rb_run, tmp_path, capsys):
     doc = json.loads(target.read_text())
     assert code == 0 and str(target) in out
     assert doc["entity"] and doc["activity"] and doc["wasDerivedFrom"]
+
+
+# --------------------------------------------------------------------------- comparison protocol
+
+PROTOCOL = {
+    "name": "toy-check",
+    "title": "Toy protocol",
+    "stream": {
+        "env": "toy-scan",
+        "regimes": ["nominal", "small_battery"],
+        "order": "interleaved",
+        "seeds": "0:2",
+    },
+    "agent": "stepwise",
+    "model": {"llm": "offline-demo", "embedder": "hashing"},
+    "budget": {"max_calls_per_run": 100000},
+    "repeats": 2,
+    "baseline": "reasoningbank",
+    "arms": {
+        "no_memory": {"method": "no_memory"},
+        "reasoningbank": {"method": "reasoningbank"},
+        "newest_on_ties": {"method": "reasoningbank", "options": {"tie_break": "newest"}},
+        "conditioned": {"method": "conditioned_retrieval"},
+    },
+}
+
+
+def test_compare_runs_every_arm_on_the_same_stream_and_reports(tmp_path, capsys):
+    (tmp_path / "protocol.json").write_text(json.dumps(PROTOCOL))
+    out = tmp_path / "comparison"
+    code, text = sea(
+        capsys, "compare", "run", "--protocol", tmp_path / "protocol.json", "--out", out
+    )
+    assert code == 0
+    streams = []
+    for arm in PROTOCOL["arms"]:
+        for rep in (0, 1):
+            config = json.loads((out / arm / f"rep-{rep}" / "config.json").read_text())
+            assert (config["protocol"], config["arm"], config["repeat"]) == ("toy-check", arm, rep)
+            assert config["llm"] == "offline-demo"
+            streams.append([(t["name"], t["seed"]) for t in config["tasks"]])
+    assert all(s == streams[0] for s in streams), "every arm and repeat ran the same tasks"
+    assert streams[0] == [
+        ("nominal", 0),
+        ("small_battery", 0),
+        ("nominal", 1),
+        ("small_battery", 1),
+    ]
+
+    result = json.loads((out / "comparison.json").read_text())
+    assert result["stand_in_model"] is True and result["baseline"] == "reasoningbank"
+    assert set(result["arms"]) == set(PROTOCOL["arms"])
+    arm = result["arms"]["conditioned"]
+    assert arm["origin"] == "adaptation" and arm["repeats"] == 2
+    assert arm["tasks_completed"] == [4, 4] and arm["metrics"]["tasks"] == 8
+    assert set(arm["by_group"]) == {"nominal", "small_battery"}
+    assert arm["cost"]["model_calls_per_run"] > 0
+    assert set(result["comparisons"]) == {
+        "no_memory_minus_reasoningbank",
+        "newest_on_ties_minus_reasoningbank",
+        "conditioned_minus_reasoningbank",
+    }
+    paired = result["comparisons"]["no_memory_minus_reasoningbank"]
+    assert paired["tasks"] == 4 and {"diff", "ci_low", "ci_high", "p_value"} <= set(paired["score"])
+    report = (out / "comparison.md").read_text()
+    for needle in (
+        "**These numbers are not results.**",
+        "## Arms",
+        "## Outcome metrics",
+        "## Paired differences against `reasoningbank`",
+        "## Cost per run",
+        "## By task group",
+        "| conditioned | `conditioned_retrieval` | adaptation |",
+    ):
+        assert needle in report, needle
+    assert "These numbers are not results" in text
+
+    code, again = sea(capsys, "compare", "report", out)
+    assert code == 0 and json.loads((out / "comparison.json").read_text()) == result
+
+
+def test_compare_checks_a_protocol_before_spending_anything(tmp_path):
+    from self_evolving_agents.compare import load_protocol
+
+    def write(**changes):
+        protocol = json.loads(json.dumps(PROTOCOL))
+        for key, value in changes.items():
+            if value is None:
+                protocol.pop(key)
+            else:
+                protocol[key] = value
+        (tmp_path / "p.json").write_text(json.dumps(protocol))
+        return tmp_path / "p.json"
+
+    load_protocol(write())
+    with pytest.raises(ValueError, match="baseline arm 'missing'"):
+        load_protocol(write(baseline="missing"))
+    with pytest.raises(ValueError, match="has no 'stream'"):
+        load_protocol(write(stream=None))
+    with pytest.raises(ValueError, match="is not a stream method"):
+        load_protocol(write(arms={"reasoningbank": {"method": "claim_graph"}}))
+    bad = {"reasoningbank": {"method": "reasoningbank", "options": {"temperature_of_room": 21}}}
+    with pytest.raises(ValueError, match="has no option temperature_of_room"):
+        load_protocol(write(arms=bad))
 
 
 # --------------------------------------------------------------------------- claims

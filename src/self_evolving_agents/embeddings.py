@@ -1,17 +1,19 @@
 """Text embeddings for memory retrieval.
 
-The paper embeds task queries with ``gemini-embedding-001``. The default here is a
-dependency-free hashing embedder so that retrieval works offline; it captures
-lexical overlap (shared words and character n-grams), not meaning. Any object with
-the same two methods can be passed instead, e.g. a wrapper around a sentence
-embedding model or an embeddings API.
+The paper embeds task queries with ``gemini-embedding-001``; :class:`GeminiEmbedder`
+is that model. The default is a dependency-free hashing embedder so that retrieval
+works offline; it captures lexical overlap (shared words and character n-grams), not
+meaning, and a run that uses it is not using the paper's retrieval. Any object with
+a ``name`` and an ``embed`` method can be passed instead.
 """
 
 from __future__ import annotations
 
 import hashlib
+import json
 import math
 import re
+from pathlib import Path
 from typing import Any, Protocol, runtime_checkable
 
 import numpy as np
@@ -110,3 +112,121 @@ def condition_similarity(a: dict[str, Any], b: dict[str, Any]) -> float | None:
         else:
             total += 1.0 if x == y else 0.0
     return total / len(shared)
+
+
+class GeminiEmbedder:
+    """``gemini-embedding-001`` through the official Google GenAI SDK.
+
+    This is the embedding model the ReasoningBank paper uses (Appendix A.2), called
+    the way the reference code calls it: task type ``RETRIEVAL_DOCUMENT`` and 3072
+    output dimensions. It needs the ``gemini`` extra and Google credentials
+    (``GOOGLE_API_KEY``, or a Vertex AI project).
+
+    It has been exercised against a local stand-in for the service only, never
+    against the service itself.
+    """
+
+    def __init__(
+        self,
+        model: str = "gemini-embedding-001",
+        *,
+        dimensions: int = 3072,
+        task_type: str = "RETRIEVAL_DOCUMENT",
+        batch_size: int = 64,
+        client: Any = None,
+    ):
+        if client is None:
+            try:
+                from google import genai
+            except ImportError as exc:  # pragma: no cover - depends on the optional extra
+                raise ImportError(
+                    "GeminiEmbedder needs the Google GenAI SDK: "
+                    "pip install 'self-evolving-agents[gemini]'"
+                ) from exc
+            client = genai.Client()
+        self.client = client
+        self.model = model
+        self.dimensions = dimensions
+        self.task_type = task_type
+        self.batch_size = batch_size
+        self.name = f"{model}-{dimensions}"
+
+    def embed(self, texts: list[str]) -> np.ndarray:
+        rows: list[list[float]] = []
+        for start in range(0, len(texts), self.batch_size):
+            response = self.client.models.embed_content(
+                model=self.model,
+                contents=list(texts[start : start + self.batch_size]),
+                config={
+                    "task_type": self.task_type,
+                    "output_dimensionality": self.dimensions,
+                },
+            )
+            rows.extend(list(e.values) for e in response.embeddings)
+        if len(rows) != len(texts):
+            raise RuntimeError(f"asked for {len(texts)} embeddings, received {len(rows)}")
+        out = np.asarray(rows, dtype=np.float32).reshape(len(texts), -1)
+        norms = np.linalg.norm(out, axis=1, keepdims=True)
+        norms[norms == 0] = 1.0
+        return out / norms
+
+
+class CachedEmbedder:
+    """Remembers vectors on disk, so a text is sent to the embedding service once.
+
+    The paper stores the embedding of every query next to the memory for the same
+    reason. Reloading a bank then costs nothing and returns the same vectors.
+    """
+
+    def __init__(self, embedder: Embedder, path: str | Path):
+        self.embedder = embedder
+        self.path = Path(path)
+        self.name = embedder.name
+        self._vectors: dict[str, np.ndarray] = {}
+        if self.path.exists():
+            with self.path.open() as fh:
+                for line in fh:
+                    if line.strip():
+                        record = json.loads(line)
+                        if record.get("embedder") == self.name:
+                            self._vectors[record["key"]] = np.asarray(
+                                record["vector"], dtype=np.float32
+                            )
+
+    @staticmethod
+    def _key(text: str) -> str:
+        return hashlib.blake2b(text.encode(), digest_size=16).hexdigest()
+
+    def embed(self, texts: list[str]) -> np.ndarray:
+        missing = [t for t in dict.fromkeys(texts) if self._key(t) not in self._vectors]
+        if missing:
+            vectors = self.embedder.embed(missing)
+            self.path.parent.mkdir(parents=True, exist_ok=True)
+            with self.path.open("a") as fh:
+                for text, vector in zip(missing, vectors, strict=True):
+                    self._vectors[self._key(text)] = vector
+                    record = {
+                        "embedder": self.name,
+                        "key": self._key(text),
+                        "vector": vector.tolist(),
+                    }
+                    fh.write(json.dumps(record) + "\n")
+        return np.stack([self._vectors[self._key(t)] for t in texts]) if texts else np.zeros((0, 0))
+
+
+def make_embedder(spec: str = "hashing", cache_dir: str | Path | None = None) -> Embedder:
+    """An embedder from a short description.
+
+    ``"hashing"`` or ``"hashing:<dim>"``: the offline word-overlap embedder.
+    ``"gemini"`` or ``"gemini:<model>"``: the paper's embedding model, cached on disk
+    when ``cache_dir`` is given.
+    """
+    kind, _, detail = spec.partition(":")
+    if kind == "hashing":
+        return HashingEmbedder(int(detail)) if detail else HashingEmbedder()
+    if kind == "gemini":
+        embedder: Embedder = GeminiEmbedder(detail) if detail else GeminiEmbedder()
+        if cache_dir is not None:
+            embedder = CachedEmbedder(embedder, Path(cache_dir) / "embeddings.jsonl")
+        return embedder
+    raise ValueError(f"unknown embedder {spec!r}; use 'hashing' or 'gemini'")

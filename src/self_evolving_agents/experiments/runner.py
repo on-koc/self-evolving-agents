@@ -18,7 +18,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from ..agents.policy_agent import PolicyAgent
+from ..agents.rule import PolicyAgent
 from ..envs.base import TextEnv, make_env
 from ..policies import RulePolicy
 from ..types import Outcome, Task, stable_hash

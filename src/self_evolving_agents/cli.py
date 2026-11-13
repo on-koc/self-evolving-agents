@@ -1,12 +1,14 @@
 """``sea`` command line.
 
-    sea envs                              list environments and scanning regimes
-    sea rb run ...                        run a task stream with reasoning memory
-    sea rb show RUN                       summary and memory items of a run
+    sea methods                           the methods, where each comes from, what is known
+    sea run --method NAME ...             run one method on a stream of tasks
+    sea show RUN                          summary and memory items of a run
+    sea compare run|report ...            several methods on the same stream (a protocol)
+    sea claims ...                        the claim graph: studies, replication, reports
     sea policy run ...                    run a rule policy (no model) on scanning tasks
     sea prov lineage RUN ID               where a record came from / what it influenced
     sea prov export RUN OUT.json          dump a run's provenance as W3C PROV-JSON
-    sea claims ...                        claim graph and experiments (see ``sea claims -h``)
+    sea envs                              list environments and scanning regimes
 
 A run lives in one directory: ``config.json``, ``provenance.sqlite``, ``bank.jsonl``,
 ``records.jsonl``, ``summary.json`` and ``llm_cache/``. Re-running the same command
@@ -21,23 +23,9 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from .envs import REGIMES, available_envs, discoveryworld_task, scan_task
+from .envs import REGIMES, available_envs
+from .tasks import ORDERS, parse_seeds, task_stream
 from .types import Task
-
-
-def parse_seeds(text: str) -> list[int]:
-    """``"0:5"`` -> 0..4, ``"1,4,9"`` -> those, ``"7"`` -> [7]."""
-    seeds: list[int] = []
-    for part in text.split(","):
-        part = part.strip()
-        if ":" in part:
-            start, stop = part.split(":", 1)
-            seeds.extend(range(int(start or 0), int(stop)))
-        elif part:
-            seeds.append(int(part))
-    if not seeds:
-        raise argparse.ArgumentTypeError(f"no seeds in {text!r}")
-    return seeds
 
 
 def parse_assignments(pairs: list[str] | None) -> dict[str, float]:
@@ -51,36 +39,42 @@ def parse_assignments(pairs: list[str] | None) -> dict[str, float]:
     return out
 
 
+def parse_options(pairs: list[str] | None) -> dict[str, Any]:
+    """``["retrieve_k=2", "judge=env", "memory=false"]`` -> typed values.
+
+    A value that reads as JSON (a number, ``true``, ``null``) is taken as such;
+    anything else is a string.
+    """
+    out: dict[str, Any] = {}
+    for pair in pairs or []:
+        key, sep, value = pair.partition("=")
+        if not sep:
+            raise SystemExit(f"expected name=value, got {pair!r}")
+        try:
+            out[key.strip()] = json.loads(value)
+        except json.JSONDecodeError:
+            out[key.strip()] = value
+    return out
+
+
 def build_tasks(args: argparse.Namespace) -> list[Task]:
     """Expand the task options into an ordered stream."""
-    seeds = parse_seeds(args.seeds)
-    if args.env == "discoveryworld":
-        if not args.scenario:
-            raise SystemExit("--scenario is required for discoveryworld")
-        scenarios = [s.strip() for s in args.scenario.split(";") if s.strip()]
-        groups = [
-            [
-                discoveryworld_task(s, args.difficulty, seed=seed, max_steps=args.max_steps)
-                for seed in seeds
-            ]
-            for s in scenarios
-        ]
-    else:
-        params = parse_assignments(args.param)
-        if args.duration:
-            params["duration_s"] = args.duration
-        conditions = parse_assignments(args.condition) or None
-        regimes = [r.strip() for r in args.regime.split(",") if r.strip()]
-        groups = [
-            [
-                scan_task(args.env, regime, seed=seed, conditions=conditions, **params)
-                for seed in seeds
-            ]
-            for regime in regimes
-        ]
-    if args.order == "interleaved":
-        return [group[i] for i in range(len(seeds)) for group in groups]
-    return [task for group in groups for task in group]
+    if args.env == "discoveryworld" and not args.scenario:
+        raise SystemExit("--scenario is required for discoveryworld")
+    params: dict[str, Any] = dict(parse_assignments(args.param))
+    if args.duration:
+        params["duration_s"] = args.duration
+    return task_stream(
+        args.env,
+        parse_seeds(args.seeds),
+        regimes=[r.strip() for r in args.regime.split(",") if r.strip()],
+        order=args.order,
+        conditions=parse_assignments(args.condition) or None,
+        params=params,
+        scenarios=[s.strip() for s in (args.scenario or "").split(";") if s.strip()],
+        difficulty=args.difficulty,
+        max_steps=args.max_steps,
+    )
 
 
 def _add_task_options(p: argparse.ArgumentParser) -> None:
@@ -113,9 +107,30 @@ def _add_task_options(p: argparse.ArgumentParser) -> None:
     g.add_argument(
         "--order",
         default="sequential",
-        choices=["sequential", "interleaved"],
+        choices=list(ORDERS),
         help="with several regimes or scenarios: finish one before the next, or alternate",
     )
+
+
+def _add_model_options(p: argparse.ArgumentParser) -> None:
+    g = p.add_argument_group("model")
+    g.add_argument(
+        "--llm",
+        default="anthropic:claude-opus-5-5",
+        help="'anthropic:<model>' or 'offline-demo' (a scripted stand-in, for dry runs)",
+    )
+    g.add_argument(
+        "--effort", choices=["low", "medium", "high", "xhigh", "max"], help="Claude effort level"
+    )
+    g.add_argument(
+        "--embedder",
+        default="hashing",
+        help="'hashing' (offline, word overlap) or 'gemini' (the paper's embedding model)",
+    )
+    g.add_argument(
+        "--max-cost", type=float, help="stop when the estimated spend reaches this many USD"
+    )
+    g.add_argument("--max-calls", type=int, help="stop after this many uncached model calls")
 
 
 # --------------------------------------------------------------------------- commands
@@ -129,120 +144,67 @@ def cmd_envs(args: argparse.Namespace) -> int:
     return 0
 
 
-def cmd_rb_run(args: argparse.Namespace) -> int:
-    from .agents import PolicyProgramAgent, StepwiseAgent
-    from .llm import Budget, BudgetExceeded, TrackedLLM, make_backend
-    from .methods.reasoningbank import ReasoningBank
-    from .methods.reasoningbank.induction import EnvJudge, LLMJudge, MemoryExtractor
-    from .methods.reasoningbank.pipeline import PipelineConfig, ReasoningBankPipeline
-    from .provenance import ProvenanceStore
+def cmd_methods(args: argparse.Namespace) -> int:
+    from .methods.registry import METHODS, defaults
 
-    out = Path(args.out)
-    out.mkdir(parents=True, exist_ok=True)
-    tasks = build_tasks(args)
-    config = PipelineConfig(
-        memory=args.memory,
-        scaling=args.scaling,
-        k=args.k,
-        include_failures=not args.success_only,
-        retrieve_k=args.retrieve_k,
-        retrieval_mode=args.retrieval,
-        max_items=args.max_items,
-        condition_weight=args.condition_weight,
-        utility_weight=args.utility_weight,
-        store_steps=not args.no_steps,
-    )
-    run_config = {k: v for k, v in vars(args).items() if k != "func"}
-    (out / "config.json").write_text(json.dumps(run_config, indent=2, default=str))
+    for spec in METHODS.values():
+        how = "sea run --method " + spec.name if spec.runner == "stream" else "sea claims study"
+        print(f"{spec.name}  ({spec.origin})  {spec.title}")
+        print(f"    {spec.summary}")
+        print(f"    evidence: {spec.evidence}")
+        print(f"    run with: {how}    documentation: {spec.doc}")
+        if args.options and spec.runner == "stream":
+            for key, value in defaults(spec.name).items():
+                print(f"      {key} = {value!r}")
+        print()
+    return 0
 
-    store = ProvenanceStore(out / "provenance.sqlite")
-    store.start_run("reasoningbank", out.name, run_config)
-    backend_options: dict[str, Any] = {}
-    if args.effort and not args.llm.startswith("offline"):
-        backend_options["effort"] = args.effort
-    llm = TrackedLLM(
-        make_backend(args.llm, **backend_options),
-        cache_dir=out / "llm_cache",
-        budget=Budget(max_cost_usd=args.max_cost, max_calls=args.max_calls),
-        store=store,
-    )
-    agent = StepwiseAgent(llm) if args.agent == "stepwise" else PolicyProgramAgent(llm)
-    judge = LLMJudge(llm) if args.judge == "llm" else EnvJudge()
-    bank = ReasoningBank(args.bank or out / "bank.jsonl")
 
-    extra_memory = None
-    if args.claims:
-        from .envs.scanning import DEFAULT_CONDITIONS
-        from .methods.claim_graph.graph import ClaimGraph
-        from .methods.claim_graph.report import claims_as_memory
+def cmd_run(args: argparse.Namespace) -> int:
+    from .methods.run import run_method
 
-        graph_path = Path(args.claims) / "graph.json"
-        if not graph_path.exists():
-            raise SystemExit(f"--claims: no graph.json in {args.claims}")
-        claim_graph = ClaimGraph(graph_path)
-
-        def extra_memory(task: Task) -> list[Any]:
-            return claims_as_memory(claim_graph, {**DEFAULT_CONDITIONS, **task.conditions})
-
-    def progress(record: Any) -> None:
-        task = record.task
-        print(
-            f"[{len(pipeline.records):3d}/{len(tasks)}] {task['name']} seed={task['seed']}: "
-            f"score {record.score:+.3f} {'ok ' if record.success else 'FAIL'} "
-            f"({record.failure or 'no failure'}), {record.steps} steps, judged "
-            f"{'success' if record.judged_success else 'failure'}, "
-            f"used {len(record.retrieved_item_ids)} items, learned {len(record.new_item_ids)}",
-            flush=True,
-        )
-
-    pipeline = ReasoningBankPipeline(
-        agent,
-        judge,
-        bank=bank,
-        extractor=MemoryExtractor(llm),
-        llm=llm,
-        store=store,
-        config=config,
-        extra_memory=extra_memory,
-        on_record=progress,
-    )
-    if args.llm.startswith("offline"):
-        print(
-            "NOTE: offline-demo is a rule-based stand-in, not a language model. "
-            "This run exercises the pipeline; its numbers are not results."
-        )
-    status = 0
     try:
-        pipeline.run_stream(tasks)
-    except BudgetExceeded as exc:
-        print(
-            f"Stopped: {exc}. Completed {len(pipeline.records)} of {len(tasks)} tasks; "
-            "rerun the same command to continue from the cache with a larger budget."
+        status, summary = run_method(
+            args.method,
+            build_tasks(args),
+            args.out,
+            llm=args.llm,
+            options=parse_options(args.set),
+            agent=args.agent,
+            embedder=args.embedder,
+            effort=args.effort,
+            max_cost=args.max_cost,
+            max_calls=args.max_calls,
+            bank=args.bank,
+            store_steps=not args.no_steps,
         )
-        status = 2
-    finally:
-        pipeline.save_records(out / "records.jsonl")
-        summary = {"pipeline": pipeline.summary(), "bank": bank.stats(), "llm": llm.summary()}
-        (out / "summary.json").write_text(json.dumps(summary, indent=2))
-        store.close()
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from None
     print(json.dumps(summary, indent=2))
-    print(f"Run written to {out}/")
+    print(f"Run written to {args.out}/")
     return status
 
 
-def cmd_rb_show(args: argparse.Namespace) -> int:
+def cmd_show(args: argparse.Namespace) -> int:
     from .methods.reasoningbank import ReasoningBank
 
     run = Path(args.run)
     summary_path = run / "summary.json"
     if summary_path.exists():
         print(summary_path.read_text())
-    bank = ReasoningBank(run / "bank.jsonl")
+    bank_path = run / "bank.jsonl"
+    if not bank_path.exists():
+        print("\nThis run has no memory bank.")
+        return 0
+    bank = ReasoningBank(bank_path)
     print(f"\n{len(bank.items)} memory items in {len(bank)} experiences:")
     for experience in bank.experiences:
         for item in experience.items:
+            usage = item.meta.get("usage") or {}
             used = (
-                f"used {item.uses}x, mean reward {item.mean_score:+.3f}" if item.uses else "unused"
+                f"used {usage['uses']}x, mean reward {usage['score_sum'] / usage['uses']:+.3f}"
+                if usage.get("uses")
+                else "no usage statistics"
             )
             print(f"\n[{item.id}] ({item.source}; from {experience.task_key}; {used})")
             print(f"  Title: {item.title}\n  When:  {item.description}\n  What:  {item.content}")
@@ -319,94 +281,49 @@ def cmd_prov_export(args: argparse.Namespace) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
+    from .methods.registry import AGENTS, METHODS
+
     parser = argparse.ArgumentParser(prog="sea", description=__doc__.split("\n\n")[0])
     sub = parser.add_subparsers(dest="command", required=True)
 
     sub.add_parser("envs", help="list environments and regimes").set_defaults(func=cmd_envs)
 
-    rb = sub.add_parser("rb", help="ReasoningBank pipeline").add_subparsers(
-        dest="rb_command", required=True
+    methods = sub.add_parser("methods", help="list the methods and what is known about each")
+    methods.add_argument("--options", action="store_true", help="also print every option's default")
+    methods.set_defaults(func=cmd_methods)
+
+    stream_methods = [m.name for m in METHODS.values() if m.runner == "stream"]
+    run = sub.add_parser(
+        "run",
+        help="run one method on a stream of tasks",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    run = rb.add_parser(
-        "run", help="run a task stream", formatter_class=argparse.ArgumentDefaultsHelpFormatter
-    )
-    _add_task_options(run)
-    g = run.add_argument_group("model")
-    g.add_argument(
-        "--llm",
-        default="anthropic:claude-opus-5-5",
-        help="'anthropic:<model>' or 'offline-demo' (a scripted stand-in, for dry runs)",
-    )
-    g.add_argument(
-        "--effort", choices=["low", "medium", "high", "xhigh", "max"], help="Claude effort level"
-    )
-    g.add_argument(
-        "--max-cost", type=float, help="stop when the estimated spend reaches this many USD"
-    )
-    g.add_argument("--max-calls", type=int, help="stop after this many uncached model calls")
     g = run.add_argument_group("method")
+    g.add_argument("--method", required=True, choices=stream_methods)
+    g.add_argument(
+        "--set",
+        action="append",
+        metavar="NAME=VALUE",
+        help="override one of the method's options (see `sea methods --options`)",
+    )
     g.add_argument(
         "--agent",
         default="stepwise",
-        choices=["stepwise", "policy"],
-        help="stepwise: one model call per action (as in the paper). "
-        "policy: one call per episode writes a rule policy that is then executed",
+        choices=list(AGENTS),
+        help="stepwise: one model call per action, as in the paper. policy_program: one call "
+        "per episode writes a rule policy that is then executed",
     )
-    g.add_argument("--memory", default="reasoningbank", choices=["reasoningbank", "none"])
-    g.add_argument(
-        "--judge",
-        default="llm",
-        choices=["llm", "env"],
-        help="llm: LLM-as-a-judge, no ground truth. env: the simulator's own criterion",
-    )
-    g.add_argument(
-        "--success-only",
-        action="store_true",
-        help="ablation: do not learn from failed trajectories",
-    )
-    g.add_argument(
-        "--scaling",
-        default="none",
-        choices=["none", "parallel", "sequential", "vanilla"],
-        help="test-time scaling (MaTTS parallel / sequential, or vanilla TTS)",
-    )
-    g.add_argument("--k", type=int, default=1, help="scaling factor")
-    g.add_argument(
-        "--retrieval",
-        default="experience",
-        choices=["experience", "item"],
-        help="experience: the paper's top-k experiences. item: item-level with diversity",
-    )
-    g.add_argument(
-        "--retrieve-k", type=int, default=1, help="experiences to retrieve (experience mode)"
-    )
-    g.add_argument("--max-items", type=int, help="cap on retrieved items (default 6 in item mode)")
-    g.add_argument(
-        "--condition-weight",
-        type=float,
-        default=0.0,
-        help="0..1 weight of operating-condition similarity in retrieval",
-    )
-    g.add_argument(
-        "--utility-weight",
-        type=float,
-        default=0.0,
-        help="item mode: bonus for items whose past uses went well",
-    )
-    g.add_argument(
-        "--claims",
-        metavar="RUN",
-        help="directory of a `sea claims study` run: give the agent the evidence-backed "
-        "claims that apply under each task's conditions (works with --memory none too)",
-    )
+    _add_task_options(run)
+    _add_model_options(run)
     g = run.add_argument_group("output")
     g.add_argument("--out", required=True, help="run directory")
     g.add_argument("--bank", help="memory bank file to load and extend (default: <out>/bank.jsonl)")
     g.add_argument("--no-steps", action="store_true", help="do not store per-step records")
-    run.set_defaults(func=cmd_rb_run)
-    show = rb.add_parser("show", help="print a run's summary and memory items")
+    run.set_defaults(func=cmd_run)
+
+    show = sub.add_parser("show", help="print a run's summary and memory items")
     show.add_argument("run")
-    show.set_defaults(func=cmd_rb_show)
+    show.set_defaults(func=cmd_show)
 
     policy = sub.add_parser("policy", help="rule policies").add_subparsers(
         dest="policy_command", required=True
@@ -440,12 +357,13 @@ def build_parser() -> argparse.ArgumentParser:
     export.add_argument("out")
     export.set_defaults(func=cmd_prov_export)
 
-    try:
-        from .methods.claim_graph.cli import add_claims_commands
-    except ImportError:  # the claim layer is optional at import time
-        pass
-    else:
-        add_claims_commands(sub)
+    from .methods.claim_graph.cli import add_claims_commands
+
+    add_claims_commands(sub)
+
+    from .compare import add_compare_commands
+
+    add_compare_commands(sub)
     return parser
 
 

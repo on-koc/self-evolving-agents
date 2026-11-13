@@ -19,6 +19,8 @@ bsk = ["bsk>=2.12", "bsk-rl>=1.3.11", "gymnasium"]
 discoveryworld = ["discoveryworld>=0.0.2"]
 # Claude backend (official SDK). Any release with the 2026-10-21 API version.
 anthropic = ["anthropic>=2.0"]
+# The embedding model the ReasoningBank paper used (gemini-embedding-001), through the official SDK.
+gemini = ["google-genai>=1.0"]
 plots = ["matplotlib"]
 dev = ["pytest>=7.3", "ruff>=0.4"]
 all = [
@@ -27,6 +29,7 @@ all = [
     "gymnasium",
     "discoveryworld>=0.0.2",
     "anthropic>=2.0",
+    "google-genai>=1.0",
     "matplotlib",
 ]
 

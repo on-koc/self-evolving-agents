@@ -126,3 +126,92 @@ either corrected or is listed under remaining deviations below.
 | D8 | T3 | "Sequential" scaling re-ran the task from the start with notes from earlier attempts. | The published procedure continues the same trajectory after it completes. That is a different procedure. | Not correctable in these environments (see below). Renamed `restart` and documented as an adaptation. |
 | D9 | R1 | Retrieval used a hashing embedder that measures word overlap. | The paper uses a neural embedding model. | The paper's model is now available (`GeminiEmbedder`); the hashing embedder remains the offline default and is named in every run's configuration. |
 | D10 | M3 | Deduplication, usage statistics and condition-weighted retrieval lived in the baseline's memory class, switched off by default. | Off by default, so behaviour was the paper's, but the baseline's code path contained the adaptations. | Moved out. The baseline class has no such parameters. |
+
+## Status of every row after the corrections
+
+"Test" names the test in `tests/test_reasoningbank.py` or `tests/test_methods.py`
+that pins the row down. All tests use scripted stand-ins for the model.
+
+| Row | Status | Detail | Test |
+|---|---|---|---|
+| S1 stream | matches | `StreamLoop.run_stream` handles tasks in order | `test_S1_S2_...` |
+| S2 empty start, persistent | matches | | `test_S1_S2_...`, `test_M2_...` |
+| S3 no ground truth | matches | the LLM judge is the default; the judge and extractor are shown no outcome metric. `judge=env` is a labelled control | `test_S3_...` |
+| M1 item schema | matches | | `test_M1_...` |
+| M2 storage | matches in content | one experience per line of a JSON Lines file; trajectories are kept in the provenance store and referenced by id; embeddings are recomputed on load, or cached on disk for the API embedder | `test_M2_...` |
+| M3 append-only | matches | the baseline's bank has no other consolidation | `test_M3_...` |
+| R1 embedding model | **differs by default** | `--embedder gemini` is the paper's model, called as the reference code calls it; the default is an offline hashing embedder | `test_gemini_embedder_...` |
+| R2 top-k experiences, k = 1 | matches | | `test_R2_...` (two tests) |
+| R3 instruction-wrapped lookup | option, off | not in the paper | `test_R3_...` |
+| R4 empty best match | matches | | `test_R4_...` |
+| R5 system prompt, instruction | matches | instruction verbatim | `test_R5_...` |
+| R6 item format | matches the paper | title and content; the reference code's form is `inject_description` | `test_R6_...` |
+| A1 ReAct agent | matches in kind | the agent is shown its last 10 steps (with its reasoning for the last 3) instead of the full history within a token limit | `tests/test_envs_and_agents.py` |
+| A2 temperature, step limit | **differs** | 0.7 is requested; the Claude backend omits it for models that reject sampling parameters. Step limits are those of the environments | |
+| A3 backbone | **differs** | Claude models through the Anthropic API. Gemini, the paper's main backbone, has no backend here | |
+| J1 LLM judge | matches | temperature as for A2 | `test_J1_...` |
+| J2 judge prompt and inputs | adapted | frame, inputs and answer format as published. The three web task types are replaced by the environment's success criterion. There is no "agent's response" in these environments; the final state includes the feedback to the last action, which is where an episode's end is reported | `test_J2_...` (four tests) |
+| J3 judge accuracy | unmeasured | reported by every run as `judge_agreement` | |
+| E1 two prompts, 3 items | matches | temperature as for A2 | `test_E1_...` |
+| E2 wording | matches | only the domain is substituted | `test_E2_...` |
+| E3 extractor input | matches | reasoning and action per step. Trajectories over 60,000 characters are shortened from the middle; the paper's 30-step episodes never need that | `test_E3_...` |
+| E4 judge rationale | option, off | | `test_E4_...` |
+| E5 stored form | matches the paper | parsed into the three fields | `test_M1_...` |
+| T1 scaling factor | matches | k = 1 is the baseline | `test_T1_...` |
+| T2 parallel | matches | only the selected trajectory is judged; extraction at temperature 1.0 (0.7 in the reference code) | `test_T2_...` |
+| T3 sequential | **not reproduced** | see below; `restart` is a different procedure | `test_restart_...` |
+| T4 Best-of-N | matches | only the domain is substituted; Pass@1 is the first attempt | `test_T4_...` |
+| T5 controls | match | `scaling=vanilla`; `memory=false` | `test_T5_...` |
+| B1 Synapse, AWM | **not implemented** | the only comparison baseline here is no memory | |
+| B2 metrics | match | success rate by the simulator's criterion, mean steps; token use per run | `test_summary_metrics_...` |
+
+## Remaining deviations
+
+Things that differ from the published system and could affect a comparison:
+
+1. **Environments.** The paper evaluates on WebArena, Mind2Web and SWE-Bench-Verified.
+   Here the method runs on a spacecraft-tasking simulator and on DiscoveryWorld. The
+   domain-specific parts of the prompts (the judge's description of success, the
+   word for the domain) are necessarily different.
+2. **Models.** Claude through the Anthropic API instead of Gemini 2.5 or Claude 3.7.
+   For models that accept no sampling parameters, the published temperatures (0.7
+   acting, 0.0 judging, 1.0 extracting) cannot be set.
+3. **Embedder.** The offline default is not a semantic embedding model. Any result
+   intended as "ReasoningBank" should use `--embedder gemini` or say which embedder
+   was used.
+4. **Ties.** Not a deviation from the paper, which is silent, but a behaviour that
+   matters far more here than on the paper's benchmarks (see the method's page). Both
+   settings are arms of every protocol.
+5. **Agent context.** A window of recent steps instead of the full history.
+6. **Sequential MaTTS** cannot be run in episodes that end for good.
+7. **Synapse and AWM** are not implemented, so nothing here can say how ReasoningBank
+   compares with other memory designs.
+8. **The prompts were read from figures.** Their text was extracted from the figure
+   files of the arXiv source; emphasis markup is not visible there and follows the
+   reference code.
+
+## What can and cannot be claimed
+
+Supported by this audit:
+
+- The baseline is a re-implementation of ReasoningBank that follows the published
+  procedure and prompts, with the domain substituted, on new environments. Each
+  published component is implemented, tested in isolation and listed above.
+- Parallel MaTTS and its two controls follow the paper.
+- Extensions are in separate folders and cannot alter the baseline: a test fails if
+  the baseline's code imports or mentions them.
+
+Not supported:
+
+- **Equivalence with the system evaluated in the paper.** Environments, models and
+  decoding settings differ.
+- **Any performance claim.** Fidelity here is established by inspection and by tests
+  of mechanics. The paper's numbers have not been reproduced: doing so needs its
+  benchmarks and has not been attempted. An implementation can match a description
+  row by row and still behave differently in ways only a reproduction would show.
+- **Sequential MaTTS**, in any form.
+
+A paper using this baseline should describe it as "our re-implementation of
+ReasoningBank (Ouyang et al., 2026), following the published prompts and procedure,
+adapted to [environment]", state the model, the embedder and the tie rule, and cite
+this document for the differences.

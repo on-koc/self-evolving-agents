@@ -1,23 +1,19 @@
-"""The step-by-step language-model agent, as used in the ReasoningBank paper.
+"""The step-by-step language-model agent (ReAct style), as used in the ReasoningBank paper.
 
-At every step the model sees the task, any retrieved memory items (in the system
-prompt), a short window of recent steps and the current observation, and replies
-with ``<think>...</think><action>...</action>``.
+At every step the model sees the task, whatever the memory method put in the system
+prompt, a window of recent steps and the current observation, and replies with
+``<think>...</think><action>...</action>``.
 """
 
 from __future__ import annotations
 
 import re
-from collections.abc import Sequence
 from typing import Any
 
 from ..envs.base import ActionParseError, TextEnv
 from ..llm import BudgetExceeded, LLMError, LLMRequest, assistant, user
-from ..methods.reasoningbank import prompts
-from ..methods.reasoningbank.render import render_memory
-from ..methods.reasoningbank.schema import MemoryItem
 from ..types import Action, Observation, Step, Trajectory
-from .base import Agent, run_episode
+from .base import Agent, MemoryBlock, run_episode
 
 _THINK = re.compile(r"<think>(.*?)</think>", re.DOTALL | re.IGNORECASE)
 _ACTION = re.compile(r"<action>(.*?)</action>", re.DOTALL | re.IGNORECASE)
@@ -64,8 +60,8 @@ class StepwiseAgent(Agent):
         thought_window: for how many of those the agent's own reasoning is repeated.
         parse_retries: how often to ask again when a reply cannot be parsed. After
             that the environment's fallback action is taken and the step is flagged.
-        memory_instruction: text placed before the memory items; defaults to the
-            instruction used by the reference implementation.
+        temperature: decoding temperature requested for every action (0.7 in the
+            paper). Backends whose models do not accept one ignore it.
     """
 
     def __init__(
@@ -76,14 +72,14 @@ class StepwiseAgent(Agent):
         thought_window: int = 3,
         parse_retries: int = 1,
         max_tokens: int = 16000,
-        memory_instruction: str = prompts.MEMORY_INSTRUCTION,
+        temperature: float | None = 0.7,
     ):
         self.llm = llm
         self.history_window = history_window
         self.thought_window = thought_window
         self.parse_retries = parse_retries
         self.max_tokens = max_tokens
-        self.memory_instruction = memory_instruction
+        self.temperature = temperature
 
     @property
     def descriptor(self) -> dict[str, Any]:
@@ -92,12 +88,18 @@ class StepwiseAgent(Agent):
             "type": "stepwise",
             "model": self.llm.model,
             "history_window": self.history_window,
+            "thought_window": self.thought_window,
+            "temperature": self.temperature,
         }
 
     # ------------------------------------------------------------------ prompts
 
-    def system_prompt(self, env: TextEnv, memory: Sequence[MemoryItem], notes: str) -> str:
-        """Everything that stays fixed for the episode. Identical at every step, so it can be cached."""
+    def system_prompt(self, env: TextEnv, memory: MemoryBlock | None, notes: str) -> str:
+        """Everything that stays fixed for the episode. Identical at every step, so it can be cached.
+
+        Memory goes at the end of the system prompt, as in the paper ("retrieved items
+        are injected into the agent's system instruction").
+        """
         spec = env.spec
         parts = [
             spec.instructions(),
@@ -105,9 +107,9 @@ class StepwiseAgent(Agent):
             "## Response format\n" + RESPONSE_FORMAT.format(action_format=spec.action_format),
         ]
         if memory:
-            parts.append(self.memory_instruction + "\n\n" + render_memory(memory))
+            parts.append(memory.text.strip())
         if notes:
-            parts.append(prompts.REFINEMENT_NOTES_HEADER + "\n" + notes)
+            parts.append(notes.strip())
         return "\n\n".join(parts)
 
     def step_prompt(self, observation: Observation, steps: list[Step]) -> str:
@@ -143,7 +145,7 @@ class StepwiseAgent(Agent):
         env: TextEnv,
         *,
         first_observation: Observation | None = None,
-        memory: Sequence[MemoryItem] = (),
+        memory: MemoryBlock | None = None,
         notes: str = "",
         sample: int = 0,
         meta: dict[str, Any] | None = None,
@@ -163,7 +165,7 @@ class StepwiseAgent(Agent):
                             messages=messages,
                             purpose="act",
                             max_tokens=self.max_tokens,
-                            temperature=0.7,
+                            temperature=self.temperature,
                             sample=sample,
                             meta={"task": env.task.key, "step": len(steps), "attempt": attempt},
                         )
@@ -202,6 +204,6 @@ class StepwiseAgent(Agent):
             decide,
             agent=self.descriptor,
             first_observation=first,
-            memory=memory,
+            memory_item_ids=memory.item_ids if memory else (),
             meta={"sample": sample, **(meta or {})},
         )
