@@ -105,11 +105,18 @@ success rate. This is the ground truth that the judge's label is checked against
 (7.2), and the label the `judge=env` control uses.
 
 **Limitations.** The 20% threshold was chosen in this repository; it is not part of
-BSK-RL. It is not the same as survival: of the surviving episodes simulated for the
+BSK-RL. Where the best attainable recording share is itself near 20% (small
+batteries, small arrays), the success rate mostly records on which side of the
+threshold a method's episodes happen to fall. At 35 Wh with a 0.16 m² array the grid
+search and the claim graph have similar mean scores (0.165 and 0.206) and success
+rates of 28% and 84%. A method tuned for the score is not tuned for this threshold,
+so success rates of such methods should not be ranked against each other. It is not
+the same as survival either: of the surviving episodes simulated for the
 one-variable study, 6% recorded less than 20%; of those simulated only for the
 two-variable study, which includes a small solar array, 38%. (These counts include
 the deliberately poor settings that experiments try.) The claim graph does not use
-this metric at all; it works with the score.
+this metric at all; it works with the score. It is reported for the held-out
+comparison because it is the kind of quantity the paper reports.
 
 ### 2.4 Steps
 

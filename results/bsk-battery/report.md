@@ -370,13 +370,15 @@ Proposed by: program. Compares `charge_below` = 0.8 instead of 0.6.
 
 4 conditions never used in an experiment, 32 held-out seeds each.
 
-| method | mean score | failure rate |
-|---|---|---|
-| reference | +0.3050 | 19.5% |
-| flat | +0.1031 | 43.0% |
-| pooled | +0.4426 | 1.6% |
-| conditional | +0.5979 | 1.6% |
-| oracle | +0.6070 | 0.0% |
+| method | mean score | spacecraft lost | success rate |
+|---|---|---|---|
+| reference | +0.3050 | 19.5% | 78.1% |
+| flat | +0.1031 | 43.0% | 57.0% |
+| pooled | +0.4426 | 1.6% | 93.0% |
+| conditional | +0.5979 | 1.6% | 97.7% |
+| oracle | +0.6070 | 0.0% | 95.3% |
+
+Success: the spacecraft survived and recorded data for at least 20% of the episode (`docs/metrics.md`, 2.3).
 
 Paired differences over the same (condition, seed) episodes:
 
@@ -402,13 +404,15 @@ Per condition (mean score, failure rate, settings used):
 
 2 conditions never used in an experiment, 32 held-out seeds each.
 
-| method | mean score | failure rate |
-|---|---|---|
-| reference | -0.0167 | 48.4% |
-| flat | -0.0322 | 50.0% |
-| pooled | +0.2168 | 17.2% |
-| conditional | +0.3768 | 20.3% |
-| oracle | +0.4790 | 9.4% |
+| method | mean score | spacecraft lost | success rate |
+|---|---|---|---|
+| reference | -0.0167 | 48.4% | 51.6% |
+| flat | -0.0322 | 50.0% | 50.0% |
+| pooled | +0.2168 | 17.2% | 65.6% |
+| conditional | +0.3768 | 20.3% | 79.7% |
+| oracle | +0.4790 | 9.4% | 82.8% |
+
+Success: the spacecraft survived and recorded data for at least 20% of the episode (`docs/metrics.md`, 2.3).
 
 Paired differences over the same (condition, seed) episodes:
 

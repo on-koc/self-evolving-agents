@@ -584,13 +584,15 @@ Proposed by: program. Compares `charge_below` = 0.8 instead of 0.6.
 
 4 conditions never used in an experiment, 32 held-out seeds each.
 
-| method | mean score | failure rate |
-|---|---|---|
-| reference | +0.0824 | 21.1% |
-| flat | -0.0933 | 46.1% |
-| pooled | +0.1212 | 1.6% |
-| conditional | +0.3477 | 2.3% |
-| oracle | +0.3470 | 1.6% |
+| method | mean score | spacecraft lost | success rate |
+|---|---|---|---|
+| reference | +0.0824 | 21.1% | 52.3% |
+| flat | -0.0933 | 46.1% | 52.3% |
+| pooled | +0.1212 | 1.6% | 27.3% |
+| conditional | +0.3477 | 2.3% | 64.1% |
+| oracle | +0.3470 | 1.6% | 58.6% |
+
+Success: the spacecraft survived and recorded data for at least 20% of the episode (`docs/metrics.md`, 2.3).
 
 Paired differences over the same (condition, seed) episodes:
 
@@ -616,13 +618,15 @@ Per condition (mean score, failure rate, settings used):
 
 4 conditions never used in an experiment, 32 held-out seeds each.
 
-| method | mean score | failure rate |
-|---|---|---|
-| reference | +0.1837 | 20.3% |
-| flat | -0.0335 | 47.7% |
-| pooled | +0.2608 | 1.6% |
-| conditional | +0.4517 | 1.6% |
-| oracle | +0.4567 | 0.8% |
+| method | mean score | spacecraft lost | success rate |
+|---|---|---|---|
+| reference | +0.1837 | 20.3% | 68.8% |
+| flat | -0.0335 | 47.7% | 52.3% |
+| pooled | +0.2608 | 1.6% | 63.3% |
+| conditional | +0.4517 | 1.6% | 92.2% |
+| oracle | +0.4567 | 0.8% | 73.4% |
+
+Success: the spacecraft survived and recorded data for at least 20% of the episode (`docs/metrics.md`, 2.3).
 
 Paired differences over the same (condition, seed) episodes:
 
@@ -648,13 +652,15 @@ Per condition (mean score, failure rate, settings used):
 
 2 conditions never used in an experiment, 32 held-out seeds each.
 
-| method | mean score | failure rate |
-|---|---|---|
-| reference | +0.5230 | 0.0% |
-| flat | +0.6042 | 0.0% |
-| pooled | +0.3868 | 0.0% |
-| conditional | +0.5869 | 0.0% |
-| oracle | +0.6042 | 0.0% |
+| method | mean score | spacecraft lost | success rate |
+|---|---|---|---|
+| reference | +0.5230 | 0.0% | 79.7% |
+| flat | +0.6042 | 0.0% | 92.2% |
+| pooled | +0.3868 | 0.0% | 60.9% |
+| conditional | +0.5869 | 0.0% | 92.2% |
+| oracle | +0.6042 | 0.0% | 92.2% |
+
+Success: the spacecraft survived and recorded data for at least 20% of the episode (`docs/metrics.md`, 2.3).
 
 Paired differences over the same (condition, seed) episodes:
 

@@ -27,26 +27,31 @@
       "reference": {
         "mean_score": 0.0824,
         "failure_rate": 0.2109,
+        "success_rate": 0.5234,
         "episodes": 128
       },
       "flat": {
         "mean_score": -0.0933,
         "failure_rate": 0.4609,
+        "success_rate": 0.5234,
         "episodes": 128
       },
       "pooled": {
         "mean_score": 0.1212,
         "failure_rate": 0.0156,
+        "success_rate": 0.2734,
         "episodes": 128
       },
       "conditional": {
         "mean_score": 0.3477,
         "failure_rate": 0.0234,
+        "success_rate": 0.6406,
         "episodes": 128
       },
       "oracle": {
         "mean_score": 0.347,
         "failure_rate": 0.0156,
+        "success_rate": 0.5859,
         "episodes": 128
       }
     },
@@ -314,6 +319,7 @@
           "reference": {
             "mean_score": -0.7191,
             "failure_rate": 0.8125,
+            "success_rate": 0.0938,
             "failures": {
               "battery": 26
             },
@@ -323,6 +329,7 @@
           "flat": {
             "mean_score": -0.8775,
             "failure_rate": 0.9688,
+            "success_rate": 0.0312,
             "failures": {
               "battery": 31
             },
@@ -338,6 +345,7 @@
           "pooled": {
             "mean_score": 0.0264,
             "failure_rate": 0.0625,
+            "success_rate": 0.0625,
             "failures": {
               "battery": 2
             },
@@ -359,6 +367,7 @@
           "conditional": {
             "mean_score": 0.0171,
             "failure_rate": 0.0938,
+            "success_rate": 0.125,
             "failures": {
               "battery": 3
             },
@@ -379,6 +388,7 @@
           "oracle": {
             "mean_score": 0.001,
             "failure_rate": 0.0625,
+            "success_rate": 0.0,
             "failures": {
               "battery": 2
             },
@@ -399,6 +409,7 @@
           "reference": {
             "mean_score": 0.151,
             "failure_rate": 0.0312,
+            "success_rate": 0.375,
             "failures": {
               "battery": 1
             },
@@ -408,6 +419,7 @@
           "flat": {
             "mean_score": -0.6589,
             "failure_rate": 0.875,
+            "success_rate": 0.125,
             "failures": {
               "battery": 28
             },
@@ -423,6 +435,7 @@
           "pooled": {
             "mean_score": 0.1036,
             "failure_rate": 0.0,
+            "success_rate": 0.1875,
             "failures": {},
             "settings": {
               "charge_below": 0.6,
@@ -442,6 +455,7 @@
           "conditional": {
             "mean_score": 0.2104,
             "failure_rate": 0.0,
+            "success_rate": 0.5,
             "failures": {},
             "settings": {
               "desat_above": 0.3,
@@ -455,6 +469,7 @@
           "oracle": {
             "mean_score": 0.1922,
             "failure_rate": 0.0,
+            "success_rate": 0.4062,
             "failures": {},
             "settings": {
               "charge_below": 0.25,
@@ -473,6 +488,7 @@
           "reference": {
             "mean_score": 0.3136,
             "failure_rate": 0.0,
+            "success_rate": 0.7188,
             "failures": {},
             "settings": {},
             "claims_applied": []
@@ -480,6 +496,7 @@
           "flat": {
             "mean_score": 0.443,
             "failure_rate": 0.0,
+            "success_rate": 0.9375,
             "failures": {},
             "settings": {
               "charge_below": 0.1,
@@ -493,6 +510,7 @@
           "pooled": {
             "mean_score": 0.1394,
             "failure_rate": 0.0,
+            "success_rate": 0.4062,
             "failures": {},
             "settings": {
               "charge_below": 0.6,
@@ -512,6 +530,7 @@
           "conditional": {
             "mean_score": 0.443,
             "failure_rate": 0.0,
+            "success_rate": 0.9375,
             "failures": {},
             "settings": {
               "charge_below": 0.1,
@@ -525,6 +544,7 @@
           "oracle": {
             "mean_score": 0.443,
             "failure_rate": 0.0,
+            "success_rate": 0.9375,
             "failures": {},
             "settings": {
               "charge_below": 0.1,
@@ -543,6 +563,7 @@
           "reference": {
             "mean_score": 0.5841,
             "failure_rate": 0.0,
+            "success_rate": 0.9062,
             "failures": {},
             "settings": {},
             "claims_applied": []
@@ -550,6 +571,7 @@
           "flat": {
             "mean_score": 0.7203,
             "failure_rate": 0.0,
+            "success_rate": 1.0,
             "failures": {},
             "settings": {
               "charge_below": 0.1,
@@ -563,6 +585,7 @@
           "pooled": {
             "mean_score": 0.2155,
             "failure_rate": 0.0,
+            "success_rate": 0.4375,
             "failures": {},
             "settings": {
               "charge_below": 0.6,
@@ -582,6 +605,7 @@
           "conditional": {
             "mean_score": 0.7203,
             "failure_rate": 0.0,
+            "success_rate": 1.0,
             "failures": {},
             "settings": {
               "charge_below": 0.1,
@@ -595,6 +619,7 @@
           "oracle": {
             "mean_score": 0.7517,
             "failure_rate": 0.0,
+            "success_rate": 1.0,
             "failures": {},
             "settings": {
               "charge_below": 0.05,
@@ -634,26 +659,31 @@
       "reference": {
         "mean_score": 0.1837,
         "failure_rate": 0.2031,
+        "success_rate": 0.6875,
         "episodes": 128
       },
       "flat": {
         "mean_score": -0.0335,
         "failure_rate": 0.4766,
+        "success_rate": 0.5234,
         "episodes": 128
       },
       "pooled": {
         "mean_score": 0.2608,
         "failure_rate": 0.0156,
+        "success_rate": 0.6328,
         "episodes": 128
       },
       "conditional": {
         "mean_score": 0.4517,
         "failure_rate": 0.0156,
+        "success_rate": 0.9219,
         "episodes": 128
       },
       "oracle": {
         "mean_score": 0.4567,
         "failure_rate": 0.0078,
+        "success_rate": 0.7344,
         "episodes": 128
       }
     },
@@ -921,6 +951,7 @@
           "reference": {
             "mean_score": -0.5968,
             "failure_rate": 0.75,
+            "success_rate": 0.2188,
             "failures": {
               "battery": 24
             },
@@ -930,6 +961,7 @@
           "flat": {
             "mean_score": -0.8424,
             "failure_rate": 0.9688,
+            "success_rate": 0.0312,
             "failures": {
               "battery": 31
             },
@@ -945,6 +977,7 @@
           "pooled": {
             "mean_score": 0.1698,
             "failure_rate": 0.0625,
+            "success_rate": 0.7188,
             "failures": {
               "battery": 2
             },
@@ -966,6 +999,7 @@
           "conditional": {
             "mean_score": 0.2062,
             "failure_rate": 0.0625,
+            "success_rate": 0.8438,
             "failures": {
               "battery": 2
             },
@@ -986,6 +1020,7 @@
           "oracle": {
             "mean_score": 0.1653,
             "failure_rate": 0.0,
+            "success_rate": 0.2812,
             "failures": {},
             "settings": {
               "charge_below": 0.6,
@@ -1004,6 +1039,7 @@
           "reference": {
             "mean_score": 0.1698,
             "failure_rate": 0.0625,
+            "success_rate": 0.5938,
             "failures": {
               "battery": 2
             },
@@ -1013,6 +1049,7 @@
           "flat": {
             "mean_score": -0.6651,
             "failure_rate": 0.9062,
+            "success_rate": 0.0938,
             "failures": {
               "battery": 29
             },
@@ -1028,6 +1065,7 @@
           "pooled": {
             "mean_score": 0.1855,
             "failure_rate": 0.0,
+            "success_rate": 0.3438,
             "failures": {},
             "settings": {
               "charge_below": 0.6,
@@ -1047,6 +1085,7 @@
           "conditional": {
             "mean_score": 0.2952,
             "failure_rate": 0.0,
+            "success_rate": 0.875,
             "failures": {},
             "settings": {
               "desat_above": 0.3,
@@ -1060,6 +1099,7 @@
           "oracle": {
             "mean_score": 0.2624,
             "failure_rate": 0.0,
+            "success_rate": 0.6875,
             "failures": {},
             "settings": {
               "charge_below": 0.25,
@@ -1078,6 +1118,7 @@
           "reference": {
             "mean_score": 0.4982,
             "failure_rate": 0.0,
+            "success_rate": 0.9688,
             "failures": {},
             "settings": {},
             "claims_applied": []
@@ -1085,6 +1126,7 @@
           "flat": {
             "mean_score": 0.6037,
             "failure_rate": 0.0312,
+            "success_rate": 0.9688,
             "failures": {
               "battery": 1
             },
@@ -1100,6 +1142,7 @@
           "pooled": {
             "mean_score": 0.3686,
             "failure_rate": 0.0,
+            "success_rate": 0.875,
             "failures": {},
             "settings": {
               "charge_below": 0.6,
@@ -1119,6 +1162,7 @@
           "conditional": {
             "mean_score": 0.5356,
             "failure_rate": 0.0,
+            "success_rate": 0.9688,
             "failures": {},
             "settings": {
               "desat_above": 0.3,
@@ -1132,6 +1176,7 @@
           "oracle": {
             "mean_score": 0.6037,
             "failure_rate": 0.0312,
+            "success_rate": 0.9688,
             "failures": {
               "battery": 1
             },
@@ -1152,6 +1197,7 @@
           "reference": {
             "mean_score": 0.6635,
             "failure_rate": 0.0,
+            "success_rate": 0.9688,
             "failures": {},
             "settings": {},
             "claims_applied": []
@@ -1159,6 +1205,7 @@
           "flat": {
             "mean_score": 0.7698,
             "failure_rate": 0.0,
+            "success_rate": 1.0,
             "failures": {},
             "settings": {
               "charge_below": 0.1,
@@ -1172,6 +1219,7 @@
           "pooled": {
             "mean_score": 0.3193,
             "failure_rate": 0.0,
+            "success_rate": 0.5938,
             "failures": {},
             "settings": {
               "charge_below": 0.6,
@@ -1191,6 +1239,7 @@
           "conditional": {
             "mean_score": 0.7698,
             "failure_rate": 0.0,
+            "success_rate": 1.0,
             "failures": {},
             "settings": {
               "charge_below": 0.1,
@@ -1204,6 +1253,7 @@
           "oracle": {
             "mean_score": 0.7957,
             "failure_rate": 0.0,
+            "success_rate": 1.0,
             "failures": {},
             "settings": {
               "charge_below": 0.05,
@@ -1235,26 +1285,31 @@
       "reference": {
         "mean_score": 0.523,
         "failure_rate": 0.0,
+        "success_rate": 0.7969,
         "episodes": 64
       },
       "flat": {
         "mean_score": 0.6042,
         "failure_rate": 0.0,
+        "success_rate": 0.9219,
         "episodes": 64
       },
       "pooled": {
         "mean_score": 0.3868,
         "failure_rate": 0.0,
+        "success_rate": 0.6094,
         "episodes": 64
       },
       "conditional": {
         "mean_score": 0.5869,
         "failure_rate": 0.0,
+        "success_rate": 0.9219,
         "episodes": 64
       },
       "oracle": {
         "mean_score": 0.6042,
         "failure_rate": 0.0,
+        "success_rate": 0.9219,
         "episodes": 64
       }
     },
@@ -1522,6 +1577,7 @@
           "reference": {
             "mean_score": 0.2699,
             "failure_rate": 0.0,
+            "success_rate": 0.5938,
             "failures": {},
             "settings": {},
             "claims_applied": []
@@ -1529,6 +1585,7 @@
           "flat": {
             "mean_score": 0.3813,
             "failure_rate": 0.0,
+            "success_rate": 0.8438,
             "failures": {},
             "settings": {
               "charge_below": 0.1,
@@ -1542,6 +1599,7 @@
           "pooled": {
             "mean_score": 0.0804,
             "failure_rate": 0.0,
+            "success_rate": 0.2188,
             "failures": {},
             "settings": {
               "charge_below": 0.6,
@@ -1561,6 +1619,7 @@
           "conditional": {
             "mean_score": 0.3813,
             "failure_rate": 0.0,
+            "success_rate": 0.8438,
             "failures": {},
             "settings": {
               "charge_below": 0.1,
@@ -1574,6 +1633,7 @@
           "oracle": {
             "mean_score": 0.3813,
             "failure_rate": 0.0,
+            "success_rate": 0.8438,
             "failures": {},
             "settings": {
               "charge_below": 0.1,
@@ -1592,6 +1652,7 @@
           "reference": {
             "mean_score": 0.7762,
             "failure_rate": 0.0,
+            "success_rate": 1.0,
             "failures": {},
             "settings": {},
             "claims_applied": []
@@ -1599,6 +1660,7 @@
           "flat": {
             "mean_score": 0.827,
             "failure_rate": 0.0,
+            "success_rate": 1.0,
             "failures": {},
             "settings": {
               "charge_below": 0.1,
@@ -1612,6 +1674,7 @@
           "pooled": {
             "mean_score": 0.6932,
             "failure_rate": 0.0,
+            "success_rate": 1.0,
             "failures": {},
             "settings": {
               "charge_below": 0.6,
@@ -1631,6 +1694,7 @@
           "conditional": {
             "mean_score": 0.7925,
             "failure_rate": 0.0,
+            "success_rate": 1.0,
             "failures": {},
             "settings": {
               "desat_above": 0.3,
@@ -1644,6 +1708,7 @@
           "oracle": {
             "mean_score": 0.827,
             "failure_rate": 0.0,
+            "success_rate": 1.0,
             "failures": {},
             "settings": {
               "charge_below": 0.1,

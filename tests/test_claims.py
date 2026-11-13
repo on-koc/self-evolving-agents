@@ -1315,6 +1315,10 @@ def test_transfer_evaluation_and_composition_check(toy_study):
     )
     assert set(result["overall"]) == {"reference", "flat", "pooled", "conditional", "oracle"}
     assert all(row["episodes"] == 24 for row in result["overall"].values())
+    for row in result["overall"].values():
+        # Success needs survival, so it can never exceed the share that survived.
+        assert 0.0 <= row["success_rate"] <= 1.0 - row["failure_rate"] + 1e-9
+    assert "success_rate" in result["per_point"][0]["methods"]["conditional"]
     assert set(result["comparisons"]) == {
         "conditional_minus_pooled",
         "conditional_minus_flat",

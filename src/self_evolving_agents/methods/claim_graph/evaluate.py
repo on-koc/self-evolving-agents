@@ -73,6 +73,7 @@ def evaluate_transfer(
     methods = list(modes) + (["oracle"] if oracle_grid else [])
     scores: dict[str, list[float]] = {m: [] for m in methods}
     failed: dict[str, list[float]] = {m: [] for m in methods}
+    succeeded: dict[str, list[float]] = {m: [] for m in methods}
     per_point: list[dict[str, Any]] = []
 
     for point in test_points:
@@ -92,6 +93,7 @@ def evaluate_transfer(
             row["methods"][mode] = _summarise(outcomes, rec.settings, rec.reasons)
             scores[mode] += [o.score for o in outcomes]
             failed[mode] += [float(o.failure is not None) for o in outcomes]
+            succeeded[mode] += [float(bool(o.success)) for o in outcomes]
         if oracle_grid:
             if not tuning_seeds:
                 raise ValueError("the oracle needs tuning_seeds")
@@ -107,12 +109,14 @@ def evaluate_transfer(
             row["methods"]["oracle"] = _summarise(outcomes, best_settings, [])
             scores["oracle"] += [o.score for o in outcomes]
             failed["oracle"] += [float(o.failure is not None) for o in outcomes]
+            succeeded["oracle"] += [float(bool(o.success)) for o in outcomes]
         per_point.append(row)
 
     overall = {
         m: {
             "mean_score": round(float(np.mean(scores[m])), 4),
             "failure_rate": round(float(np.mean(failed[m])), 4),
+            "success_rate": round(float(np.mean(succeeded[m])), 4),
             "episodes": len(scores[m]),
         }
         for m in methods
@@ -174,6 +178,7 @@ def _summarise(
     return {
         "mean_score": round(float(np.mean([o.score for o in outcomes])), 4),
         "failure_rate": round(float(np.mean([o.failure is not None for o in outcomes])), 4),
+        "success_rate": round(float(np.mean([bool(o.success) for o in outcomes])), 4),
         "failures": failures,
         "settings": settings,
         "claims_applied": [r["claim"] for r in reasons],

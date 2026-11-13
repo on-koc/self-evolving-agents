@@ -237,8 +237,16 @@ outside it. 32 seeds each.
 |---|---|---|---|---|---|
 | inside the range: mean score | +0.305 | +0.103 | +0.443 | +0.598 | +0.607 |
 | inside the range: spacecraft lost | 19.5% | 43.0% | 1.6% | 1.6% | 0.0% |
+| inside the range: success rate | 78.1% | 57.0% | 93.0% | 97.7% | 95.3% |
 | outside the range: mean score | −0.017 | −0.032 | +0.217 | +0.377 | +0.479 |
 | outside the range: spacecraft lost | 48.4% | 50.0% | 17.2% | 20.3% | 9.4% |
+| outside the range: success rate | 51.6% | 50.0% | 65.6% | 79.7% | 82.8% |
+
+Success means the spacecraft survived and recorded for at least 20% of the episode.
+It is the counterpart of the paper's success rate and is shown for that reason; the
+grid search tunes for the score, not for this threshold, which is why it can lose no
+spacecraft and still have a lower success rate than the claims
+([`metrics.md`](metrics.md), 2.3).
 
 Paired differences in mean score, with the 95% interval obtained by resampling
 seeds, and the permutation p-value:
@@ -291,6 +299,16 @@ held-out conditions in three groups, 32 seeds each.
 | array areas outside the studied range (2 conditions) | +0.523 (0%) | +0.604 (0%) | +0.387 (0%) | +0.587 (0%) | +0.604 (0%) |
 
 Mean score, with the share of spacecraft lost.
+
+| Success rate | reference | flat | pooled | conditional | grid search |
+|---|---|---|---|---|---|
+| small array | 52.3% | 52.3% | 27.3% | 64.1% | 58.6% |
+| between areas | 68.8% | 52.3% | 63.3% | 92.2% | 73.4% |
+| outside | 79.7% | 92.2% | 60.9% | 92.2% | 92.2% |
+
+The success rate separates `pooled` from the rest more sharply than the score does:
+with the small array its one safe setting keeps 98% of spacecraft alive and lets only
+27% of episodes record for a fifth of the time.
 
 | Difference (interval by seed) | Small array | Between areas | Outside |
 |---|---|---|---|

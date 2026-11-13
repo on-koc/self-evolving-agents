@@ -116,7 +116,11 @@ def summarise_replicates(runs: dict[str, Path]) -> dict[str, Any]:
         for group, result in transfer.items():
             groups[group] = {
                 "methods": {
-                    m: {"mean_score": v["mean_score"], "failure_rate": v["failure_rate"]}
+                    m: {
+                        "mean_score": v["mean_score"],
+                        "failure_rate": v["failure_rate"],
+                        **({"success_rate": v["success_rate"]} if "success_rate" in v else {}),
+                    }
                     for m, v in result["overall"].items()
                 },
                 "comparisons": {name: c["score"] for name, c in result["comparisons"].items()},
@@ -155,6 +159,20 @@ def summarise_replicates(runs: dict[str, Path]) -> dict[str, Any]:
                 ),
                 "failure_rate": _spread(
                     [per_run[r]["groups"][group]["methods"][m]["failure_rate"] for r in labels]
+                ),
+                **(
+                    {
+                        "success_rate": _spread(
+                            [
+                                per_run[r]["groups"][group]["methods"][m]["success_rate"]
+                                for r in labels
+                            ]
+                        )
+                    }
+                    if all(
+                        "success_rate" in per_run[r]["groups"][group]["methods"][m] for r in labels
+                    )
+                    else {}
                 ),
             }
             for m in content["methods"]
@@ -291,6 +309,15 @@ def render_replication(summary: dict[str, Any], title: str = "Claim study") -> s
         for method, stats in content["methods"].items():
             s = stats["failure_rate"]
             lines.append(f"| {method} | {s['mean']:.1%} | {s['min']:.1%} | {s['max']:.1%} |")
+        if all("success_rate" in stats for stats in content["methods"].values()):
+            lines += [
+                "",
+                "| success rate | mean over replicates | min | max |",
+                "|---|---|---|---|",
+            ]
+            for method, stats in content["methods"].items():
+                s = stats["success_rate"]
+                lines.append(f"| {method} | {s['mean']:.1%} | {s['min']:.1%} | {s['max']:.1%} |")
         with_seeds = all(
             "by_seed_intervals_above_zero" in s for s in content["comparisons"].values()
         )

@@ -150,11 +150,19 @@ def render_report(
             f"{len(result['test_points'])} conditions never used in an experiment, "
             f"{result['n_seeds']} held-out seeds each.",
             "",
-            "| method | mean score | failure rate |",
-            "|---|---|---|",
+            "| method | mean score | spacecraft lost | success rate |",
+            "|---|---|---|---|",
         ]
         for method, row in result["overall"].items():
-            lines.append(f"| {method} | {row['mean_score']:+.4f} | {row['failure_rate']:.1%} |")
+            success = f"{row['success_rate']:.1%}" if "success_rate" in row else "n/a"
+            lines.append(
+                f"| {method} | {row['mean_score']:+.4f} | {row['failure_rate']:.1%} | {success} |"
+            )
+        lines += [
+            "",
+            "Success: the spacecraft survived and recorded data for at least 20% of the "
+            "episode (`docs/metrics.md`, 2.3).",
+        ]
         lines += ["", "Paired differences over the same (condition, seed) episodes:", ""]
         clustered = False
         for name, comparison in result["comparisons"].items():
