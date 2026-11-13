@@ -127,6 +127,22 @@ def _per_task(runs: list[list[TaskRecord]]) -> dict[str, dict[str, float]]:
     return out
 
 
+def _paired(
+    tasks: dict[str, dict[str, Any]], base: dict[str, dict[str, Any]], keys: list[str]
+) -> dict[str, Any]:
+    """Paired differences (arm minus baseline) over the given tasks, one entry per metric."""
+    row: dict[str, Any] = {"tasks": len(keys)}
+    if len(keys) < 2:
+        return row
+    for metric in ("score", "success", "lost", "steps"):
+        a = [tasks[k][metric] for k in keys]
+        b = [base[k][metric] for k in keys]
+        if any(x != x or y != y for x, y in zip(a, b, strict=True)):
+            continue  # a metric the environment does not define
+        row[metric] = paired_compare(a, b).to_dict()
+    return row
+
+
 def report_protocol(out: str | Path) -> dict[str, Any]:
     """Tabulate a protocol's runs: every metric per arm, and paired differences to the baseline."""
     out = Path(out)
@@ -183,14 +199,13 @@ def report_protocol(out: str | Path) -> dict[str, Any]:
             if name == baseline:
                 continue
             shared = [k for k in tasks if k in base]
-            row: dict[str, Any] = {"tasks": len(shared)}
-            if len(shared) >= 2:
-                for metric in ("score", "success", "lost", "steps"):
-                    a = [tasks[k][metric] for k in shared]
-                    b = [base[k][metric] for k in shared]
-                    if any(x != x or y != y for x, y in zip(a, b, strict=True)):
-                        continue  # a metric the environment does not define
-                    row[metric] = paired_compare(a, b).to_dict()
+            row = _paired(tasks, base, shared)
+            groups = list(dict.fromkeys(tasks[k]["group"] for k in shared))
+            if len(groups) > 1:
+                row["by_group"] = {
+                    g: _paired(tasks, base, [k for k in shared if tasks[k]["group"] == g])
+                    for g in groups
+                }
             comparisons[f"{name}_minus_{baseline}"] = row
     result = {
         "protocol": protocol["name"],
@@ -304,6 +319,23 @@ def render_comparison(result: dict[str, Any]) -> str:
                 for g in groups
             ]
             lines.append(f"| {name} | " + " | ".join(cells) + " |")
+        lines += [
+            "",
+            f"Paired difference in score against `{result['baseline']}` within each group:",
+            "",
+            "| comparison | " + " | ".join(groups) + " |",
+            "|---|" + "---|" * len(groups),
+        ]
+        for name, row in result["comparisons"].items():
+            cells = []
+            for g in groups:
+                d = (row.get("by_group") or {}).get(g, {}).get("score")
+                cells.append(
+                    "n/a"
+                    if d is None
+                    else f"{d['diff']:+.3f} [{d['ci_low']:+.3f}, {d['ci_high']:+.3f}]"
+                )
+            lines.append(f"| {name.replace('_minus_', ' minus ')} | " + " | ".join(cells) + " |")
     variable = [n for n, a in result["arms"].items() if a["repeats"] > 1]
     if variable:
         lines += ["", "## Mean score of each repeat", ""]

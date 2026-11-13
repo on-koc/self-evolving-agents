@@ -594,12 +594,14 @@ Proposed by: program. Compares `charge_below` = 0.8 instead of 0.6.
 
 Paired differences over the same (condition, seed) episodes:
 
-- conditional minus pooled: +0.2264 [+0.1878, +0.2650], p = 0.0002
-- conditional minus flat: +0.4410 [+0.3554, +0.5280], p = 0.0002
-- conditional minus reference: +0.2653 [+0.2021, +0.3303], p = 0.0002
-- pooled minus reference: +0.0388 [-0.0452, +0.1218], p = 0.3815
-- flat minus reference: -0.1757 [-0.2584, -0.0975], p = 0.0002
-- oracle minus conditional: -0.0007 [-0.0272, +0.0289], p = 0.9904
+- conditional minus pooled: +0.2264 [+0.1878, +0.2650], p = 0.0002; resampling whole seeds: [+0.2039, +0.2466], p = 0.0002
+- conditional minus flat: +0.4410 [+0.3554, +0.5280], p = 0.0002; resampling whole seeds: [+0.3949, +0.4794], p = 0.0002
+- conditional minus reference: +0.2653 [+0.2021, +0.3303], p = 0.0002; resampling whole seeds: [+0.2197, +0.3094], p = 0.0002
+- pooled minus reference: +0.0388 [-0.0452, +0.1218], p = 0.3815; resampling whole seeds: [-0.0055, +0.0810], p = 0.0928
+- flat minus reference: -0.1757 [-0.2584, -0.0975], p = 0.0002; resampling whole seeds: [-0.2201, -0.1326], p = 0.0002
+- oracle minus conditional: -0.0007 [-0.0272, +0.0289], p = 0.9904; resampling whole seeds: [-0.0274, +0.0279], p = 0.9978
+
+The first interval treats every (condition, seed) episode pair as independent. The second averages over the conditions first and resamples the 32 seeds, because every condition reuses the same seeds.
 
 Per condition (mean score, failure rate, settings used):
 
@@ -624,12 +626,14 @@ Per condition (mean score, failure rate, settings used):
 
 Paired differences over the same (condition, seed) episodes:
 
-- conditional minus pooled: +0.1908 [+0.1619, +0.2230], p = 0.0002
-- conditional minus flat: +0.4852 [+0.3873, +0.5839], p = 0.0002
-- conditional minus reference: +0.2680 [+0.1942, +0.3491], p = 0.0002
-- pooled minus reference: +0.0772 [-0.0082, +0.1696], p = 0.0962
-- flat minus reference: -0.2172 [-0.3087, -0.1314], p = 0.0002
-- oracle minus conditional: +0.0051 [-0.0275, +0.0398], p = 0.7936
+- conditional minus pooled: +0.1908 [+0.1619, +0.2230], p = 0.0002; resampling whole seeds: [+0.1755, +0.2069], p = 0.0002
+- conditional minus flat: +0.4852 [+0.3873, +0.5839], p = 0.0002; resampling whole seeds: [+0.4368, +0.5287], p = 0.0002
+- conditional minus reference: +0.2680 [+0.1942, +0.3491], p = 0.0002; resampling whole seeds: [+0.2102, +0.3210], p = 0.0002
+- pooled minus reference: +0.0772 [-0.0082, +0.1696], p = 0.0962; resampling whole seeds: [+0.0193, +0.1302], p = 0.0124
+- flat minus reference: -0.2172 [-0.3087, -0.1314], p = 0.0002; resampling whole seeds: [-0.2781, -0.1600], p = 0.0002
+- oracle minus conditional: +0.0051 [-0.0275, +0.0398], p = 0.7936; resampling whole seeds: [-0.0258, +0.0394], p = 0.8032
+
+The first interval treats every (condition, seed) episode pair as independent. The second averages over the conditions first and resamples the 32 seeds, because every condition reuses the same seeds.
 
 Per condition (mean score, failure rate, settings used):
 
@@ -654,12 +658,14 @@ Per condition (mean score, failure rate, settings used):
 
 Paired differences over the same (condition, seed) episodes:
 
-- conditional minus pooled: +0.2001 [+0.1700, +0.2301], p = 0.0002
-- conditional minus flat: -0.0173 [-0.0322, -0.0049], p = 0.0040
-- conditional minus reference: +0.0639 [+0.0388, +0.0861], p = 0.0002
-- pooled minus reference: -0.1362 [-0.1608, -0.1116], p = 0.0002
-- flat minus reference: +0.0811 [+0.0608, +0.0998], p = 0.0002
-- oracle minus conditional: +0.0173 [+0.0049, +0.0322], p = 0.0040
+- conditional minus pooled: +0.2001 [+0.1700, +0.2301], p = 0.0002; resampling whole seeds: [+0.1806, +0.2182], p = 0.0002
+- conditional minus flat: -0.0173 [-0.0322, -0.0049], p = 0.0040; resampling whole seeds: [-0.0313, -0.0057], p = 0.0078
+- conditional minus reference: +0.0639 [+0.0388, +0.0861], p = 0.0002; resampling whole seeds: [+0.0425, +0.0836], p = 0.0002
+- pooled minus reference: -0.1362 [-0.1608, -0.1116], p = 0.0002; resampling whole seeds: [-0.1591, -0.1131], p = 0.0002
+- flat minus reference: +0.0811 [+0.0608, +0.0998], p = 0.0002; resampling whole seeds: [+0.0614, +0.0976], p = 0.0002
+- oracle minus conditional: +0.0173 [+0.0049, +0.0322], p = 0.0040; resampling whole seeds: [+0.0057, +0.0313], p = 0.0078
+
+The first interval treats every (condition, seed) episode pair as independent. The second averages over the conditions first and resamples the 32 seeds, because every condition reuses the same seeds.
 
 Per condition (mean score, failure rate, settings used):
 

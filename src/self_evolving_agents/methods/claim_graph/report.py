@@ -156,12 +156,28 @@ def render_report(
         for method, row in result["overall"].items():
             lines.append(f"| {method} | {row['mean_score']:+.4f} | {row['failure_rate']:.1%} |")
         lines += ["", "Paired differences over the same (condition, seed) episodes:", ""]
+        clustered = False
         for name, comparison in result["comparisons"].items():
             sc = comparison["score"]
-            lines.append(
+            line = (
                 f"- {name.replace('_', ' ')}: {sc['diff']:+.4f} "
                 f"[{sc['ci_low']:+.4f}, {sc['ci_high']:+.4f}], p = {sc['p_value']:.4f}"
             )
+            cl = comparison.get("score_by_seed")
+            if cl:
+                clustered = True
+                line += (
+                    f"; resampling whole seeds: [{cl['ci_low']:+.4f}, {cl['ci_high']:+.4f}], "
+                    f"p = {cl['p_value']:.4f}"
+                )
+            lines.append(line)
+        if clustered:
+            lines += [
+                "",
+                "The first interval treats every (condition, seed) episode pair as independent. "
+                "The second averages over the conditions first and resamples the "
+                f"{result['n_seeds']} seeds, because every condition reuses the same seeds.",
+            ]
         lines += ["", "Per condition (mean score, failure rate, settings used):", ""]
         methods = list(result["overall"])
         lines.append("| conditions | " + " | ".join(methods) + " |")

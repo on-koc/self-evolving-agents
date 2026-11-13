@@ -67,6 +67,26 @@
           "ci_high": 0.0,
           "p_value": 1.0,
           "confidence": 0.95
+        },
+        "score_by_seed": {
+          "n": 32,
+          "mean_a": 0.597884,
+          "mean_b": 0.442574,
+          "diff": 0.155309,
+          "ci_low": 0.133207,
+          "ci_high": 0.175726,
+          "p_value": 0.0002,
+          "confidence": 0.95
+        },
+        "failure_rate_by_seed": {
+          "n": 32,
+          "mean_a": 0.015625,
+          "mean_b": 0.015625,
+          "diff": 0.0,
+          "ci_low": 0.0,
+          "ci_high": 0.0,
+          "p_value": 1.0,
+          "confidence": 0.95
         }
       },
       "conditional_minus_flat": {
@@ -87,6 +107,26 @@
           "diff": -0.414062,
           "ci_low": -0.5,
           "ci_high": -0.335938,
+          "p_value": 0.0002,
+          "confidence": 0.95
+        },
+        "score_by_seed": {
+          "n": 32,
+          "mean_a": 0.597884,
+          "mean_b": 0.103078,
+          "diff": 0.494805,
+          "ci_low": 0.426833,
+          "ci_high": 0.551778,
+          "p_value": 0.0002,
+          "confidence": 0.95
+        },
+        "failure_rate_by_seed": {
+          "n": 32,
+          "mean_a": 0.015625,
+          "mean_b": 0.429688,
+          "diff": -0.414062,
+          "ci_low": -0.460938,
+          "ci_high": -0.359375,
           "p_value": 0.0002,
           "confidence": 0.95
         }
@@ -111,6 +151,26 @@
           "ci_high": -0.117188,
           "p_value": 0.0002,
           "confidence": 0.95
+        },
+        "score_by_seed": {
+          "n": 32,
+          "mean_a": 0.597884,
+          "mean_b": 0.304989,
+          "diff": 0.292895,
+          "ci_low": 0.223757,
+          "ci_high": 0.357391,
+          "p_value": 0.0002,
+          "confidence": 0.95
+        },
+        "failure_rate_by_seed": {
+          "n": 32,
+          "mean_a": 0.015625,
+          "mean_b": 0.195312,
+          "diff": -0.179688,
+          "ci_low": -0.226562,
+          "ci_high": -0.132812,
+          "p_value": 0.0002,
+          "confidence": 0.95
         }
       },
       "pooled_minus_reference": {
@@ -131,6 +191,26 @@
           "diff": -0.179688,
           "ci_low": -0.25,
           "ci_high": -0.117188,
+          "p_value": 0.0002,
+          "confidence": 0.95
+        },
+        "score_by_seed": {
+          "n": 32,
+          "mean_a": 0.442574,
+          "mean_b": 0.304989,
+          "diff": 0.137586,
+          "ci_low": 0.07143,
+          "ci_high": 0.20104,
+          "p_value": 0.001,
+          "confidence": 0.95
+        },
+        "failure_rate_by_seed": {
+          "n": 32,
+          "mean_a": 0.015625,
+          "mean_b": 0.195312,
+          "diff": -0.179688,
+          "ci_low": -0.226562,
+          "ci_high": -0.132812,
           "p_value": 0.0002,
           "confidence": 0.95
         }
@@ -155,6 +235,26 @@
           "ci_high": 0.3125,
           "p_value": 0.0002,
           "confidence": 0.95
+        },
+        "score_by_seed": {
+          "n": 32,
+          "mean_a": 0.103078,
+          "mean_b": 0.304989,
+          "diff": -0.20191,
+          "ci_low": -0.269662,
+          "ci_high": -0.130566,
+          "p_value": 0.0002,
+          "confidence": 0.95
+        },
+        "failure_rate_by_seed": {
+          "n": 32,
+          "mean_a": 0.429688,
+          "mean_b": 0.195312,
+          "diff": 0.234375,
+          "ci_low": 0.179688,
+          "ci_high": 0.28125,
+          "p_value": 0.0002,
+          "confidence": 0.95
         }
       },
       "oracle_minus_conditional": {
@@ -176,6 +276,26 @@
           "ci_low": -0.039062,
           "ci_high": 0.0,
           "p_value": 0.5019,
+          "confidence": 0.95
+        },
+        "score_by_seed": {
+          "n": 32,
+          "mean_a": 0.607024,
+          "mean_b": 0.597884,
+          "diff": 0.009141,
+          "ci_low": -0.018229,
+          "ci_high": 0.044409,
+          "p_value": 0.574085,
+          "confidence": 0.95
+        },
+        "failure_rate_by_seed": {
+          "n": 32,
+          "mean_a": 0.0,
+          "mean_b": 0.015625,
+          "diff": -0.015625,
+          "ci_low": -0.039062,
+          "ci_high": 0.0,
+          "p_value": 0.492701,
           "confidence": 0.95
         }
       }
@@ -540,6 +660,26 @@
           "ci_high": 0.125,
           "p_value": 0.733853,
           "confidence": 0.95
+        },
+        "score_by_seed": {
+          "n": 32,
+          "mean_a": 0.376765,
+          "mean_b": 0.216842,
+          "diff": 0.159923,
+          "ci_low": 0.018516,
+          "ci_high": 0.299096,
+          "p_value": 0.032394,
+          "confidence": 0.95
+        },
+        "failure_rate_by_seed": {
+          "n": 32,
+          "mean_a": 0.203125,
+          "mean_b": 0.171875,
+          "diff": 0.03125,
+          "ci_low": -0.046875,
+          "ci_high": 0.125,
+          "p_value": 0.718656,
+          "confidence": 0.95
         }
       },
       "conditional_minus_flat": {
@@ -560,6 +700,26 @@
           "diff": -0.296875,
           "ci_low": -0.40625,
           "ci_high": -0.1875,
+          "p_value": 0.0002,
+          "confidence": 0.95
+        },
+        "score_by_seed": {
+          "n": 32,
+          "mean_a": 0.376765,
+          "mean_b": -0.0322,
+          "diff": 0.408966,
+          "ci_low": 0.296156,
+          "ci_high": 0.51859,
+          "p_value": 0.0002,
+          "confidence": 0.95
+        },
+        "failure_rate_by_seed": {
+          "n": 32,
+          "mean_a": 0.203125,
+          "mean_b": 0.5,
+          "diff": -0.296875,
+          "ci_low": -0.375,
+          "ci_high": -0.203125,
           "p_value": 0.0002,
           "confidence": 0.95
         }
@@ -584,6 +744,26 @@
           "ci_high": -0.171875,
           "p_value": 0.0002,
           "confidence": 0.95
+        },
+        "score_by_seed": {
+          "n": 32,
+          "mean_a": 0.376765,
+          "mean_b": -0.01675,
+          "diff": 0.393515,
+          "ci_low": 0.281055,
+          "ci_high": 0.500619,
+          "p_value": 0.0002,
+          "confidence": 0.95
+        },
+        "failure_rate_by_seed": {
+          "n": 32,
+          "mean_a": 0.203125,
+          "mean_b": 0.484375,
+          "diff": -0.28125,
+          "ci_low": -0.359375,
+          "ci_high": -0.1875,
+          "p_value": 0.0002,
+          "confidence": 0.95
         }
       },
       "pooled_minus_reference": {
@@ -606,6 +786,26 @@
           "ci_high": -0.203125,
           "p_value": 0.0002,
           "confidence": 0.95
+        },
+        "score_by_seed": {
+          "n": 32,
+          "mean_a": 0.216842,
+          "mean_b": -0.01675,
+          "diff": 0.233592,
+          "ci_low": 0.089217,
+          "ci_high": 0.371259,
+          "p_value": 0.003799,
+          "confidence": 0.95
+        },
+        "failure_rate_by_seed": {
+          "n": 32,
+          "mean_a": 0.171875,
+          "mean_b": 0.484375,
+          "diff": -0.3125,
+          "ci_low": -0.390625,
+          "ci_high": -0.234375,
+          "p_value": 0.0002,
+          "confidence": 0.95
         }
       },
       "flat_minus_reference": {
@@ -621,6 +821,26 @@
         },
         "failure_rate": {
           "n": 64,
+          "mean_a": 0.5,
+          "mean_b": 0.484375,
+          "diff": 0.015625,
+          "ci_low": 0.0,
+          "ci_high": 0.046875,
+          "p_value": 1.0,
+          "confidence": 0.95
+        },
+        "score_by_seed": {
+          "n": 32,
+          "mean_a": -0.0322,
+          "mean_b": -0.01675,
+          "diff": -0.01545,
+          "ci_low": -0.070015,
+          "ci_high": 0.02678,
+          "p_value": 0.633473,
+          "confidence": 0.95
+        },
+        "failure_rate_by_seed": {
+          "n": 32,
           "mean_a": 0.5,
           "mean_b": 0.484375,
           "diff": 0.015625,
@@ -649,6 +869,26 @@
           "ci_low": -0.1875,
           "ci_high": -0.046875,
           "p_value": 0.015597,
+          "confidence": 0.95
+        },
+        "score_by_seed": {
+          "n": 32,
+          "mean_a": 0.478957,
+          "mean_b": 0.376765,
+          "diff": 0.102191,
+          "ci_low": 0.022273,
+          "ci_high": 0.192001,
+          "p_value": 0.018196,
+          "confidence": 0.95
+        },
+        "failure_rate_by_seed": {
+          "n": 32,
+          "mean_a": 0.09375,
+          "mean_b": 0.203125,
+          "diff": -0.109375,
+          "ci_low": -0.1875,
+          "ci_high": -0.046875,
+          "p_value": 0.015397,
           "confidence": 0.95
         }
       }

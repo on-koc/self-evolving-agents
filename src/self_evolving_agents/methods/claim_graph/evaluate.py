@@ -130,6 +130,15 @@ def evaluate_transfer(
             comparisons[f"{a}_minus_{b}"] = {
                 "score": paired_compare(scores[a], scores[b]).to_dict(),
                 "failure_rate": paired_compare(failed[a], failed[b]).to_dict(),
+                # The same differences with one value per seed (its mean over the
+                # conditions): every condition reuses the same seeds, so this is the
+                # interval that does not assume those episodes are independent.
+                "score_by_seed": paired_compare(
+                    by_seed(scores[a], len(seeds)), by_seed(scores[b], len(seeds))
+                ).to_dict(),
+                "failure_rate_by_seed": paired_compare(
+                    by_seed(failed[a], len(seeds)), by_seed(failed[b], len(seeds))
+                ).to_dict(),
             }
     return {
         "test_points": [dict(p) for p in test_points],
@@ -139,6 +148,20 @@ def evaluate_transfer(
         "comparisons": comparisons,
         "per_point": per_point,
     }
+
+
+def by_seed(values: Sequence[float], n_seeds: int) -> list[float]:
+    """Mean per seed of values laid out condition by condition, ``n_seeds`` per condition.
+
+    Every held-out condition is evaluated on the same seeds, and a seed fixes the
+    orbit, the epoch and the initial state. Two episodes that share a seed are
+    therefore not independent draws. Averaging over the conditions first leaves one
+    value per seed, and resampling those is resampling whole seeds.
+    """
+    array = np.asarray(values, dtype=float)
+    if n_seeds <= 0 or array.size % n_seeds:
+        raise ValueError("values do not form whole blocks of n_seeds")
+    return [float(v) for v in array.reshape(-1, n_seeds).mean(axis=0)]
 
 
 def _summarise(

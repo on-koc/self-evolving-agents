@@ -248,6 +248,10 @@ def test_compare_runs_every_arm_on_the_same_stream_and_reports(tmp_path, capsys)
     }
     paired = result["comparisons"]["no_memory_minus_reasoningbank"]
     assert paired["tasks"] == 4 and {"diff", "ci_low", "ci_high", "p_value"} <= set(paired["score"])
+    # The same paired difference within each task group (a hypothesis may be about one regime).
+    assert set(paired["by_group"]) == {"nominal", "small_battery"}
+    assert paired["by_group"]["small_battery"]["tasks"] == 2
+    assert "diff" in paired["by_group"]["small_battery"]["score"]
     report = (out / "comparison.md").read_text()
     for needle in (
         "**These numbers are not results.**",
@@ -256,6 +260,7 @@ def test_compare_runs_every_arm_on_the_same_stream_and_reports(tmp_path, capsys)
         "## Paired differences against `reasoningbank`",
         "## Cost per run",
         "## By task group",
+        "Paired difference in score against `reasoningbank` within each group:",
         "| conditioned | `conditioned_retrieval` | adaptation |",
     ):
         assert needle in report, needle
@@ -431,15 +436,21 @@ def test_claims_replicate_runs_each_seed_base_and_summarises(study, tmp_path, ca
     reference = held_out["methods"]["reference"]["mean_score"]
     assert reference["n"] == 2 and reference["sd"] == 0, "independent of the training seeds"
     assert len(held_out["methods"]["conditional"]["mean_score"]["values"]) == 2
-    assert {"mean", "sd", "min", "max", "intervals_above_zero"} <= set(
-        held_out["comparisons"]["conditional_minus_reference"]
-    )
+    assert {
+        "mean",
+        "sd",
+        "min",
+        "max",
+        "intervals_above_zero",
+        "by_seed_intervals_above_zero",
+    } <= set(held_out["comparisons"]["conditional_minus_reference"])
     assert all(len(row["choices"]) >= 1 for row in held_out["settings"])
     text = (out / "replication.md").read_text()
     for needle in (
         "## Size and cost of each replicate",
         "## Held-out score: held out",
         "replicates whose 95% interval excludes zero",
+        "the same, resampling whole seeds",
         "## Do the replicates reach the same verdicts?",
     ):
         assert needle in text, needle
@@ -460,6 +471,7 @@ def test_claims_replicate_runs_each_seed_base_and_summarises(study, tmp_path, ca
     compared = json.loads((tmp_path / "compare.json").read_text())
     group = compared["groups"]["held out"]
     assert group["a_minus_b"]["n"] == 2 * 8, "two conditions, eight held-out seeds"
+    assert group["a_minus_b_by_seed"]["n"] == 8 and "resampling whole seeds" in text
     first = held_out["methods"]["conditional"]["mean_score"]["values"]
     assert group["a_minus_b"]["mean_a"] == pytest.approx(first[0], abs=1e-4)
     assert group["a_minus_b"]["mean_b"] == pytest.approx(first[1], abs=1e-4)

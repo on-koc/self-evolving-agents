@@ -228,6 +228,12 @@ def cmd_compare(args: argparse.Namespace) -> int:
             f"A minus B {d['diff']:+.4f} [{d['ci_low']:+.4f}, {d['ci_high']:+.4f}], "
             f"p = {d['p_value']:.4f}"
         )
+        s = content.get("a_minus_b_by_seed")
+        if s:
+            print(
+                f"    resampling whole seeds: [{s['ci_low']:+.4f}, {s['ci_high']:+.4f}], "
+                f"p = {s['p_value']:.4f}"
+            )
         for row in content["per_point"]:
             if not row["same_settings"]:
                 print(f"    differs at {row['conditions']}: A {row['a']}  B {row['b']}")
@@ -301,7 +307,8 @@ def cmd_evaluate(args: argparse.Namespace) -> int:
     if not config.get("evaluation"):
         raise SystemExit("the study configuration has no 'evaluation' section")
     domain = Domain.from_dict(config["domain"])
-    with EpisodeRunner(EpisodeCache(run / "episodes.sqlite"), workers=args.workers) as runner:
+    cache = Path(args.cache) if args.cache else run / "episodes.sqlite"
+    with EpisodeRunner(EpisodeCache(cache), workers=args.workers) as runner:
         transfer, composition = _evaluate(config, run, runner, graph, domain)
         print(f"{runner.episodes_run} episodes run, {runner.episodes_cached} reused from the cache")
     study_path = run / "study.json"
@@ -442,6 +449,9 @@ def add_claims_commands(sub: Any) -> None:
     )
     evaluate.add_argument("run")
     evaluate.add_argument("--workers", type=int, default=0, help="parallel simulator processes")
+    evaluate.add_argument(
+        "--cache", help="episode cache to use (default: episodes.sqlite in the run directory)"
+    )
     evaluate.set_defaults(func=cmd_evaluate)
 
     plot = claims.add_parser("plot", help="write the study's figures (needs matplotlib)")

@@ -120,6 +120,11 @@ def summarise_replicates(runs: dict[str, Path]) -> dict[str, Any]:
                     for m, v in result["overall"].items()
                 },
                 "comparisons": {name: c["score"] for name, c in result["comparisons"].items()},
+                "comparisons_by_seed": {
+                    name: c["score_by_seed"]
+                    for name, c in result["comparisons"].items()
+                    if "score_by_seed" in c
+                },
                 "settings": [
                     {
                         "conditions": row["conditions"],
@@ -162,6 +167,16 @@ def summarise_replicates(runs: dict[str, Path]) -> dict[str, Any]:
                 "intervals_above_zero": sum(row["ci_low"] > 0 for row in rows),
                 "intervals_below_zero": sum(row["ci_high"] < 0 for row in rows),
             }
+            clustered = [
+                per_run[r]["groups"][group].get("comparisons_by_seed", {}).get(name) for r in labels
+            ]
+            if all(clustered):
+                comparisons[name]["by_seed_intervals_above_zero"] = sum(
+                    row["ci_low"] > 0 for row in clustered
+                )
+                comparisons[name]["by_seed_intervals_below_zero"] = sum(
+                    row["ci_high"] < 0 for row in clustered
+                )
         settings = []
         for i, row in enumerate(content["settings"]):
             chosen = Counter(
@@ -276,20 +291,27 @@ def render_replication(summary: dict[str, Any], title: str = "Claim study") -> s
         for method, stats in content["methods"].items():
             s = stats["failure_rate"]
             lines.append(f"| {method} | {s['mean']:.1%} | {s['min']:.1%} | {s['max']:.1%} |")
+        with_seeds = all(
+            "by_seed_intervals_above_zero" in s for s in content["comparisons"].values()
+        )
         lines += [
             "",
             "| paired difference | mean over replicates | sd | min | max | "
-            "replicates whose 95% interval excludes zero |",
-            "|---|---|---|---|---|---|",
+            "replicates whose 95% interval excludes zero |"
+            + (" the same, resampling whole seeds |" if with_seeds else ""),
+            "|---|---|---|---|---|---|" + ("---|" if with_seeds else ""),
         ]
+
+        def decided(s: dict[str, Any], prefix: str = "") -> str:
+            above, below = s[f"{prefix}intervals_above_zero"], s[f"{prefix}intervals_below_zero"]
+            side = "above" if above >= below else "below"
+            return f"{above + below} of {s['n']}" + (f" ({side})" if above + below else "")
+
         for name, s in content["comparisons"].items():
-            decided = s["intervals_above_zero"] + s["intervals_below_zero"]
-            side = "above" if s["intervals_above_zero"] >= s["intervals_below_zero"] else "below"
             lines.append(
                 f"| {name.replace('_', ' ')} | {s['mean']:+.3f} | {s['sd']:.3f} | "
-                f"{s['min']:+.3f} | {s['max']:+.3f} | {decided} of {s['n']}"
-                + (f" ({side})" if decided else "")
-                + " |"
+                f"{s['min']:+.3f} | {s['max']:+.3f} | {decided(s)} |"
+                + (f" {decided(s, 'by_seed_')} |" if with_seeds else "")
             )
         lines += [
             "",
@@ -343,7 +365,7 @@ def compare_runs(
     """
     from ...experiments import EpisodeCache, EpisodeRunner, paired_compare
     from ...policies import scanning_policy
-    from .evaluate import _run
+    from .evaluate import _run, by_seed
     from .policy import recommend
     from .testing import Domain
 
@@ -393,6 +415,9 @@ def compare_runs(
                 )
             out["groups"][group] = {
                 "a_minus_b": paired_compare(scores_a, scores_b).to_dict(),
+                "a_minus_b_by_seed": paired_compare(
+                    by_seed(scores_a, len(seeds)), by_seed(scores_b, len(seeds))
+                ).to_dict(),
                 "failure_rate_a": round(sum(lost_a) / len(lost_a), 6),
                 "failure_rate_b": round(sum(lost_b) / len(lost_b), 6),
                 "per_point": rows,

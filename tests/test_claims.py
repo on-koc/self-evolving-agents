@@ -1293,6 +1293,15 @@ def test_active_loop_proposers_extend_the_search(toy_study):
     assert len(pairs) == len(set(pairs)), "no comparison is proposed twice"
 
 
+def test_by_seed_averages_over_conditions():
+    from self_evolving_agents.methods.claim_graph.evaluate import by_seed
+
+    # Two conditions, three seeds each, laid out condition by condition.
+    assert by_seed([1.0, 2.0, 3.0, 3.0, 4.0, 5.0], 3) == [2.0, 3.0, 4.0]
+    with pytest.raises(ValueError, match="whole blocks"):
+        by_seed([1.0, 2.0, 3.0], 2)
+
+
 def test_transfer_evaluation_and_composition_check(toy_study):
     graph, domain, runner, *_ = toy_study
     result = evaluate_transfer(
@@ -1314,6 +1323,12 @@ def test_transfer_evaluation_and_composition_check(toy_study):
         "flat_minus_reference",
         "oracle_minus_conditional",
     }
+    # Two conditions reuse the same twelve seeds: the second interval resamples seeds.
+    pooled = result["comparisons"]["conditional_minus_flat"]["score"]
+    clustered = result["comparisons"]["conditional_minus_flat"]["score_by_seed"]
+    assert (pooled["n"], clustered["n"]) == (24, 12)
+    assert clustered["diff"] == pytest.approx(pooled["diff"], abs=1e-6), "the same mean difference"
+    assert "failure_rate_by_seed" in result["comparisons"]["conditional_minus_flat"]
     small = result["per_point"][0]["methods"]
     assert (
         small["reference"]["settings"] == {} and small["flat"]["settings"]["charge_below"] == 0.10
