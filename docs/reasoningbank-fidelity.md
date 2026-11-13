@@ -90,6 +90,43 @@ printed in P (see rows E2 and J2).
 | B1 | Baselines: no memory; Synapse (raw trajectories as memory); AWM (workflows as memory). They share retrieval and consolidation with ReasoningBank and differ only in what is extracted. Synapse and AWM use successful trajectories only. | P 4.1, B.1 |
 | B2 | Metrics: success rate by the benchmark's own ground-truth evaluation, and the average number of steps per task. Token use per task is reported separately. | P B.1, C.2 |
 
+## Essential components and implementation choices
+
+Not every row above carries the same weight. A baseline that changes an essential
+component is no longer ReasoningBank. One that changes a published setting is
+ReasoningBank with a different configuration, and must say so. One that changes an
+implementation choice is still the published method.
+
+The classes, and the test used to assign a row:
+
+| Class | Test | Rows |
+|---|---|---|
+| **Essential** | the paper's method section (3.1 to 3.3) defines the method by it, or the paper's central claims depend on it | S1 a stream of tasks; S2 memory starts empty and persists; S3 no ground truth, self-judged; M1 items of title, description and content; R2 retrieval by similarity of the task query, returning the items of past experiences; R5 items placed in the agent's prompt with the instruction to consider each; J1 a model labels the trajectory; E1 both successful and failed trajectories are distilled, with different instructions; M3 nothing but appending (the authors keep consolidation minimal on purpose); for MaTTS: T2 self-contrast over k trajectories, T3 self-refinement within a trajectory |
+| **Published setting** | a value or text given in the paper that the paper itself varies, or could vary, without calling the result a different method | k = 1 experience (R2; the paper tries 1 to 4); at most 3 items (E1); temperatures 0.7, 0.0, 1.0 (A2, J1, E1); the embedding model (R1); the wording of the prompts (E2, J2, T2, T4, F); the extractor's input of reasoning and action (E3); title and content shown to the agent (R6, per P); the scaling factor (T1); Best-of-N selection (T4); the two controls (T5) |
+| **Benchmark-specific** | tied to the paper's benchmarks and not transferable as such | the step limit of 30 (A2); the three web task types in the judge's instruction (J2); "web navigation" in every prompt; the backbones (A3); the comparison methods Synapse and AWM (B1); the benchmark's own success checker (B2) |
+| **Implementation choice** | absent from the paper: found only in the reference code, or left open and decided here | instruction-wrapped lookup (R3); what happens when the best match has no items (R4); showing the description to the agent (R6, per C); appending the judge's reasoning to the extractor's input (E4); storing the extractor's text unparsed (E5); which experience wins an exact tie (the code's stable sort); the storage file format (M2); extraction temperature 0.7 in the scaling pipeline (T6); and, decided here, the agent's window of recent steps, the truncation of very long trajectories, parsing items into fields, the embedding cache |
+
+How each class is treated in this implementation:
+
+| Class | Treatment |
+|---|---|
+| Essential | implemented as published, and not configurable away, with two exceptions that are labelled as departures: `include_failures=false` (the paper's own ablation) and `judge=env` (a control that breaks S3 on purpose). T3 cannot be implemented in these environments and is reported as not reproduced |
+| Published setting | the default is the published value; every one is an option, recorded in the run's configuration. Two cannot be honoured by default: the temperatures, for models that reject them, and the embedding model, unless `--embedder gemini` is chosen |
+| Benchmark-specific | replaced by the environment's counterpart (its domain name, its statement of success, its own step limit), which is the substitution the authors made for their software-engineering experiments |
+| Implementation choice | where the reference code's choice affects behaviour, it is available as an option that is off by default (R3, R6, E4, revised prompts, strict judge), except the tie rule, which defaults to the reference code's because the paper is silent and some rule is needed |
+
+Two rows deserve a note because their class is arguable.
+
+- **E3, what the extractor sees.** The paper presents reasoning and action without
+  observations as an approximation forced by long web pages, not as a principle.
+  It is classed as a published setting, and the default follows it, but the
+  adaptations that show observations to the extractor are not thereby leaving the
+  method.
+- **M3, append-only consolidation.** The authors say they keep it minimal to
+  isolate the contribution of the memory content. It is classed as essential *for a
+  baseline*: a comparison against "ReasoningBank" with added consolidation would
+  credit the baseline with something its authors left out.
+
 ## Results reported in the paper, for reference
 
 These are the authors' numbers on their benchmarks. Nothing in this repository
