@@ -152,7 +152,7 @@ written to the revision log and mirrored into the provenance store.
 
 ## Choosing the next experiment
 
-`claims.loop.Planner` ranks candidate experiments each round:
+`claim_graph.loop.Planner` ranks candidate experiments each round:
 
 1. **test** — a hypothesis nobody has tested, at the context it came from.
 2. **boundary** — two tested points on the same line gave different labels: probe
@@ -186,7 +186,7 @@ said so.
 
 ## Using the graph
 
-`claims.policy.recommend(graph, conditions)` collects the supported claims that apply
+`claim_graph.policy.recommend(graph, conditions)` collects the supported claims that apply
 at the conditions and chains them per parameter group ("0.40 beats 0.25 here" then
 "0.60 beats 0.40 here" gives 0.60). It reports, for each claim used, the distance from
 the query to the nearest supporting test, so tested ground can be told from
@@ -202,17 +202,17 @@ another. Along a single variable it never bites, since the bounds are the midpoi
 between neighbouring tests. Where box and nearest test disagree, nothing is
 recommended.
 
-`claims.policy.policy_map(graph)` tabulates the recommendation for every region the
-supported claims tell apart; the study report opens with it.
+`claim_graph.policy.policy_map(graph)` tabulates the recommendation for every region
+the supported claims tell apart; the study report opens with it.
 
-For a language-model agent, `claims.report.claims_as_memory` renders the applicable
-claims as memory items that state the scope, the nearest supporting test, the known
-counterexamples and the status of each explanation. `sea rb run --claims RUN` puts
-them in the agent's prompt.
+For a language-model agent, the separate method `claim_memory`
+([`claim_memory.md`](claim_memory.md)) renders the applicable claims as memory items
+that state the scope, the nearest supporting test, the known counterexamples and the
+status of each explanation, and puts them in the agent's prompt.
 
 ## Evaluating transfer
 
-`claims.evaluate.evaluate_transfer` compares ways of using the same evidence at
+`claim_graph.evaluate.evaluate_transfer` compares ways of using the same evidence at
 conditions that were never part of an experiment, on seeds that were never used:
 
 | Method | What it does |
@@ -318,7 +318,7 @@ Replication and the ablation are in `../protocols/robustness.md`.
 - **Open-ended scopes are extrapolations.** "battery >= 28.5 Wh" for early wheel
   unloading was tested up to 400 Wh. The graph says so through the distance it
   reports, but nothing stops the claim being used at 600 Wh, and in the Basilisk
-  study it did not hold there (`results-bsk-battery.md`). `max_distance` refuses any
+  study it did not hold there (`../results-bsk-battery.md`). `max_distance` refuses any
   claim beyond a chosen distance; that would also have refused a claim that did keep
   holding at 600 Wh. The effect sizes were already shrinking towards the edge, and
   using that trend is the obvious next step.
