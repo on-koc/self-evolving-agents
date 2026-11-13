@@ -98,3 +98,37 @@ sea claims compare runs/bsk-battery-replication/seed-1000 runs/bsk-battery-passi
 One task family, one condition variable, one simulator. Five replicates give a rough
 idea of the spread, not a distribution. The held-out seeds are the same for every
 replicate, so variability due to the choice of held-out seeds is not included.
+
+## Outcome
+
+Added after the runs. Nothing above this line was changed.
+
+Both experiments were run as specified. Results and files are in
+[`../comparison.md`](../comparison.md), sections B.5 and B.6.
+
+**R1.** The stated expectation held: reference below best single setting below
+conditional claims, inside the studied range, in all five replicates. The three
+things named as counting against the method:
+
+| Named in advance | What happened |
+|---|---|
+| a replicate in which conditional claims do not beat the best single setting | By mean score: none, inside or outside the range. By interval: the difference excludes zero in five of five replicates inside the range and in three of five outside it |
+| a replicate in which they lose the spacecraft clearly more often | Inside the range the share is the same (1.6%) in all five. Outside it the claims lose 20.3% against 17.2% in four replicates (13 episodes against 11 of 64; interval of the difference −0.05 to +0.13 or wider) and 20.3% against 40.6% in the fifth. "Clearly" was not defined in advance; by the interval, no replicate shows it |
+| recommended settings that differ between replicates at most held-out conditions | **This occurred**, at all six held-out conditions |
+
+**R2.** Active minus fixed grid, inside the range: +0.003, interval [−0.005,
++0.011] as specified (resampling single episodes), [−0.003, +0.009] resampling
+seeds. By the rule stated above this is recorded as *no measurable benefit of active
+selection at this scale*. The fixed grid used 2,224 episodes, the active run 2,688.
+
+**Departures from the protocol.**
+
+- A second interval was added to every paired difference: one that resamples the
+  held-out seeds, because every held-out condition reuses the same seeds. It was
+  implemented while the last replicate was still running, for reasons unrelated to
+  the replication, and no count in the summary differs between the two intervals.
+  Both are in the result files.
+- The success rate was added to the reported measures.
+- The runs were made with the claim-graph code as it stood when the protocol was
+  committed. The summary and the comparison were then computed with the current
+  code, which gives identical numbers for everything the earlier code reported.

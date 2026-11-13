@@ -17,7 +17,7 @@ Basilisk simulator and [DiscoveryWorld](https://github.com/allenai/discoveryworl
 |---|---|
 | The ReasoningBank baseline follows the paper | compared row by row with the paper and the reference code; ten discrepancies found, eight corrected and two kept as documented deviations; equivalence with the published system is **not** claimed. [`docs/reasoningbank-fidelity.md`](docs/reasoningbank-fidelity.md) |
 | Each method is separate and runs on its own | one folder and one page per method; dependencies between folders enforced by a test. [`docs/methods/`](docs/methods/README.md) |
-| The claim graph (needs no language model) | **measured** on Basilisk: two studies, a five-fold replication, one ablation; about 20,000 simulated episodes |
+| The claim graph (needs no language model) | **measured** on Basilisk: two studies, a five-fold replication, one ablation; about 25,000 simulated episodes |
 | Every method that needs a language model, the baseline included | **not measured.** No model was available for this work. Each is tested for its mechanics with scripted stand-ins, and the comparison that would measure it is specified in advance. [`docs/protocols/model-comparison.md`](docs/protocols/model-comparison.md) |
 
 Nothing here is a measured statement about how ReasoningBank performs in these
@@ -58,7 +58,14 @@ graph chose the experiments. Evaluated on conditions and seeds no experiment use
   (95% interval +0.133 to +0.176) and cannot be told apart from tuning on the test
   conditions themselves (+0.009, −0.018 to +0.044).
 - Lessons that are true for the reference spacecraft, applied to every spacecraft,
-  are worse than no lessons at all.
+  lose more than twice as many spacecraft as no lessons at all.
+- Repeated five times with different training seeds, the claims score +0.611 on
+  average (standard deviation 0.015) and beat the single best setting every time.
+  The individual claims are less stable than the score: the five runs recommend
+  different settings at every held-out condition, and the size of the harm done by
+  unconditional lessons varies between runs.
+- Choosing experiments by probing between disagreeing results gave no measurable
+  benefit over a fixed grid at this scale, and cost 21% more episodes.
 - Outside the studied range the claims fall behind tuning (0.377 against 0.479), and
   in one group of the second study the unconditional lessons score slightly higher
   than the claims (0.604 against 0.587).

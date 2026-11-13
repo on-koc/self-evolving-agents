@@ -164,6 +164,11 @@ written to the revision log and mirrored into the provenance store.
 4. **coverage** — the untested grid point farthest from anything tested for this
    comparison.
 
+Whether this ordering beats a plain grid has been tested once, for one condition
+variable: it did not. A fixed nine-point grid reached the same held-out score with
+17% fewer episodes (`../comparison.md`, B.6). `planner.boundaries=false` switches
+the boundary probes off.
+
 The budget is counted in the different simulator episodes the experiments need.
 Asking for the same episode again within a study is free (a sequential test re-uses
 its first seeds). Episodes found in the on-disk cache are counted like simulated
@@ -301,6 +306,16 @@ Replication and the ablation are in `../protocols/robustness.md`.
 
 ## Limits of the current design
 
+- **Single claims are not stable across runs.** When the first study was repeated
+  with other training seeds, the held-out score barely moved (standard deviation
+  0.015) but the five graphs recommended different settings at every held-out
+  condition, and 23 of 59 tests made by all five did not get the same label in all
+  of them (`../comparison.md`, B.5). A graph should be read as one of several nearly
+  equivalent sets of recommendations. A claim near a boundary needs replication
+  before it is treated as a finding.
+- **Active selection is unproven.** See above: no benefit over a grid at the one
+  scale tested. Its expected advantage, with several conditions at once, has not
+  been measured.
 - **One change at a time.** Families are tested against the reference policy. An
   interaction between two recommended settings is only caught afterwards by the
   composition check. Testing against the current best policy instead is supported by

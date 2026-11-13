@@ -89,8 +89,8 @@ the resolved configuration it ran with (`config.json`).
 |---|---|---|
 | Study 1 | `sea claims study --config studies/bsk_battery.json --out runs/bsk-battery --workers 4` | about 30 min |
 | Study 2 | `sea claims study --config studies/bsk_battery_panel.json --out runs/bsk-battery-panel --workers 4` | about 75 min |
-| Replication | `sea claims replicate --config studies/bsk_battery.json --out runs/bsk-battery-replication --seed-bases 1000,2000,3000,4000,7000 --workers 4` | about 2 h |
-| Ablation | `sea claims study --config studies/bsk_battery_passive.json --out runs/bsk-battery-passive --workers 4` | about 45 min |
+| Replication | `sea claims replicate --config studies/bsk_battery.json --out runs/bsk-battery-replication --seed-bases 1000,2000,3000,4000,7000 --workers 4` | about 2.5 h |
+| Ablation | `sea claims study --config studies/bsk_battery_passive.json --out runs/bsk-battery-passive --cache runs/bsk-battery-replication/episodes.sqlite --workers 4` | about 15 min after the replication, whose cache it shares |
 | Ablation, comparison | `sea claims compare runs/bsk-battery-replication/seed-1000 runs/bsk-battery-passive --cache runs/bsk-battery-replication/episodes.sqlite` | minutes |
 | Figures | `sea claims plot runs/bsk-battery` | seconds |
 
@@ -150,7 +150,7 @@ None has been made. For when one is:
   digit can flip a threshold decision of a rule policy and with it an episode. The
   installation check in section 2 detects this.
 - The SPICE kernels are downloaded, not pinned.
-- `results/` holds the outputs of the studies, not their episode caches (6 to 20 MB
+- `results/` holds the outputs of the studies, not their episode caches (6 to 27 MB
   each), so a reproduction re-simulates.
 
 **Confounds in the recorded evidence.** Each is discussed where the results are

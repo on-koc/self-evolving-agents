@@ -60,6 +60,15 @@ it is written to each run's `config.json`.
 Seeds fix the simulator, not the model. Repeats of an arm differ because the model
 samples; they do not differ in the tasks.
 
+**The embedder.** The protocols name the offline hashing embedder, which is not the
+paper's. For the baseline on these streams the choice cannot change what is
+retrieved: all episodes of a regime have the same query, so a same-regime experience
+has similarity exactly 1 under any embedder and wins, and the tie among several is
+broken by the tie rule, not by the embedder. It does matter for
+`conditioned_retrieval`, which ranks single items by their text. A run that is to be
+cited as ReasoningBank should set `"embedder": "gemini"` in the protocol (it needs a
+Google API key) or state the embedder used.
+
 ## Metrics
 
 Defined in [`../metrics.md`](../metrics.md). Primary: mean episode score. Secondary:

@@ -120,12 +120,18 @@ Further overheads that the table does not show:
   discuss each retrieved item before every action, so the cost of memory grows with
   S, not with the number of tasks.
 - **Configuration.** The baseline has 7 options of its own and 5 that reproduce
-  details of the reference code. `conditioned_retrieval` adds 7, `matts` 3,
-  `claim_memory` 3. The claim graph has its own set (batch size, maximum seeds,
+  details of the reference code. `conditioned_retrieval` adds 8 (for seven
+  mechanisms), `matts` 3, `claim_memory` 3. The claim graph has its own set (batch size, maximum seeds,
   minimum effect, boundary ratio, depth of the partition, budget). More options mean
   more ways to tune on the test data; the protocols fix all of them in advance.
 - **The claim graph's cost is paid before deployment**, in simulator time, and is
   then shared by every later episode. Its measured size is in B.8.
+- **Expected running time.** A simulated episode under a rule policy takes 1.3 to
+  1.6 s on one core (measured, B.8). With a step-by-step agent the time of an
+  episode is that of about a hundred model calls made one after another, so the
+  model, not the simulator, sets the pace; the policy-writing agent needs one to
+  three calls and then the same 1.3 to 1.6 s. With the paper's embedding model,
+  retrieval adds one embedding request per task.
 
 ## A.6 Foundations and assumptions
 
@@ -215,9 +221,10 @@ condition itself.
 - The grid search is given experiments at the held-out condition (16 tuning seeds,
   6000 to 6015, for each of 12 settings). No other method has that. It is a reference
   for what was attainable, not a competitor.
-- `flat` and `pooled` are derived from the claim graph's own evidence. They are
-  controls that remove one property each (conditions; then also multiplicity of
-  settings), not independent methods with their own search.
+- `flat` and `pooled` are derived from the claim graph's own evidence. `flat` uses
+  only what was found at the reference conditions and applies it everywhere;
+  `pooled` uses all the evidence and still applies one setting everywhere. They are
+  controls on how evidence is used, not independent methods with their own search.
 - `flat` is **not ReasoningBank**. It applies, mechanically and everywhere, every
   change that helped at the reference conditions. ReasoningBank shows free-text
   lessons to a model that may or may not follow them. What `flat` measures is the
@@ -326,12 +333,146 @@ threshold that would have paid off there.
 
 ## B.5 Robustness: variability over training seeds (measured)
 
-*Pending: the fifth replicate is still running. This section is filled in from
-`results/bsk-battery-replication/` when it has finished.*
+Protocol: [`protocols/robustness.md`](protocols/robustness.md), part R1, written and
+committed before the runs. Files: `results/bsk-battery-replication/`.
+
+Study 1 was run five times. The runs differ only in the 48 training seeds (starting
+at 1000, 2000, 3000, 4000 and 7000; the first is the recorded study). All five are
+evaluated on the same held-out conditions and seeds, so the spread between them is
+the variability of the whole procedure.
+
+| Training seeds from | 1000 | 2000 | 3000 | 4000 | 7000 |
+|---|---|---|---|---|---|
+| experiments | 77 | 75 | 79 | 71 | 76 |
+| episodes | 2,688 | 2,720 | 2,608 | 2,304 | 3,056 |
+| claims (supported) | 21 (13) | 22 (14) | 21 (12) | 21 (13) | 20 (10) |
+| conditional, inside the range | +0.598 | +0.621 | +0.622 | +0.621 | +0.592 |
+| conditional, outside the range | +0.377 | +0.377 | +0.360 | +0.377 | +0.370 |
+
+**Held-out mean score over the five replicates.**
+
+| Method | Inside: mean | sd | min to max | Outside: mean | sd | min to max |
+|---|---|---|---|---|---|---|
+| reference | +0.305 | none by construction | | −0.017 | none by construction | |
+| flat | +0.197 | 0.085 | +0.103 to +0.259 | −0.031 | 0.001 | −0.032 to −0.030 |
+| pooled | +0.460 | 0.040 | +0.443 to +0.531 | +0.180 | 0.083 | +0.031 to +0.217 |
+| conditional | +0.611 | 0.015 | +0.592 to +0.622 | +0.372 | 0.007 | +0.360 to +0.377 |
+| grid search | +0.607 | none by construction | | +0.479 | none by construction | |
+
+Spacecraft lost: `conditional` 1.6% inside the range and 20.3% outside it in every
+replicate; `pooled` 1.6% inside in every replicate, 17.2% to 40.6% outside; `flat`
+29.7% to 43.0% inside. Success rate of `conditional` inside the range: 97.7% in
+every replicate.
+
+**Paired differences.** Mean over the replicates, the range, and the number of
+replicates whose own 95% interval (by seed) excludes zero.
+
+| Difference | Inside the range | Outside the range |
+|---|---|---|
+| conditional − reference | +0.306 (+0.287 to +0.317); 5 of 5 | +0.389 (+0.377 to +0.394); 5 of 5 |
+| conditional − pooled | +0.150 (+0.090 to +0.179); 5 of 5 | +0.193 (+0.143 to +0.346); 3 of 5 |
+| conditional − flat | +0.414 (+0.362 to +0.495); 5 of 5 | +0.403 (+0.389 to +0.409); 5 of 5 |
+| pooled − reference | +0.155 (+0.138 to +0.226); 5 of 5 | +0.196 (+0.048 to +0.234); 4 of 5 |
+| flat − reference | −0.108 (−0.202 to −0.046); 2 of 5 | −0.014 (−0.015 to −0.013); 0 of 5 |
+| grid search − conditional | −0.004 (−0.015 to +0.015); 0 of 5 | +0.107 (+0.102 to +0.119); 5 of 5 |
+
+**What held in every replicate.**
+
+- The ordering stated in advance: reference below `pooled` below `conditional`,
+  inside the range, each with an interval that excludes zero.
+- `conditional` cannot be told apart from the grid search inside the range. In three
+  replicates it scores above it.
+- Outside the range it falls behind the grid search, by 0.10 to 0.12.
+
+**What did not hold in every replicate.**
+
+1. *That unconditional lessons are worse than none.* `flat − reference` excludes
+   zero in two replicates of five. In the other three the lessons that held for the
+   reference spacecraft included charging in longer blocks, which makes the lower
+   charge threshold less dangerous: `flat` then scores +0.259 instead of +0.103.
+   It still loses more spacecraft than the reference in all five (29.7% to 43.0%
+   against 19.5%), but the difference in score (−0.046) is within noise. The
+   recorded study shows this effect at its strongest.
+2. *The recommended settings.* At none of the six held-out conditions do all five
+   replicates recommend the same settings. The protocol named this in advance as
+   something that would count against the method.
+
+   | Battery (Wh) | Different recommendations among 5 replicates | Largest group that agrees | Score, lowest to highest |
+   |---|---|---|---|
+   | 35 | 3 | 3 | +0.319 to +0.357 |
+   | 70 | 2 | 4 | +0.575 to +0.589 |
+   | 140 | 2 | 3 | +0.636 to +0.711 |
+   | 280 | 3 | 2 | +0.825 to +0.846 |
+   | 18 (outside) | 4 | 2 | −0.158 to −0.123 |
+   | 600 (outside) | 3 | 2 | +0.877 to +0.899 |
+
+   The replicates differ in which secondary changes they include (the eclipse
+   top-up, longer charging blocks) and, for large batteries, in whether the charge
+   threshold is 0.1 or 0.05. At 18, 35 and 70 Wh the charge threshold is the same in
+   all five; at 140 Wh three replicates lower it and two keep the reference value
+   (point 4).
+3. *The verdicts of single tests.* Of the 59 tests that every replicate made at the
+   same condition, 36 (61%) received the same label in all five. In 22 of the other
+   23 no two replicates found opposite directions: some found a direction and others
+   "unresolved" or "no meaningful benefit". In one (charge threshold 0.4 against
+   0.25 at 54.5 Wh, next to a boundary) four replicates found the intervention
+   better and one the baseline.
+4. *The abstention at 140 Wh.* The recorded study left the lower charge threshold
+   unresolved at 154 Wh and recommends nothing for it at 140 Wh (0.636). Three
+   replicates resolved that test in favour of the lower threshold and score 0.711
+   at 140 Wh. The recorded study is the second lowest of the five.
+
+**Interpretation.** The *score* of the procedure is stable: a standard deviation of
+0.015 against a gain of 0.31 over the reference. The *content* of the graph is not:
+which secondary claims are supported, and where exactly a boundary lies, depend on
+the draw of training seeds. A graph is one of several nearly equivalent sets of
+recommendations, and a single claim near a boundary should not be relied on without
+replication.
+
+**Limits.** Five replicates. One study. The held-out seeds are the same for every
+replicate, so variability from their choice is not included.
 
 ## B.6 Ablation: active against fixed-grid experiments (measured)
 
-*Pending: runs after the replication.*
+Protocol: [`protocols/robustness.md`](protocols/robustness.md), part R2, written and
+committed before the runs. Files: `results/bsk-battery-passive/`.
+
+Study 1 was run once more with the probes between disagreeing tests switched off.
+Every comparison is tested at a fixed grid of nine battery sizes instead. Everything
+else is the same, including the training seeds.
+
+| | Active (the recorded study) | Fixed grid |
+|---|---|---|
+| battery sizes tested | 18: five grid points, the rest added by the planner | 9, fixed in advance |
+| experiments | 77 (8 first tests, 36 boundary probes, 32 coverage, 1 sweep) | 73 (8 first tests, 64 grid points, 1 sweep) |
+| episodes | 2,688 | 2,224 |
+| simulation time, one core | 59 min | 53 min |
+| claims (supported) | 21 (13) | 23 (13) |
+| `conditional` inside the range: mean score, lost | +0.598, 1.6% | +0.595, 1.6% |
+| `conditional` outside the range: mean score, lost | +0.377, 20.3% | +0.377, 20.3% |
+
+Paired difference, active minus fixed grid, inside the range: **+0.003**, 95%
+interval by seed [−0.003, +0.009], p = 0.33. Outside the range the two designs
+recommend identical settings.
+
+**Reading, by the rule fixed in advance:** no measurable benefit of active selection
+at this scale. The fixed grid reached the same held-out score with 17% fewer
+episodes.
+
+The two designs recommend different settings at three of the four conditions inside
+the range, in both directions (the grid is better at 35 Wh, 0.388 against 0.357;
+active is better at 70 and 140 Wh, 0.575 against 0.552 and 0.636 against 0.615).
+These differences are of the size seen between replicates of one design (B.5), and
+the difference between the designs (0.003) is smaller than the standard deviation
+over replicates of the active design (0.015). One run of each cannot separate the
+design from the draw.
+
+**What this does not show.** The protocol predicted this outcome and gave the
+reason: a nine-point grid over a 16-fold range is already about as fine as the
+bisection rule's stopping distance. Active selection should pay where a grid of the
+same resolution is much larger, that is over a wider range or with several
+conditions varied at once. That case has not been tested; study 2 used the active
+design only.
 
 ## B.7 Sensitivity to rules that changed during the work (measured)
 
@@ -436,16 +577,27 @@ what the method did on web tasks. They are not evidence about this task.
 1. Conditional claims beat the same evidence used without conditions, on every
    group of held-out conditions in both studies (+0.155 to +0.226 in score; intervals
    exclude zero).
-2. Unconditional lessons from the reference spacecraft, applied everywhere, are
-   worse than no lessons inside the studied ranges (−0.18 to −0.22) and lose two to
-   three times as many spacecraft.
+2. Unconditional lessons from the reference spacecraft, applied everywhere, lose
+   more spacecraft than no lessons inside the studied ranges (30% to 48% against
+   about 20%), in both studies and in all five replicates. In score they are worse
+   by 0.18 to 0.22 in the two recorded studies; over the five replicates of study 1
+   the difference ranges from −0.05 to −0.20 and excludes zero in two.
 3. Inside the studied ranges the claim graph cannot be told apart from tuning on the
-   held-out condition itself (differences within ±0.01, intervals include zero).
-4. Outside the studied range it falls behind tuning (+0.102 in study 1), and in one
-   group of study 2 it falls behind the unconditional lessons (−0.017).
+   held-out condition itself (differences within ±0.015, intervals include zero), in
+   both studies and in all five replicates.
+4. Outside the studied range it falls behind tuning (+0.10 to +0.12 in all five
+   replicates of study 1), and in one group of study 2 it falls behind the
+   unconditional lessons (−0.017).
 5. The rule that withholds a claim when its nearest test disagrees lowers the
    held-out score where it applies.
 6. A study costs as much as tuning at 14 to 29 conditions.
+7. Over five replicates the held-out score of the claim graph varies little (sd
+   0.015 inside the range). The recommended settings vary at every held-out
+   condition, and 39% of the tests made by all replicates do not get the same label
+   in all of them.
+8. Choosing experiments by bisection between disagreeing tests gave no measurable
+   benefit over a fixed nine-point grid (+0.003 [−0.003, +0.009]), and used 21% more
+   episodes.
 
 **Interpretation.**
 
@@ -456,5 +608,12 @@ what the method did on web tasks. They are not evidence about this task.
 - Finding 4 is the expected behaviour of a method that abstains where it has no
   evidence. Whether abstaining is right depends on the cost of a lost spacecraft,
   which the score fixes at one episode of data.
+- Finding 7 says what a claim graph is evidence *of*. Its recommendations as a
+  whole are reliable in the sense that matters for use: they score the same from
+  run to run. Its individual claims are not all reliable in the sense that matters
+  for knowledge: some would not be found again.
+- Finding 8 is a negative result for the part of the method that chooses
+  experiments, at the only scale tested. The claim graph's measured advantages come
+  from testing and conditioning, not from how the test points were chosen.
 
 **Hypotheses.** Everything about the six methods that need a language model.
