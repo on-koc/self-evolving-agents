@@ -1,0 +1,21 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.pytest_cache/
+.ruff_cache/
+build/
+dist/
+
+# Run artefacts: provenance databases, LLM caches, raw trajectories.
+# Compact result summaries that are meant to be read live under results/.
+runs/
+*.sqlite
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
+
+# DiscoveryWorld writes rendered frames relative to the working directory.
+video/
+
+.DS_Store

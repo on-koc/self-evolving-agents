@@ -1,0 +1,3913 @@
+{
+ "replicates": [
+  "1000",
+  "2000",
+  "3000",
+  "4000",
+  "7000"
+ ],
+ "per_replicate": {
+  "1000": {
+   "experiments": 77,
+   "episodes_used": 2688,
+   "claims": 21,
+   "by_status": {
+    "superseded": 6,
+    "refuted": 2,
+    "supported": 13
+   },
+   "comparisons": [
+    "charge_below 0.05 vs 0.1",
+    "charge_below 0.1 vs 0.25",
+    "charge_below 0.4 vs 0.25",
+    "charge_below 0.6 vs 0.4",
+    "charge_below 0.8 vs 0.6",
+    "charge_margin 0.25 vs 0",
+    "desat_above 0.3 vs 0.6",
+    "precharge_below 0.6 vs 0, precharge_window_s 900 vs 0"
+   ],
+   "verdicts": {
+    "charge_below 0.1 vs 0.25": {
+     "battery_capacity_wh=200": "intervention_better",
+     "battery_capacity_wh=25": "no_benefit",
+     "battery_capacity_wh=70.7": "baseline_better",
+     "battery_capacity_wh=119": "baseline_better",
+     "battery_capacity_wh=42": "baseline_better",
+     "battery_capacity_wh=154": "inconclusive",
+     "battery_capacity_wh=32.4": "no_benefit",
+     "battery_capacity_wh=400": "intervention_better",
+     "battery_capacity_wh=50": "baseline_better",
+     "battery_capacity_wh=100": "baseline_better"
+    },
+    "precharge_below 0.6 vs 0, precharge_window_s 900 vs 0": {
+     "battery_capacity_wh=200": "no_benefit",
+     "battery_capacity_wh=25": "intervention_better",
+     "battery_capacity_wh=70.7": "intervention_better",
+     "battery_capacity_wh=119": "intervention_better",
+     "battery_capacity_wh=154": "inconclusive",
+     "battery_capacity_wh=400": "no_benefit",
+     "battery_capacity_wh=50": "inconclusive",
+     "battery_capacity_wh=35.4": "intervention_better",
+     "battery_capacity_wh=59.5": "intervention_better",
+     "battery_capacity_wh=42.1": "intervention_better",
+     "battery_capacity_wh=100": "intervention_better"
+    },
+    "desat_above 0.3 vs 0.6": {
+     "battery_capacity_wh=200": "intervention_better",
+     "battery_capacity_wh=25": "inconclusive",
+     "battery_capacity_wh=70.7": "intervention_better",
+     "battery_capacity_wh=42": "intervention_better",
+     "battery_capacity_wh=32.4": "intervention_better",
+     "battery_capacity_wh=400": "intervention_better",
+     "battery_capacity_wh=100": "intervention_better",
+     "battery_capacity_wh=50": "intervention_better"
+    },
+    "charge_margin 0.25 vs 0": {
+     "battery_capacity_wh=200": "inconclusive",
+     "battery_capacity_wh=25": "intervention_better",
+     "battery_capacity_wh=70.7": "intervention_better",
+     "battery_capacity_wh=119": "intervention_better",
+     "battery_capacity_wh=154": "inconclusive",
+     "battery_capacity_wh=400": "inconclusive",
+     "battery_capacity_wh=50": "inconclusive",
+     "battery_capacity_wh=35.4": "intervention_better",
+     "battery_capacity_wh=59.5": "inconclusive",
+     "battery_capacity_wh=42.1": "intervention_better",
+     "battery_capacity_wh=100": "intervention_better"
+    },
+    "charge_below 0.05 vs 0.1": {
+     "battery_capacity_wh=200": "baseline_better",
+     "battery_capacity_wh=25": "no_benefit",
+     "battery_capacity_wh=70.7": "no_benefit",
+     "battery_capacity_wh=119": "baseline_better",
+     "battery_capacity_wh=91.7": "baseline_better",
+     "battery_capacity_wh=400": "no_benefit",
+     "battery_capacity_wh=283": "inconclusive",
+     "battery_capacity_wh=238": "inconclusive",
+     "battery_capacity_wh=336": "inconclusive",
+     "battery_capacity_wh=50": "no_benefit",
+     "battery_capacity_wh=100": "baseline_better"
+    },
+    "charge_below 0.4 vs 0.25": {
+     "battery_capacity_wh=25": "intervention_better",
+     "battery_capacity_wh=200": "baseline_better",
+     "battery_capacity_wh=400": "baseline_better",
+     "battery_capacity_wh=70.7": "baseline_better",
+     "battery_capacity_wh=42": "intervention_better",
+     "battery_capacity_wh=54.5": "intervention_better",
+     "battery_capacity_wh=100": "baseline_better",
+     "battery_capacity_wh=50": "intervention_better"
+    },
+    "charge_below 0.6 vs 0.4": {
+     "battery_capacity_wh=25": "intervention_better",
+     "battery_capacity_wh=200": "baseline_better",
+     "battery_capacity_wh=70.7": "baseline_better",
+     "battery_capacity_wh=42": "no_benefit",
+     "battery_capacity_wh=54.5": "baseline_better",
+     "battery_capacity_wh=32.4": "intervention_better",
+     "battery_capacity_wh=400": "baseline_better",
+     "battery_capacity_wh=100": "baseline_better",
+     "battery_capacity_wh=50": "baseline_better"
+    },
+    "charge_below 0.8 vs 0.6": {
+     "battery_capacity_wh=25": "inconclusive",
+     "battery_capacity_wh=200": "baseline_better",
+     "battery_capacity_wh=70.7": "baseline_better",
+     "battery_capacity_wh=42": "baseline_better",
+     "battery_capacity_wh=32.4": "no_benefit",
+     "battery_capacity_wh=400": "baseline_better",
+     "battery_capacity_wh=100": "baseline_better",
+     "battery_capacity_wh=50": "baseline_better"
+    }
+   },
+   "groups": {
+    "interpolation (inside the studied range)": {
+     "methods": {
+      "reference": {
+       "mean_score": 0.305,
+       "failure_rate": 0.1953,
+       "success_rate": 0.7812
+      },
+      "flat": {
+       "mean_score": 0.1031,
+       "failure_rate": 0.4297,
+       "success_rate": 0.5703
+      },
+      "pooled": {
+       "mean_score": 0.4426,
+       "failure_rate": 0.0156,
+       "success_rate": 0.9297
+      },
+      "conditional": {
+       "mean_score": 0.5979,
+       "failure_rate": 0.0156,
+       "success_rate": 0.9766
+      },
+      "oracle": {
+       "mean_score": 0.607,
+       "failure_rate": 0.0,
+       "success_rate": 0.9531
+      }
+     },
+     "comparisons": {
+      "conditional_minus_pooled": {
+       "n": 128,
+       "mean_a": 0.597884,
+       "mean_b": 0.442574,
+       "diff": 0.155309,
+       "ci_low": 0.127546,
+       "ci_high": 0.185094,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "conditional_minus_flat": {
+       "n": 128,
+       "mean_a": 0.597884,
+       "mean_b": 0.103078,
+       "diff": 0.494805,
+       "ci_low": 0.389416,
+       "ci_high": 0.601423,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "conditional_minus_reference": {
+       "n": 128,
+       "mean_a": 0.597884,
+       "mean_b": 0.304989,
+       "diff": 0.292895,
+       "ci_low": 0.209625,
+       "ci_high": 0.380225,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "pooled_minus_reference": {
+       "n": 128,
+       "mean_a": 0.442574,
+       "mean_b": 0.304989,
+       "diff": 0.137586,
+       "ci_low": 0.040012,
+       "ci_high": 0.234971,
+       "p_value": 0.004999,
+       "confidence": 0.95
+      },
+      "flat_minus_reference": {
+       "n": 128,
+       "mean_a": 0.103078,
+       "mean_b": 0.304989,
+       "diff": -0.20191,
+       "ci_low": -0.296902,
+       "ci_high": -0.112772,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "oracle_minus_conditional": {
+       "n": 128,
+       "mean_a": 0.607024,
+       "mean_b": 0.597884,
+       "diff": 0.009141,
+       "ci_low": -0.018468,
+       "ci_high": 0.04304,
+       "p_value": 0.583883,
+       "confidence": 0.95
+      }
+     },
+     "comparisons_by_seed": {
+      "conditional_minus_pooled": {
+       "n": 32,
+       "mean_a": 0.597884,
+       "mean_b": 0.442574,
+       "diff": 0.155309,
+       "ci_low": 0.133207,
+       "ci_high": 0.175726,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "conditional_minus_flat": {
+       "n": 32,
+       "mean_a": 0.597884,
+       "mean_b": 0.103078,
+       "diff": 0.494805,
+       "ci_low": 0.426833,
+       "ci_high": 0.551778,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "conditional_minus_reference": {
+       "n": 32,
+       "mean_a": 0.597884,
+       "mean_b": 0.304989,
+       "diff": 0.292895,
+       "ci_low": 0.223757,
+       "ci_high": 0.357391,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "pooled_minus_reference": {
+       "n": 32,
+       "mean_a": 0.442574,
+       "mean_b": 0.304989,
+       "diff": 0.137586,
+       "ci_low": 0.07143,
+       "ci_high": 0.20104,
+       "p_value": 0.001,
+       "confidence": 0.95
+      },
+      "flat_minus_reference": {
+       "n": 32,
+       "mean_a": 0.103078,
+       "mean_b": 0.304989,
+       "diff": -0.20191,
+       "ci_low": -0.269662,
+       "ci_high": -0.130566,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "oracle_minus_conditional": {
+       "n": 32,
+       "mean_a": 0.607024,
+       "mean_b": 0.597884,
+       "diff": 0.009141,
+       "ci_low": -0.018229,
+       "ci_high": 0.044409,
+       "p_value": 0.574085,
+       "confidence": 0.95
+      }
+     },
+     "settings": [
+      {
+       "conditions": {
+        "battery_capacity_wh": 35
+       },
+       "settings": {
+        "precharge_window_s": 900.0,
+        "precharge_below": 0.6,
+        "desat_above": 0.3,
+        "charge_margin": 0.25,
+        "charge_below": 0.6
+       },
+       "mean_score": 0.3566
+      },
+      {
+       "conditions": {
+        "battery_capacity_wh": 70
+       },
+       "settings": {
+        "precharge_window_s": 900.0,
+        "precharge_below": 0.6,
+        "desat_above": 0.3,
+        "charge_margin": 0.25
+       },
+       "mean_score": 0.5748
+      },
+      {
+       "conditions": {
+        "battery_capacity_wh": 140
+       },
+       "settings": {
+        "desat_above": 0.3
+       },
+       "mean_score": 0.6357
+      },
+      {
+       "conditions": {
+        "battery_capacity_wh": 280
+       },
+       "settings": {
+        "charge_below": 0.1,
+        "desat_above": 0.3
+       },
+       "mean_score": 0.8245
+      }
+     ]
+    },
+    "extrapolation (outside the studied range)": {
+     "methods": {
+      "reference": {
+       "mean_score": -0.0167,
+       "failure_rate": 0.4844,
+       "success_rate": 0.5156
+      },
+      "flat": {
+       "mean_score": -0.0322,
+       "failure_rate": 0.5,
+       "success_rate": 0.5
+      },
+      "pooled": {
+       "mean_score": 0.2168,
+       "failure_rate": 0.1719,
+       "success_rate": 0.6562
+      },
+      "conditional": {
+       "mean_score": 0.3768,
+       "failure_rate": 0.2031,
+       "success_rate": 0.7969
+      },
+      "oracle": {
+       "mean_score": 0.479,
+       "failure_rate": 0.0938,
+       "success_rate": 0.8281
+      }
+     },
+     "comparisons": {
+      "conditional_minus_pooled": {
+       "n": 64,
+       "mean_a": 0.376765,
+       "mean_b": 0.216842,
+       "diff": 0.159923,
+       "ci_low": 0.017104,
+       "ci_high": 0.297877,
+       "p_value": 0.027395,
+       "confidence": 0.95
+      },
+      "conditional_minus_flat": {
+       "n": 64,
+       "mean_a": 0.376765,
+       "mean_b": -0.0322,
+       "diff": 0.408966,
+       "ci_low": 0.262986,
+       "ci_high": 0.560745,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "conditional_minus_reference": {
+       "n": 64,
+       "mean_a": 0.376765,
+       "mean_b": -0.01675,
+       "diff": 0.393515,
+       "ci_low": 0.250452,
+       "ci_high": 0.53854,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "pooled_minus_reference": {
+       "n": 64,
+       "mean_a": 0.216842,
+       "mean_b": -0.01675,
+       "diff": 0.233592,
+       "ci_low": 0.052257,
+       "ci_high": 0.425289,
+       "p_value": 0.016797,
+       "confidence": 0.95
+      },
+      "flat_minus_reference": {
+       "n": 64,
+       "mean_a": -0.0322,
+       "mean_b": -0.01675,
+       "diff": -0.01545,
+       "ci_low": -0.066337,
+       "ci_high": 0.027899,
+       "p_value": 0.628474,
+       "confidence": 0.95
+      },
+      "oracle_minus_conditional": {
+       "n": 64,
+       "mean_a": 0.478957,
+       "mean_b": 0.376765,
+       "diff": 0.102191,
+       "ci_low": 0.018888,
+       "ci_high": 0.196351,
+       "p_value": 0.019796,
+       "confidence": 0.95
+      }
+     },
+     "comparisons_by_seed": {
+      "conditional_minus_pooled": {
+       "n": 32,
+       "mean_a": 0.376765,
+       "mean_b": 0.216842,
+       "diff": 0.159923,
+       "ci_low": 0.018516,
+       "ci_high": 0.299096,
+       "p_value": 0.032394,
+       "confidence": 0.95
+      },
+      "conditional_minus_flat": {
+       "n": 32,
+       "mean_a": 0.376765,
+       "mean_b": -0.0322,
+       "diff": 0.408966,
+       "ci_low": 0.296156,
+       "ci_high": 0.51859,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "conditional_minus_reference": {
+       "n": 32,
+       "mean_a": 0.376765,
+       "mean_b": -0.01675,
+       "diff": 0.393515,
+       "ci_low": 0.281055,
+       "ci_high": 0.500619,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "pooled_minus_reference": {
+       "n": 32,
+       "mean_a": 0.216842,
+       "mean_b": -0.01675,
+       "diff": 0.233592,
+       "ci_low": 0.089217,
+       "ci_high": 0.371259,
+       "p_value": 0.003799,
+       "confidence": 0.95
+      },
+      "flat_minus_reference": {
+       "n": 32,
+       "mean_a": -0.0322,
+       "mean_b": -0.01675,
+       "diff": -0.01545,
+       "ci_low": -0.070015,
+       "ci_high": 0.02678,
+       "p_value": 0.633473,
+       "confidence": 0.95
+      },
+      "oracle_minus_conditional": {
+       "n": 32,
+       "mean_a": 0.478957,
+       "mean_b": 0.376765,
+       "diff": 0.102191,
+       "ci_low": 0.022273,
+       "ci_high": 0.192001,
+       "p_value": 0.018196,
+       "confidence": 0.95
+      }
+     },
+     "settings": [
+      {
+       "conditions": {
+        "battery_capacity_wh": 18
+       },
+       "settings": {
+        "precharge_window_s": 900.0,
+        "precharge_below": 0.6,
+        "charge_margin": 0.25,
+        "charge_below": 0.6
+       },
+       "mean_score": -0.1234
+      },
+      {
+       "conditions": {
+        "battery_capacity_wh": 600
+       },
+       "settings": {
+        "charge_below": 0.1,
+        "desat_above": 0.3
+       },
+       "mean_score": 0.877
+      }
+     ]
+    }
+   }
+  },
+  "2000": {
+   "experiments": 75,
+   "episodes_used": 2720,
+   "claims": 22,
+   "by_status": {
+    "superseded": 7,
+    "supported": 14,
+    "refuted": 1
+   },
+   "comparisons": [
+    "charge_below 0.05 vs 0.1",
+    "charge_below 0.1 vs 0.25",
+    "charge_below 0.4 vs 0.25",
+    "charge_below 0.6 vs 0.4",
+    "charge_below 0.8 vs 0.6",
+    "charge_margin 0.25 vs 0",
+    "desat_above 0.3 vs 0.6",
+    "precharge_below 0.6 vs 0, precharge_window_s 900 vs 0"
+   ],
+   "verdicts": {
+    "charge_below 0.1 vs 0.25": {
+     "battery_capacity_wh=200": "intervention_better",
+     "battery_capacity_wh=25": "no_benefit",
+     "battery_capacity_wh=70.7": "baseline_better",
+     "battery_capacity_wh=119": "baseline_better",
+     "battery_capacity_wh=42": "baseline_better",
+     "battery_capacity_wh=154": "intervention_better",
+     "battery_capacity_wh=32.4": "baseline_better",
+     "battery_capacity_wh=400": "intervention_better",
+     "battery_capacity_wh=50": "baseline_better",
+     "battery_capacity_wh=100": "baseline_better"
+    },
+    "precharge_below 0.6 vs 0, precharge_window_s 900 vs 0": {
+     "battery_capacity_wh=200": "inconclusive",
+     "battery_capacity_wh=25": "inconclusive",
+     "battery_capacity_wh=50": "intervention_better",
+     "battery_capacity_wh=100": "intervention_better",
+     "battery_capacity_wh=35.4": "intervention_better",
+     "battery_capacity_wh=141": "intervention_better",
+     "battery_capacity_wh=29.7": "intervention_better",
+     "battery_capacity_wh=400": "baseline_better",
+     "battery_capacity_wh=283": "no_benefit",
+     "battery_capacity_wh=168": "intervention_better",
+     "battery_capacity_wh=238": "no_benefit",
+     "battery_capacity_wh=336": "baseline_better"
+    },
+    "desat_above 0.3 vs 0.6": {
+     "battery_capacity_wh=200": "intervention_better",
+     "battery_capacity_wh=25": "inconclusive",
+     "battery_capacity_wh=70.7": "intervention_better",
+     "battery_capacity_wh=42": "intervention_better",
+     "battery_capacity_wh=32.4": "intervention_better",
+     "battery_capacity_wh=400": "intervention_better",
+     "battery_capacity_wh=100": "intervention_better",
+     "battery_capacity_wh=50": "intervention_better"
+    },
+    "charge_margin 0.25 vs 0": {
+     "battery_capacity_wh=200": "intervention_better",
+     "battery_capacity_wh=25": "intervention_better",
+     "battery_capacity_wh=50": "intervention_better",
+     "battery_capacity_wh=100": "intervention_better",
+     "battery_capacity_wh=400": "inconclusive",
+     "battery_capacity_wh=283": "intervention_better",
+     "battery_capacity_wh=336": "inconclusive"
+    },
+    "charge_below 0.05 vs 0.1": {
+     "battery_capacity_wh=200": "no_benefit",
+     "battery_capacity_wh=25": "no_benefit",
+     "battery_capacity_wh=50": "no_benefit",
+     "battery_capacity_wh=100": "baseline_better",
+     "battery_capacity_wh=400": "inconclusive",
+     "battery_capacity_wh=70.7": "baseline_better",
+     "battery_capacity_wh=141": "baseline_better",
+     "battery_capacity_wh=283": "intervention_better",
+     "battery_capacity_wh=168": "baseline_better",
+     "battery_capacity_wh=238": "inconclusive",
+     "battery_capacity_wh=59.5": "no_benefit",
+     "battery_capacity_wh=336": "intervention_better"
+    },
+    "charge_below 0.4 vs 0.25": {
+     "battery_capacity_wh=25": "intervention_better",
+     "battery_capacity_wh=200": "baseline_better",
+     "battery_capacity_wh=400": "baseline_better",
+     "battery_capacity_wh=70.7": "baseline_better",
+     "battery_capacity_wh=42": "intervention_better",
+     "battery_capacity_wh=54.5": "baseline_better",
+     "battery_capacity_wh=100": "baseline_better",
+     "battery_capacity_wh=50": "intervention_better"
+    },
+    "charge_below 0.6 vs 0.4": {
+     "battery_capacity_wh=25": "intervention_better",
+     "battery_capacity_wh=200": "baseline_better",
+     "battery_capacity_wh=400": "baseline_better",
+     "battery_capacity_wh=70.7": "baseline_better",
+     "battery_capacity_wh=42": "baseline_better",
+     "battery_capacity_wh=32.4": "intervention_better",
+     "battery_capacity_wh=100": "baseline_better",
+     "battery_capacity_wh=50": "inconclusive",
+     "battery_capacity_wh=59.5": "baseline_better"
+    },
+    "charge_below 0.8 vs 0.6": {
+     "battery_capacity_wh=25": "inconclusive",
+     "battery_capacity_wh=200": "baseline_better",
+     "battery_capacity_wh=70.7": "baseline_better",
+     "battery_capacity_wh=42": "baseline_better",
+     "battery_capacity_wh=32.4": "baseline_better",
+     "battery_capacity_wh=400": "baseline_better",
+     "battery_capacity_wh=100": "baseline_better",
+     "battery_capacity_wh=50": "baseline_better"
+    }
+   },
+   "groups": {
+    "interpolation (inside the studied range)": {
+     "methods": {
+      "reference": {
+       "mean_score": 0.305,
+       "failure_rate": 0.1953,
+       "success_rate": 0.7812
+      },
+      "flat": {
+       "mean_score": 0.2589,
+       "failure_rate": 0.2969,
+       "success_rate": 0.6953
+      },
+      "pooled": {
+       "mean_score": 0.5313,
+       "failure_rate": 0.0156,
+       "success_rate": 0.9688
+      },
+      "conditional": {
+       "mean_score": 0.6209,
+       "failure_rate": 0.0156,
+       "success_rate": 0.9766
+      },
+      "oracle": {
+       "mean_score": 0.607,
+       "failure_rate": 0.0,
+       "success_rate": 0.9531
+      }
+     },
+     "comparisons": {
+      "conditional_minus_pooled": {
+       "n": 128,
+       "mean_a": 0.620928,
+       "mean_b": 0.531342,
+       "diff": 0.089586,
+       "ci_low": 0.068383,
+       "ci_high": 0.113029,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "conditional_minus_flat": {
+       "n": 128,
+       "mean_a": 0.620928,
+       "mean_b": 0.258912,
+       "diff": 0.362016,
+       "ci_low": 0.265781,
+       "ci_high": 0.460964,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "conditional_minus_reference": {
+       "n": 128,
+       "mean_a": 0.620928,
+       "mean_b": 0.304989,
+       "diff": 0.315939,
+       "ci_low": 0.23371,
+       "ci_high": 0.402041,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "pooled_minus_reference": {
+       "n": 128,
+       "mean_a": 0.531342,
+       "mean_b": 0.304989,
+       "diff": 0.226353,
+       "ci_low": 0.133102,
+       "ci_high": 0.319043,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "flat_minus_reference": {
+       "n": 128,
+       "mean_a": 0.258912,
+       "mean_b": 0.304989,
+       "diff": -0.046077,
+       "ci_low": -0.121866,
+       "ci_high": 0.028953,
+       "p_value": 0.235953,
+       "confidence": 0.95
+      },
+      "oracle_minus_conditional": {
+       "n": 128,
+       "mean_a": 0.607024,
+       "mean_b": 0.620928,
+       "diff": -0.013903,
+       "ci_low": -0.040295,
+       "ci_high": 0.020018,
+       "p_value": 0.409118,
+       "confidence": 0.95
+      }
+     },
+     "comparisons_by_seed": {
+      "conditional_minus_pooled": {
+       "n": 32,
+       "mean_a": 0.620928,
+       "mean_b": 0.531342,
+       "diff": 0.089586,
+       "ci_low": 0.069592,
+       "ci_high": 0.110366,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "conditional_minus_flat": {
+       "n": 32,
+       "mean_a": 0.620928,
+       "mean_b": 0.258912,
+       "diff": 0.362016,
+       "ci_low": 0.299254,
+       "ci_high": 0.423493,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "conditional_minus_reference": {
+       "n": 32,
+       "mean_a": 0.620928,
+       "mean_b": 0.304989,
+       "diff": 0.315939,
+       "ci_low": 0.245561,
+       "ci_high": 0.382228,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "pooled_minus_reference": {
+       "n": 32,
+       "mean_a": 0.531342,
+       "mean_b": 0.304989,
+       "diff": 0.226353,
+       "ci_low": 0.160124,
+       "ci_high": 0.286854,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "flat_minus_reference": {
+       "n": 32,
+       "mean_a": 0.258912,
+       "mean_b": 0.304989,
+       "diff": -0.046077,
+       "ci_low": -0.115004,
+       "ci_high": 0.026892,
+       "p_value": 0.210558,
+       "confidence": 0.95
+      },
+      "oracle_minus_conditional": {
+       "n": 32,
+       "mean_a": 0.607024,
+       "mean_b": 0.620928,
+       "diff": -0.013903,
+       "ci_low": -0.04125,
+       "ci_high": 0.018392,
+       "p_value": 0.387323,
+       "confidence": 0.95
+      }
+     },
+     "settings": [
+      {
+       "conditions": {
+        "battery_capacity_wh": 35
+       },
+       "settings": {
+        "charge_below": 0.6,
+        "precharge_window_s": 900.0,
+        "precharge_below": 0.6,
+        "desat_above": 0.3,
+        "charge_margin": 0.25
+       },
+       "mean_score": 0.3566
+      },
+      {
+       "conditions": {
+        "battery_capacity_wh": 70
+       },
+       "settings": {
+        "precharge_window_s": 900.0,
+        "precharge_below": 0.6,
+        "desat_above": 0.3,
+        "charge_margin": 0.25
+       },
+       "mean_score": 0.5748
+      },
+      {
+       "conditions": {
+        "battery_capacity_wh": 140
+       },
+       "settings": {
+        "charge_below": 0.1,
+        "precharge_window_s": 900.0,
+        "precharge_below": 0.6,
+        "desat_above": 0.3,
+        "charge_margin": 0.25
+       },
+       "mean_score": 0.7105
+      },
+      {
+       "conditions": {
+        "battery_capacity_wh": 280
+       },
+       "settings": {
+        "charge_below": 0.05,
+        "desat_above": 0.3,
+        "charge_margin": 0.25
+       },
+       "mean_score": 0.8418
+      }
+     ]
+    },
+    "extrapolation (outside the studied range)": {
+     "methods": {
+      "reference": {
+       "mean_score": -0.0167,
+       "failure_rate": 0.4844,
+       "success_rate": 0.5156
+      },
+      "flat": {
+       "mean_score": -0.0296,
+       "failure_rate": 0.5,
+       "success_rate": 0.5
+      },
+      "pooled": {
+       "mean_score": 0.0308,
+       "failure_rate": 0.4062,
+       "success_rate": 0.5781
+      },
+      "conditional": {
+       "mean_score": 0.3768,
+       "failure_rate": 0.2031,
+       "success_rate": 0.7969
+      },
+      "oracle": {
+       "mean_score": 0.479,
+       "failure_rate": 0.0938,
+       "success_rate": 0.8281
+      }
+     },
+     "comparisons": {
+      "conditional_minus_pooled": {
+       "n": 64,
+       "mean_a": 0.376765,
+       "mean_b": 0.030833,
+       "diff": 0.345932,
+       "ci_low": 0.224246,
+       "ci_high": 0.472754,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "conditional_minus_flat": {
+       "n": 64,
+       "mean_a": 0.376765,
+       "mean_b": -0.029622,
+       "diff": 0.406387,
+       "ci_low": 0.262504,
+       "ci_high": 0.555744,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "conditional_minus_reference": {
+       "n": 64,
+       "mean_a": 0.376765,
+       "mean_b": -0.01675,
+       "diff": 0.393515,
+       "ci_low": 0.250452,
+       "ci_high": 0.53854,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "pooled_minus_reference": {
+       "n": 64,
+       "mean_a": 0.030833,
+       "mean_b": -0.01675,
+       "diff": 0.047583,
+       "ci_low": -0.043642,
+       "ci_high": 0.15853,
+       "p_value": 0.383723,
+       "confidence": 0.95
+      },
+      "flat_minus_reference": {
+       "n": 64,
+       "mean_a": -0.029622,
+       "mean_b": -0.01675,
+       "diff": -0.012872,
+       "ci_low": -0.061367,
+       "ci_high": 0.027551,
+       "p_value": 0.686863,
+       "confidence": 0.95
+      },
+      "oracle_minus_conditional": {
+       "n": 64,
+       "mean_a": 0.478957,
+       "mean_b": 0.376765,
+       "diff": 0.102191,
+       "ci_low": 0.018888,
+       "ci_high": 0.196351,
+       "p_value": 0.019796,
+       "confidence": 0.95
+      }
+     },
+     "comparisons_by_seed": {
+      "conditional_minus_pooled": {
+       "n": 32,
+       "mean_a": 0.376765,
+       "mean_b": 0.030833,
+       "diff": 0.345932,
+       "ci_low": 0.235463,
+       "ci_high": 0.459004,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "conditional_minus_flat": {
+       "n": 32,
+       "mean_a": 0.376765,
+       "mean_b": -0.029622,
+       "diff": 0.406387,
+       "ci_low": 0.29523,
+       "ci_high": 0.51386,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "conditional_minus_reference": {
+       "n": 32,
+       "mean_a": 0.376765,
+       "mean_b": -0.01675,
+       "diff": 0.393515,
+       "ci_low": 0.281055,
+       "ci_high": 0.500619,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "pooled_minus_reference": {
+       "n": 32,
+       "mean_a": 0.030833,
+       "mean_b": -0.01675,
+       "diff": 0.047583,
+       "ci_low": -0.042012,
+       "ci_high": 0.147524,
+       "p_value": 0.326135,
+       "confidence": 0.95
+      },
+      "flat_minus_reference": {
+       "n": 32,
+       "mean_a": -0.029622,
+       "mean_b": -0.01675,
+       "diff": -0.012872,
+       "ci_low": -0.064053,
+       "ci_high": 0.02688,
+       "p_value": 0.69946,
+       "confidence": 0.95
+      },
+      "oracle_minus_conditional": {
+       "n": 32,
+       "mean_a": 0.478957,
+       "mean_b": 0.376765,
+       "diff": 0.102191,
+       "ci_low": 0.022273,
+       "ci_high": 0.192001,
+       "p_value": 0.018196,
+       "confidence": 0.95
+      }
+     },
+     "settings": [
+      {
+       "conditions": {
+        "battery_capacity_wh": 18
+       },
+       "settings": {
+        "charge_margin": 0.25,
+        "charge_below": 0.6
+       },
+       "mean_score": -0.1234
+      },
+      {
+       "conditions": {
+        "battery_capacity_wh": 600
+       },
+       "settings": {
+        "charge_below": 0.1,
+        "desat_above": 0.3
+       },
+       "mean_score": 0.877
+      }
+     ]
+    }
+   }
+  },
+  "3000": {
+   "experiments": 79,
+   "episodes_used": 2608,
+   "claims": 21,
+   "by_status": {
+    "superseded": 7,
+    "supported": 12,
+    "contested": 1,
+    "refuted": 1
+   },
+   "comparisons": [
+    "charge_below 0.05 vs 0.1",
+    "charge_below 0.1 vs 0.25",
+    "charge_below 0.4 vs 0.25",
+    "charge_below 0.6 vs 0.4",
+    "charge_below 0.8 vs 0.6",
+    "charge_margin 0.25 vs 0",
+    "desat_above 0.3 vs 0.6",
+    "precharge_below 0.6 vs 0, precharge_window_s 900 vs 0"
+   ],
+   "verdicts": {
+    "charge_below 0.1 vs 0.25": {
+     "battery_capacity_wh=200": "intervention_better",
+     "battery_capacity_wh=25": "no_benefit",
+     "battery_capacity_wh=70.7": "baseline_better",
+     "battery_capacity_wh=119": "baseline_better",
+     "battery_capacity_wh=42": "baseline_better",
+     "battery_capacity_wh=154": "intervention_better",
+     "battery_capacity_wh=32.4": "baseline_better",
+     "battery_capacity_wh=400": "intervention_better",
+     "battery_capacity_wh=50": "baseline_better",
+     "battery_capacity_wh=100": "baseline_better"
+    },
+    "precharge_below 0.6 vs 0, precharge_window_s 900 vs 0": {
+     "battery_capacity_wh=200": "inconclusive",
+     "battery_capacity_wh=25": "intervention_better",
+     "battery_capacity_wh=70.7": "intervention_better",
+     "battery_capacity_wh=119": "intervention_better",
+     "battery_capacity_wh=154": "intervention_better",
+     "battery_capacity_wh=400": "no_benefit",
+     "battery_capacity_wh=283": "no_benefit",
+     "battery_capacity_wh=238": "no_benefit",
+     "battery_capacity_wh=50": "inconclusive",
+     "battery_capacity_wh=35.4": "inconclusive",
+     "battery_capacity_wh=59.5": "intervention_better",
+     "battery_capacity_wh=29.7": "intervention_better",
+     "battery_capacity_wh=100": "intervention_better"
+    },
+    "desat_above 0.3 vs 0.6": {
+     "battery_capacity_wh=200": "intervention_better",
+     "battery_capacity_wh=25": "inconclusive",
+     "battery_capacity_wh=70.7": "intervention_better",
+     "battery_capacity_wh=42": "intervention_better",
+     "battery_capacity_wh=32.4": "intervention_better",
+     "battery_capacity_wh=400": "intervention_better",
+     "battery_capacity_wh=100": "intervention_better",
+     "battery_capacity_wh=50": "intervention_better"
+    },
+    "charge_margin 0.25 vs 0": {
+     "battery_capacity_wh=200": "intervention_better",
+     "battery_capacity_wh=25": "inconclusive",
+     "battery_capacity_wh=70.7": "intervention_better",
+     "battery_capacity_wh=42": "intervention_better",
+     "battery_capacity_wh=32.4": "intervention_better",
+     "battery_capacity_wh=400": "inconclusive",
+     "battery_capacity_wh=283": "inconclusive",
+     "battery_capacity_wh=238": "intervention_better",
+     "battery_capacity_wh=100": "intervention_better",
+     "battery_capacity_wh=50": "intervention_better"
+    },
+    "charge_below 0.05 vs 0.1": {
+     "battery_capacity_wh=200": "baseline_better",
+     "battery_capacity_wh=25": "no_benefit",
+     "battery_capacity_wh=70.7": "baseline_better",
+     "battery_capacity_wh=42": "no_benefit",
+     "battery_capacity_wh=54.5": "no_benefit",
+     "battery_capacity_wh=400": "intervention_better",
+     "battery_capacity_wh=283": "intervention_better",
+     "battery_capacity_wh=238": "intervention_better",
+     "battery_capacity_wh=100": "baseline_better",
+     "battery_capacity_wh=50": "no_benefit"
+    },
+    "charge_below 0.4 vs 0.25": {
+     "battery_capacity_wh=25": "intervention_better",
+     "battery_capacity_wh=200": "baseline_better",
+     "battery_capacity_wh=400": "baseline_better",
+     "battery_capacity_wh=70.7": "inconclusive",
+     "battery_capacity_wh=119": "baseline_better",
+     "battery_capacity_wh=42": "intervention_better",
+     "battery_capacity_wh=54.5": "intervention_better",
+     "battery_capacity_wh=91.7": "baseline_better",
+     "battery_capacity_wh=100": "baseline_better",
+     "battery_capacity_wh=50": "intervention_better"
+    },
+    "charge_below 0.6 vs 0.4": {
+     "battery_capacity_wh=25": "intervention_better",
+     "battery_capacity_wh=200": "baseline_better",
+     "battery_capacity_wh=70.7": "baseline_better",
+     "battery_capacity_wh=42": "inconclusive",
+     "battery_capacity_wh=54.5": "baseline_better",
+     "battery_capacity_wh=32.4": "intervention_better",
+     "battery_capacity_wh=400": "baseline_better",
+     "battery_capacity_wh=100": "baseline_better",
+     "battery_capacity_wh=50": "baseline_better"
+    },
+    "charge_below 0.8 vs 0.6": {
+     "battery_capacity_wh=25": "inconclusive",
+     "battery_capacity_wh=200": "baseline_better",
+     "battery_capacity_wh=70.7": "baseline_better",
+     "battery_capacity_wh=42": "baseline_better",
+     "battery_capacity_wh=32.4": "no_benefit",
+     "battery_capacity_wh=400": "baseline_better",
+     "battery_capacity_wh=100": "baseline_better",
+     "battery_capacity_wh=50": "baseline_better"
+    }
+   },
+   "groups": {
+    "interpolation (inside the studied range)": {
+     "methods": {
+      "reference": {
+       "mean_score": 0.305,
+       "failure_rate": 0.1953,
+       "success_rate": 0.7812
+      },
+      "flat": {
+       "mean_score": 0.2589,
+       "failure_rate": 0.2969,
+       "success_rate": 0.6953
+      },
+      "pooled": {
+       "mean_score": 0.4426,
+       "failure_rate": 0.0156,
+       "success_rate": 0.9297
+      },
+      "conditional": {
+       "mean_score": 0.622,
+       "failure_rate": 0.0156,
+       "success_rate": 0.9766
+      },
+      "oracle": {
+       "mean_score": 0.607,
+       "failure_rate": 0.0,
+       "success_rate": 0.9531
+      }
+     },
+     "comparisons": {
+      "conditional_minus_pooled": {
+       "n": 128,
+       "mean_a": 0.622005,
+       "mean_b": 0.442574,
+       "diff": 0.179431,
+       "ci_low": 0.149497,
+       "ci_high": 0.212047,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "conditional_minus_flat": {
+       "n": 128,
+       "mean_a": 0.622005,
+       "mean_b": 0.258912,
+       "diff": 0.363093,
+       "ci_low": 0.266631,
+       "ci_high": 0.461521,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "conditional_minus_reference": {
+       "n": 128,
+       "mean_a": 0.622005,
+       "mean_b": 0.304989,
+       "diff": 0.317017,
+       "ci_low": 0.234593,
+       "ci_high": 0.403177,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "pooled_minus_reference": {
+       "n": 128,
+       "mean_a": 0.442574,
+       "mean_b": 0.304989,
+       "diff": 0.137586,
+       "ci_low": 0.040012,
+       "ci_high": 0.234971,
+       "p_value": 0.004999,
+       "confidence": 0.95
+      },
+      "flat_minus_reference": {
+       "n": 128,
+       "mean_a": 0.258912,
+       "mean_b": 0.304989,
+       "diff": -0.046077,
+       "ci_low": -0.121866,
+       "ci_high": 0.028953,
+       "p_value": 0.235953,
+       "confidence": 0.95
+      },
+      "oracle_minus_conditional": {
+       "n": 128,
+       "mean_a": 0.607024,
+       "mean_b": 0.622005,
+       "diff": -0.014981,
+       "ci_low": -0.041438,
+       "ci_high": 0.019019,
+       "p_value": 0.375525,
+       "confidence": 0.95
+      }
+     },
+     "comparisons_by_seed": {
+      "conditional_minus_pooled": {
+       "n": 32,
+       "mean_a": 0.622005,
+       "mean_b": 0.442574,
+       "diff": 0.179431,
+       "ci_low": 0.153556,
+       "ci_high": 0.203116,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "conditional_minus_flat": {
+       "n": 32,
+       "mean_a": 0.622005,
+       "mean_b": 0.258912,
+       "diff": 0.363093,
+       "ci_low": 0.300103,
+       "ci_high": 0.424212,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "conditional_minus_reference": {
+       "n": 32,
+       "mean_a": 0.622005,
+       "mean_b": 0.304989,
+       "diff": 0.317017,
+       "ci_low": 0.246742,
+       "ci_high": 0.38343,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "pooled_minus_reference": {
+       "n": 32,
+       "mean_a": 0.442574,
+       "mean_b": 0.304989,
+       "diff": 0.137586,
+       "ci_low": 0.07143,
+       "ci_high": 0.20104,
+       "p_value": 0.001,
+       "confidence": 0.95
+      },
+      "flat_minus_reference": {
+       "n": 32,
+       "mean_a": 0.258912,
+       "mean_b": 0.304989,
+       "diff": -0.046077,
+       "ci_low": -0.115004,
+       "ci_high": 0.026892,
+       "p_value": 0.210558,
+       "confidence": 0.95
+      },
+      "oracle_minus_conditional": {
+       "n": 32,
+       "mean_a": 0.607024,
+       "mean_b": 0.622005,
+       "diff": -0.014981,
+       "ci_low": -0.042639,
+       "ci_high": 0.017872,
+       "p_value": 0.360528,
+       "confidence": 0.95
+      }
+     },
+     "settings": [
+      {
+       "conditions": {
+        "battery_capacity_wh": 35
+       },
+       "settings": {
+        "charge_below": 0.6,
+        "desat_above": 0.3,
+        "charge_margin": 0.25
+       },
+       "mean_score": 0.3566
+      },
+      {
+       "conditions": {
+        "battery_capacity_wh": 70
+       },
+       "settings": {
+        "precharge_window_s": 900.0,
+        "precharge_below": 0.6,
+        "desat_above": 0.3,
+        "charge_margin": 0.25
+       },
+       "mean_score": 0.5748
+      },
+      {
+       "conditions": {
+        "battery_capacity_wh": 140
+       },
+       "settings": {
+        "charge_below": 0.1,
+        "precharge_window_s": 900.0,
+        "precharge_below": 0.6,
+        "desat_above": 0.3,
+        "charge_margin": 0.25
+       },
+       "mean_score": 0.7105
+      },
+      {
+       "conditions": {
+        "battery_capacity_wh": 280
+       },
+       "settings": {
+        "charge_below": 0.05,
+        "desat_above": 0.3
+       },
+       "mean_score": 0.8461
+      }
+     ]
+    },
+    "extrapolation (outside the studied range)": {
+     "methods": {
+      "reference": {
+       "mean_score": -0.0167,
+       "failure_rate": 0.4844,
+       "success_rate": 0.5156
+      },
+      "flat": {
+       "mean_score": -0.0296,
+       "failure_rate": 0.5,
+       "success_rate": 0.5
+      },
+      "pooled": {
+       "mean_score": 0.2168,
+       "failure_rate": 0.1719,
+       "success_rate": 0.6562
+      },
+      "conditional": {
+       "mean_score": 0.3598,
+       "failure_rate": 0.2031,
+       "success_rate": 0.7344
+      },
+      "oracle": {
+       "mean_score": 0.479,
+       "failure_rate": 0.0938,
+       "success_rate": 0.8281
+      }
+     },
+     "comparisons": {
+      "conditional_minus_pooled": {
+       "n": 64,
+       "mean_a": 0.359756,
+       "mean_b": 0.216842,
+       "diff": 0.142914,
+       "ci_low": -0.014724,
+       "ci_high": 0.298861,
+       "p_value": 0.089782,
+       "confidence": 0.95
+      },
+      "conditional_minus_flat": {
+       "n": 64,
+       "mean_a": 0.359756,
+       "mean_b": -0.029622,
+       "diff": 0.389378,
+       "ci_low": 0.250214,
+       "ci_high": 0.534642,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "conditional_minus_reference": {
+       "n": 64,
+       "mean_a": 0.359756,
+       "mean_b": -0.01675,
+       "diff": 0.376506,
+       "ci_low": 0.239396,
+       "ci_high": 0.519906,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "pooled_minus_reference": {
+       "n": 64,
+       "mean_a": 0.216842,
+       "mean_b": -0.01675,
+       "diff": 0.233592,
+       "ci_low": 0.052257,
+       "ci_high": 0.425289,
+       "p_value": 0.016797,
+       "confidence": 0.95
+      },
+      "flat_minus_reference": {
+       "n": 64,
+       "mean_a": -0.029622,
+       "mean_b": -0.01675,
+       "diff": -0.012872,
+       "ci_low": -0.061367,
+       "ci_high": 0.027551,
+       "p_value": 0.686863,
+       "confidence": 0.95
+      },
+      "oracle_minus_conditional": {
+       "n": 64,
+       "mean_a": 0.478957,
+       "mean_b": 0.359756,
+       "diff": 0.1192,
+       "ci_low": 0.021669,
+       "ci_high": 0.226093,
+       "p_value": 0.035393,
+       "confidence": 0.95
+      }
+     },
+     "comparisons_by_seed": {
+      "conditional_minus_pooled": {
+       "n": 32,
+       "mean_a": 0.359756,
+       "mean_b": 0.216842,
+       "diff": 0.142914,
+       "ci_low": -0.023493,
+       "ci_high": 0.300042,
+       "p_value": 0.09818,
+       "confidence": 0.95
+      },
+      "conditional_minus_flat": {
+       "n": 32,
+       "mean_a": 0.359756,
+       "mean_b": -0.029622,
+       "diff": 0.389378,
+       "ci_low": 0.280477,
+       "ci_high": 0.495391,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "conditional_minus_reference": {
+       "n": 32,
+       "mean_a": 0.359756,
+       "mean_b": -0.01675,
+       "diff": 0.376506,
+       "ci_low": 0.269674,
+       "ci_high": 0.480569,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "pooled_minus_reference": {
+       "n": 32,
+       "mean_a": 0.216842,
+       "mean_b": -0.01675,
+       "diff": 0.233592,
+       "ci_low": 0.089217,
+       "ci_high": 0.371259,
+       "p_value": 0.003799,
+       "confidence": 0.95
+      },
+      "flat_minus_reference": {
+       "n": 32,
+       "mean_a": -0.029622,
+       "mean_b": -0.01675,
+       "diff": -0.012872,
+       "ci_low": -0.064053,
+       "ci_high": 0.02688,
+       "p_value": 0.69946,
+       "confidence": 0.95
+      },
+      "oracle_minus_conditional": {
+       "n": 32,
+       "mean_a": 0.478957,
+       "mean_b": 0.359756,
+       "diff": 0.1192,
+       "ci_low": 0.022854,
+       "ci_high": 0.217471,
+       "p_value": 0.031394,
+       "confidence": 0.95
+      }
+     },
+     "settings": [
+      {
+       "conditions": {
+        "battery_capacity_wh": 18
+       },
+       "settings": {
+        "charge_below": 0.6
+       },
+       "mean_score": -0.1583
+      },
+      {
+       "conditions": {
+        "battery_capacity_wh": 600
+       },
+       "settings": {
+        "charge_below": 0.05,
+        "desat_above": 0.3
+       },
+       "mean_score": 0.8778
+      }
+     ]
+    }
+   }
+  },
+  "4000": {
+   "experiments": 71,
+   "episodes_used": 2304,
+   "claims": 21,
+   "by_status": {
+    "superseded": 7,
+    "supported": 13,
+    "refuted": 1
+   },
+   "comparisons": [
+    "charge_below 0.05 vs 0.1",
+    "charge_below 0.1 vs 0.25",
+    "charge_below 0.4 vs 0.25",
+    "charge_below 0.6 vs 0.4",
+    "charge_below 0.8 vs 0.6",
+    "charge_margin 0.25 vs 0",
+    "desat_above 0.3 vs 0.6",
+    "precharge_below 0.6 vs 0, precharge_window_s 900 vs 0"
+   ],
+   "verdicts": {
+    "charge_below 0.1 vs 0.25": {
+     "battery_capacity_wh=200": "intervention_better",
+     "battery_capacity_wh=25": "no_benefit",
+     "battery_capacity_wh=70.7": "baseline_better",
+     "battery_capacity_wh=119": "baseline_better",
+     "battery_capacity_wh=42": "baseline_better",
+     "battery_capacity_wh=154": "intervention_better",
+     "battery_capacity_wh=32.4": "no_benefit",
+     "battery_capacity_wh=400": "intervention_better",
+     "battery_capacity_wh=50": "baseline_better",
+     "battery_capacity_wh=100": "baseline_better"
+    },
+    "precharge_below 0.6 vs 0, precharge_window_s 900 vs 0": {
+     "battery_capacity_wh=200": "inconclusive",
+     "battery_capacity_wh=25": "intervention_better",
+     "battery_capacity_wh=70.7": "intervention_better",
+     "battery_capacity_wh=119": "intervention_better",
+     "battery_capacity_wh=154": "intervention_better",
+     "battery_capacity_wh=400": "no_benefit",
+     "battery_capacity_wh=283": "no_benefit",
+     "battery_capacity_wh=238": "no_benefit",
+     "battery_capacity_wh=50": "intervention_better",
+     "battery_capacity_wh=100": "intervention_better"
+    },
+    "desat_above 0.3 vs 0.6": {
+     "battery_capacity_wh=200": "intervention_better",
+     "battery_capacity_wh=25": "no_benefit",
+     "battery_capacity_wh=70.7": "intervention_better",
+     "battery_capacity_wh=42": "intervention_better",
+     "battery_capacity_wh=32.4": "intervention_better",
+     "battery_capacity_wh=400": "intervention_better",
+     "battery_capacity_wh=100": "intervention_better",
+     "battery_capacity_wh=50": "intervention_better"
+    },
+    "charge_margin 0.25 vs 0": {
+     "battery_capacity_wh=200": "intervention_better",
+     "battery_capacity_wh=25": "intervention_better",
+     "battery_capacity_wh=50": "intervention_better",
+     "battery_capacity_wh=100": "intervention_better",
+     "battery_capacity_wh=400": "inconclusive",
+     "battery_capacity_wh=283": "intervention_better",
+     "battery_capacity_wh=336": "inconclusive"
+    },
+    "charge_below 0.05 vs 0.1": {
+     "battery_capacity_wh=200": "baseline_better",
+     "battery_capacity_wh=25": "no_benefit",
+     "battery_capacity_wh=70.7": "no_benefit",
+     "battery_capacity_wh=119": "baseline_better",
+     "battery_capacity_wh=91.7": "baseline_better",
+     "battery_capacity_wh=400": "intervention_better",
+     "battery_capacity_wh=283": "intervention_better",
+     "battery_capacity_wh=238": "intervention_better",
+     "battery_capacity_wh=50": "no_benefit",
+     "battery_capacity_wh=100": "baseline_better"
+    },
+    "charge_below 0.4 vs 0.25": {
+     "battery_capacity_wh=25": "intervention_better",
+     "battery_capacity_wh=200": "baseline_better",
+     "battery_capacity_wh=400": "baseline_better",
+     "battery_capacity_wh=70.7": "baseline_better",
+     "battery_capacity_wh=42": "intervention_better",
+     "battery_capacity_wh=54.5": "intervention_better",
+     "battery_capacity_wh=100": "baseline_better",
+     "battery_capacity_wh=50": "intervention_better"
+    },
+    "charge_below 0.6 vs 0.4": {
+     "battery_capacity_wh=25": "intervention_better",
+     "battery_capacity_wh=200": "baseline_better",
+     "battery_capacity_wh=70.7": "baseline_better",
+     "battery_capacity_wh=42": "baseline_better",
+     "battery_capacity_wh=32.4": "intervention_better",
+     "battery_capacity_wh=400": "baseline_better",
+     "battery_capacity_wh=100": "baseline_better",
+     "battery_capacity_wh=50": "baseline_better"
+    },
+    "charge_below 0.8 vs 0.6": {
+     "battery_capacity_wh=25": "inconclusive",
+     "battery_capacity_wh=200": "baseline_better",
+     "battery_capacity_wh=70.7": "baseline_better",
+     "battery_capacity_wh=42": "no_benefit",
+     "battery_capacity_wh=54.5": "baseline_better",
+     "battery_capacity_wh=32.4": "baseline_better",
+     "battery_capacity_wh=400": "baseline_better",
+     "battery_capacity_wh=100": "baseline_better",
+     "battery_capacity_wh=50": "baseline_better"
+    }
+   },
+   "groups": {
+    "interpolation (inside the studied range)": {
+     "methods": {
+      "reference": {
+       "mean_score": 0.305,
+       "failure_rate": 0.1953,
+       "success_rate": 0.7812
+      },
+      "flat": {
+       "mean_score": 0.2589,
+       "failure_rate": 0.2969,
+       "success_rate": 0.6953
+      },
+      "pooled": {
+       "mean_score": 0.4426,
+       "failure_rate": 0.0156,
+       "success_rate": 0.9297
+      },
+      "conditional": {
+       "mean_score": 0.6209,
+       "failure_rate": 0.0156,
+       "success_rate": 0.9766
+      },
+      "oracle": {
+       "mean_score": 0.607,
+       "failure_rate": 0.0,
+       "success_rate": 0.9531
+      }
+     },
+     "comparisons": {
+      "conditional_minus_pooled": {
+       "n": 128,
+       "mean_a": 0.620928,
+       "mean_b": 0.442574,
+       "diff": 0.178353,
+       "ci_low": 0.148817,
+       "ci_high": 0.210411,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "conditional_minus_flat": {
+       "n": 128,
+       "mean_a": 0.620928,
+       "mean_b": 0.258912,
+       "diff": 0.362016,
+       "ci_low": 0.265781,
+       "ci_high": 0.460964,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "conditional_minus_reference": {
+       "n": 128,
+       "mean_a": 0.620928,
+       "mean_b": 0.304989,
+       "diff": 0.315939,
+       "ci_low": 0.23371,
+       "ci_high": 0.402041,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "pooled_minus_reference": {
+       "n": 128,
+       "mean_a": 0.442574,
+       "mean_b": 0.304989,
+       "diff": 0.137586,
+       "ci_low": 0.040012,
+       "ci_high": 0.234971,
+       "p_value": 0.004999,
+       "confidence": 0.95
+      },
+      "flat_minus_reference": {
+       "n": 128,
+       "mean_a": 0.258912,
+       "mean_b": 0.304989,
+       "diff": -0.046077,
+       "ci_low": -0.121866,
+       "ci_high": 0.028953,
+       "p_value": 0.235953,
+       "confidence": 0.95
+      },
+      "oracle_minus_conditional": {
+       "n": 128,
+       "mean_a": 0.607024,
+       "mean_b": 0.620928,
+       "diff": -0.013903,
+       "ci_low": -0.040295,
+       "ci_high": 0.020018,
+       "p_value": 0.409118,
+       "confidence": 0.95
+      }
+     },
+     "comparisons_by_seed": {
+      "conditional_minus_pooled": {
+       "n": 32,
+       "mean_a": 0.620928,
+       "mean_b": 0.442574,
+       "diff": 0.178353,
+       "ci_low": 0.152705,
+       "ci_high": 0.20169,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "conditional_minus_flat": {
+       "n": 32,
+       "mean_a": 0.620928,
+       "mean_b": 0.258912,
+       "diff": 0.362016,
+       "ci_low": 0.299254,
+       "ci_high": 0.423493,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "conditional_minus_reference": {
+       "n": 32,
+       "mean_a": 0.620928,
+       "mean_b": 0.304989,
+       "diff": 0.315939,
+       "ci_low": 0.245561,
+       "ci_high": 0.382228,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "pooled_minus_reference": {
+       "n": 32,
+       "mean_a": 0.442574,
+       "mean_b": 0.304989,
+       "diff": 0.137586,
+       "ci_low": 0.07143,
+       "ci_high": 0.20104,
+       "p_value": 0.001,
+       "confidence": 0.95
+      },
+      "flat_minus_reference": {
+       "n": 32,
+       "mean_a": 0.258912,
+       "mean_b": 0.304989,
+       "diff": -0.046077,
+       "ci_low": -0.115004,
+       "ci_high": 0.026892,
+       "p_value": 0.210558,
+       "confidence": 0.95
+      },
+      "oracle_minus_conditional": {
+       "n": 32,
+       "mean_a": 0.607024,
+       "mean_b": 0.620928,
+       "diff": -0.013903,
+       "ci_low": -0.04125,
+       "ci_high": 0.018392,
+       "p_value": 0.387323,
+       "confidence": 0.95
+      }
+     },
+     "settings": [
+      {
+       "conditions": {
+        "battery_capacity_wh": 35
+       },
+       "settings": {
+        "precharge_window_s": 900.0,
+        "precharge_below": 0.6,
+        "desat_above": 0.3,
+        "charge_margin": 0.25,
+        "charge_below": 0.6
+       },
+       "mean_score": 0.3566
+      },
+      {
+       "conditions": {
+        "battery_capacity_wh": 70
+       },
+       "settings": {
+        "precharge_window_s": 900.0,
+        "precharge_below": 0.6,
+        "desat_above": 0.3,
+        "charge_margin": 0.25
+       },
+       "mean_score": 0.5748
+      },
+      {
+       "conditions": {
+        "battery_capacity_wh": 140
+       },
+       "settings": {
+        "charge_below": 0.1,
+        "precharge_window_s": 900.0,
+        "precharge_below": 0.6,
+        "desat_above": 0.3,
+        "charge_margin": 0.25
+       },
+       "mean_score": 0.7105
+      },
+      {
+       "conditions": {
+        "battery_capacity_wh": 280
+       },
+       "settings": {
+        "charge_below": 0.05,
+        "desat_above": 0.3,
+        "charge_margin": 0.25
+       },
+       "mean_score": 0.8418
+      }
+     ]
+    },
+    "extrapolation (outside the studied range)": {
+     "methods": {
+      "reference": {
+       "mean_score": -0.0167,
+       "failure_rate": 0.4844,
+       "success_rate": 0.5156
+      },
+      "flat": {
+       "mean_score": -0.0296,
+       "failure_rate": 0.5,
+       "success_rate": 0.5
+      },
+      "pooled": {
+       "mean_score": 0.2168,
+       "failure_rate": 0.1719,
+       "success_rate": 0.6562
+      },
+      "conditional": {
+       "mean_score": 0.3772,
+       "failure_rate": 0.2031,
+       "success_rate": 0.7969
+      },
+      "oracle": {
+       "mean_score": 0.479,
+       "failure_rate": 0.0938,
+       "success_rate": 0.8281
+      }
+     },
+     "comparisons": {
+      "conditional_minus_pooled": {
+       "n": 64,
+       "mean_a": 0.377181,
+       "mean_b": 0.216842,
+       "diff": 0.160339,
+       "ci_low": 0.017437,
+       "ci_high": 0.298426,
+       "p_value": 0.027195,
+       "confidence": 0.95
+      },
+      "conditional_minus_flat": {
+       "n": 64,
+       "mean_a": 0.377181,
+       "mean_b": -0.029622,
+       "diff": 0.406803,
+       "ci_low": 0.263116,
+       "ci_high": 0.556071,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "conditional_minus_reference": {
+       "n": 64,
+       "mean_a": 0.377181,
+       "mean_b": -0.01675,
+       "diff": 0.393931,
+       "ci_low": 0.250802,
+       "ci_high": 0.539685,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "pooled_minus_reference": {
+       "n": 64,
+       "mean_a": 0.216842,
+       "mean_b": -0.01675,
+       "diff": 0.233592,
+       "ci_low": 0.052257,
+       "ci_high": 0.425289,
+       "p_value": 0.016797,
+       "confidence": 0.95
+      },
+      "flat_minus_reference": {
+       "n": 64,
+       "mean_a": -0.029622,
+       "mean_b": -0.01675,
+       "diff": -0.012872,
+       "ci_low": -0.061367,
+       "ci_high": 0.027551,
+       "p_value": 0.686863,
+       "confidence": 0.95
+      },
+      "oracle_minus_conditional": {
+       "n": 64,
+       "mean_a": 0.478957,
+       "mean_b": 0.377181,
+       "diff": 0.101775,
+       "ci_low": 0.018599,
+       "ci_high": 0.195608,
+       "p_value": 0.020196,
+       "confidence": 0.95
+      }
+     },
+     "comparisons_by_seed": {
+      "conditional_minus_pooled": {
+       "n": 32,
+       "mean_a": 0.377181,
+       "mean_b": 0.216842,
+       "diff": 0.160339,
+       "ci_low": 0.019339,
+       "ci_high": 0.299737,
+       "p_value": 0.031794,
+       "confidence": 0.95
+      },
+      "conditional_minus_flat": {
+       "n": 32,
+       "mean_a": 0.377181,
+       "mean_b": -0.029622,
+       "diff": 0.406803,
+       "ci_low": 0.295794,
+       "ci_high": 0.513964,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "conditional_minus_reference": {
+       "n": 32,
+       "mean_a": 0.377181,
+       "mean_b": -0.01675,
+       "diff": 0.393931,
+       "ci_low": 0.281687,
+       "ci_high": 0.500945,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "pooled_minus_reference": {
+       "n": 32,
+       "mean_a": 0.216842,
+       "mean_b": -0.01675,
+       "diff": 0.233592,
+       "ci_low": 0.089217,
+       "ci_high": 0.371259,
+       "p_value": 0.003799,
+       "confidence": 0.95
+      },
+      "flat_minus_reference": {
+       "n": 32,
+       "mean_a": -0.029622,
+       "mean_b": -0.01675,
+       "diff": -0.012872,
+       "ci_low": -0.064053,
+       "ci_high": 0.02688,
+       "p_value": 0.69946,
+       "confidence": 0.95
+      },
+      "oracle_minus_conditional": {
+       "n": 32,
+       "mean_a": 0.478957,
+       "mean_b": 0.377181,
+       "diff": 0.101775,
+       "ci_low": 0.021815,
+       "ci_high": 0.19159,
+       "p_value": 0.018396,
+       "confidence": 0.95
+      }
+     },
+     "settings": [
+      {
+       "conditions": {
+        "battery_capacity_wh": 18
+       },
+       "settings": {
+        "precharge_window_s": 900.0,
+        "precharge_below": 0.6,
+        "charge_margin": 0.25,
+        "charge_below": 0.6
+       },
+       "mean_score": -0.1234
+      },
+      {
+       "conditions": {
+        "battery_capacity_wh": 600
+       },
+       "settings": {
+        "charge_below": 0.05,
+        "desat_above": 0.3
+       },
+       "mean_score": 0.8778
+      }
+     ]
+    }
+   }
+  },
+  "7000": {
+   "experiments": 76,
+   "episodes_used": 3056,
+   "claims": 20,
+   "by_status": {
+    "superseded": 6,
+    "refuted": 2,
+    "supported": 10,
+    "contested": 2
+   },
+   "comparisons": [
+    "charge_below 0.05 vs 0.1",
+    "charge_below 0.1 vs 0.25",
+    "charge_below 0.4 vs 0.25",
+    "charge_below 0.6 vs 0.4",
+    "charge_below 0.8 vs 0.6",
+    "charge_margin 0.25 vs 0",
+    "desat_above 0.3 vs 0.6",
+    "precharge_below 0.6 vs 0, precharge_window_s 900 vs 0"
+   ],
+   "verdicts": {
+    "charge_below 0.1 vs 0.25": {
+     "battery_capacity_wh=200": "intervention_better",
+     "battery_capacity_wh=25": "no_benefit",
+     "battery_capacity_wh=70.7": "baseline_better",
+     "battery_capacity_wh=119": "baseline_better",
+     "battery_capacity_wh=42": "baseline_better",
+     "battery_capacity_wh=154": "inconclusive",
+     "battery_capacity_wh=32.4": "no_benefit",
+     "battery_capacity_wh=400": "intervention_better",
+     "battery_capacity_wh=50": "baseline_better",
+     "battery_capacity_wh=100": "baseline_better"
+    },
+    "precharge_below 0.6 vs 0, precharge_window_s 900 vs 0": {
+     "battery_capacity_wh=200": "inconclusive",
+     "battery_capacity_wh=25": "intervention_better",
+     "battery_capacity_wh=70.7": "intervention_better",
+     "battery_capacity_wh=119": "intervention_better",
+     "battery_capacity_wh=154": "intervention_better",
+     "battery_capacity_wh=400": "no_benefit",
+     "battery_capacity_wh=283": "no_benefit",
+     "battery_capacity_wh=238": "inconclusive",
+     "battery_capacity_wh=50": "intervention_better",
+     "battery_capacity_wh=100": "inconclusive",
+     "battery_capacity_wh=84.1": "inconclusive"
+    },
+    "desat_above 0.3 vs 0.6": {
+     "battery_capacity_wh=200": "intervention_better",
+     "battery_capacity_wh=25": "no_benefit",
+     "battery_capacity_wh=70.7": "intervention_better",
+     "battery_capacity_wh=42": "intervention_better",
+     "battery_capacity_wh=32.4": "intervention_better",
+     "battery_capacity_wh=400": "inconclusive",
+     "battery_capacity_wh=283": "intervention_better",
+     "battery_capacity_wh=336": "intervention_better",
+     "battery_capacity_wh=100": "intervention_better",
+     "battery_capacity_wh=50": "intervention_better"
+    },
+    "charge_margin 0.25 vs 0": {
+     "battery_capacity_wh=200": "inconclusive",
+     "battery_capacity_wh=25": "no_benefit",
+     "battery_capacity_wh=70.7": "inconclusive",
+     "battery_capacity_wh=42": "intervention_better",
+     "battery_capacity_wh=54.5": "intervention_better",
+     "battery_capacity_wh=32.4": "intervention_better",
+     "battery_capacity_wh=400": "inconclusive",
+     "battery_capacity_wh=100": "intervention_better",
+     "battery_capacity_wh=141": "inconclusive",
+     "battery_capacity_wh=84.1": "intervention_better",
+     "battery_capacity_wh=119": "intervention_better",
+     "battery_capacity_wh=50": "inconclusive"
+    },
+    "charge_below 0.05 vs 0.1": {
+     "battery_capacity_wh=200": "no_benefit",
+     "battery_capacity_wh=25": "no_benefit",
+     "battery_capacity_wh=50": "no_benefit",
+     "battery_capacity_wh=100": "no_benefit",
+     "battery_capacity_wh=400": "inconclusive",
+     "battery_capacity_wh=283": "inconclusive",
+     "battery_capacity_wh=238": "inconclusive"
+    },
+    "charge_below 0.4 vs 0.25": {
+     "battery_capacity_wh=25": "intervention_better",
+     "battery_capacity_wh=200": "baseline_better",
+     "battery_capacity_wh=400": "baseline_better",
+     "battery_capacity_wh=70.7": "baseline_better",
+     "battery_capacity_wh=42": "intervention_better",
+     "battery_capacity_wh=54.5": "intervention_better",
+     "battery_capacity_wh=100": "baseline_better",
+     "battery_capacity_wh=50": "intervention_better"
+    },
+    "charge_below 0.6 vs 0.4": {
+     "battery_capacity_wh=25": "intervention_better",
+     "battery_capacity_wh=200": "baseline_better",
+     "battery_capacity_wh=400": "baseline_better",
+     "battery_capacity_wh=70.7": "baseline_better",
+     "battery_capacity_wh=42": "inconclusive",
+     "battery_capacity_wh=54.5": "no_benefit",
+     "battery_capacity_wh=32.4": "intervention_better",
+     "battery_capacity_wh=100": "baseline_better",
+     "battery_capacity_wh=50": "no_benefit"
+    },
+    "charge_below 0.8 vs 0.6": {
+     "battery_capacity_wh=25": "inconclusive",
+     "battery_capacity_wh=200": "baseline_better",
+     "battery_capacity_wh=400": "baseline_better",
+     "battery_capacity_wh=70.7": "baseline_better",
+     "battery_capacity_wh=42": "baseline_better",
+     "battery_capacity_wh=32.4": "no_benefit",
+     "battery_capacity_wh=100": "baseline_better",
+     "battery_capacity_wh=50": "baseline_better"
+    }
+   },
+   "groups": {
+    "interpolation (inside the studied range)": {
+     "methods": {
+      "reference": {
+       "mean_score": 0.305,
+       "failure_rate": 0.1953,
+       "success_rate": 0.7812
+      },
+      "flat": {
+       "mean_score": 0.1031,
+       "failure_rate": 0.4297,
+       "success_rate": 0.5703
+      },
+      "pooled": {
+       "mean_score": 0.4426,
+       "failure_rate": 0.0156,
+       "success_rate": 0.9297
+      },
+      "conditional": {
+       "mean_score": 0.5921,
+       "failure_rate": 0.0156,
+       "success_rate": 0.9766
+      },
+      "oracle": {
+       "mean_score": 0.607,
+       "failure_rate": 0.0,
+       "success_rate": 0.9531
+      }
+     },
+     "comparisons": {
+      "conditional_minus_pooled": {
+       "n": 128,
+       "mean_a": 0.59211,
+       "mean_b": 0.442574,
+       "diff": 0.149536,
+       "ci_low": 0.119553,
+       "ci_high": 0.181251,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "conditional_minus_flat": {
+       "n": 128,
+       "mean_a": 0.59211,
+       "mean_b": 0.103078,
+       "diff": 0.489032,
+       "ci_low": 0.38504,
+       "ci_high": 0.595617,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "conditional_minus_reference": {
+       "n": 128,
+       "mean_a": 0.59211,
+       "mean_b": 0.304989,
+       "diff": 0.287122,
+       "ci_low": 0.206134,
+       "ci_high": 0.370358,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "pooled_minus_reference": {
+       "n": 128,
+       "mean_a": 0.442574,
+       "mean_b": 0.304989,
+       "diff": 0.137586,
+       "ci_low": 0.040012,
+       "ci_high": 0.234971,
+       "p_value": 0.004999,
+       "confidence": 0.95
+      },
+      "flat_minus_reference": {
+       "n": 128,
+       "mean_a": 0.103078,
+       "mean_b": 0.304989,
+       "diff": -0.20191,
+       "ci_low": -0.296902,
+       "ci_high": -0.112772,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "oracle_minus_conditional": {
+       "n": 128,
+       "mean_a": 0.607024,
+       "mean_b": 0.59211,
+       "diff": 0.014914,
+       "ci_low": -0.010937,
+       "ci_high": 0.047219,
+       "p_value": 0.374325,
+       "confidence": 0.95
+      }
+     },
+     "comparisons_by_seed": {
+      "conditional_minus_pooled": {
+       "n": 32,
+       "mean_a": 0.59211,
+       "mean_b": 0.442574,
+       "diff": 0.149536,
+       "ci_low": 0.127492,
+       "ci_high": 0.17105,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "conditional_minus_flat": {
+       "n": 32,
+       "mean_a": 0.59211,
+       "mean_b": 0.103078,
+       "diff": 0.489032,
+       "ci_low": 0.417965,
+       "ci_high": 0.548135,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "conditional_minus_reference": {
+       "n": 32,
+       "mean_a": 0.59211,
+       "mean_b": 0.304989,
+       "diff": 0.287122,
+       "ci_low": 0.220929,
+       "ci_high": 0.349013,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "pooled_minus_reference": {
+       "n": 32,
+       "mean_a": 0.442574,
+       "mean_b": 0.304989,
+       "diff": 0.137586,
+       "ci_low": 0.07143,
+       "ci_high": 0.20104,
+       "p_value": 0.001,
+       "confidence": 0.95
+      },
+      "flat_minus_reference": {
+       "n": 32,
+       "mean_a": 0.103078,
+       "mean_b": 0.304989,
+       "diff": -0.20191,
+       "ci_low": -0.269662,
+       "ci_high": -0.130566,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "oracle_minus_conditional": {
+       "n": 32,
+       "mean_a": 0.607024,
+       "mean_b": 0.59211,
+       "diff": 0.014914,
+       "ci_low": -0.00876,
+       "ci_high": 0.048307,
+       "p_value": 0.458508,
+       "confidence": 0.95
+      }
+     },
+     "settings": [
+      {
+       "conditions": {
+        "battery_capacity_wh": 35
+       },
+       "settings": {
+        "precharge_window_s": 900.0,
+        "precharge_below": 0.6,
+        "desat_above": 0.3,
+        "charge_below": 0.6
+       },
+       "mean_score": 0.3193
+      },
+      {
+       "conditions": {
+        "battery_capacity_wh": 70
+       },
+       "settings": {
+        "precharge_window_s": 900.0,
+        "precharge_below": 0.6,
+        "desat_above": 0.3
+       },
+       "mean_score": 0.589
+      },
+      {
+       "conditions": {
+        "battery_capacity_wh": 140
+       },
+       "settings": {
+        "desat_above": 0.3
+       },
+       "mean_score": 0.6357
+      },
+      {
+       "conditions": {
+        "battery_capacity_wh": 280
+       },
+       "settings": {
+        "charge_below": 0.1,
+        "desat_above": 0.3
+       },
+       "mean_score": 0.8245
+      }
+     ]
+    },
+    "extrapolation (outside the studied range)": {
+     "methods": {
+      "reference": {
+       "mean_score": -0.0167,
+       "failure_rate": 0.4844,
+       "success_rate": 0.5156
+      },
+      "flat": {
+       "mean_score": -0.0322,
+       "failure_rate": 0.5,
+       "success_rate": 0.5
+      },
+      "pooled": {
+       "mean_score": 0.2168,
+       "failure_rate": 0.1719,
+       "success_rate": 0.6562
+      },
+      "conditional": {
+       "mean_score": 0.3704,
+       "failure_rate": 0.2031,
+       "success_rate": 0.7344
+      },
+      "oracle": {
+       "mean_score": 0.479,
+       "failure_rate": 0.0938,
+       "success_rate": 0.8281
+      }
+     },
+     "comparisons": {
+      "conditional_minus_pooled": {
+       "n": 64,
+       "mean_a": 0.370423,
+       "mean_b": 0.216842,
+       "diff": 0.153581,
+       "ci_low": -0.004443,
+       "ci_high": 0.310224,
+       "p_value": 0.074185,
+       "confidence": 0.95
+      },
+      "conditional_minus_flat": {
+       "n": 64,
+       "mean_a": 0.370423,
+       "mean_b": -0.0322,
+       "diff": 0.402623,
+       "ci_low": 0.264209,
+       "ci_high": 0.547604,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "conditional_minus_reference": {
+       "n": 64,
+       "mean_a": 0.370423,
+       "mean_b": -0.01675,
+       "diff": 0.387173,
+       "ci_low": 0.254645,
+       "ci_high": 0.529292,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "pooled_minus_reference": {
+       "n": 64,
+       "mean_a": 0.216842,
+       "mean_b": -0.01675,
+       "diff": 0.233592,
+       "ci_low": 0.052257,
+       "ci_high": 0.425289,
+       "p_value": 0.016797,
+       "confidence": 0.95
+      },
+      "flat_minus_reference": {
+       "n": 64,
+       "mean_a": -0.0322,
+       "mean_b": -0.01675,
+       "diff": -0.01545,
+       "ci_low": -0.066337,
+       "ci_high": 0.027899,
+       "p_value": 0.628474,
+       "confidence": 0.95
+      },
+      "oracle_minus_conditional": {
+       "n": 64,
+       "mean_a": 0.478957,
+       "mean_b": 0.370423,
+       "diff": 0.108533,
+       "ci_low": 0.009253,
+       "ci_high": 0.217741,
+       "p_value": 0.042991,
+       "confidence": 0.95
+      }
+     },
+     "comparisons_by_seed": {
+      "conditional_minus_pooled": {
+       "n": 32,
+       "mean_a": 0.370423,
+       "mean_b": 0.216842,
+       "diff": 0.153581,
+       "ci_low": -0.015683,
+       "ci_high": 0.314769,
+       "p_value": 0.080784,
+       "confidence": 0.95
+      },
+      "conditional_minus_flat": {
+       "n": 32,
+       "mean_a": 0.370423,
+       "mean_b": -0.0322,
+       "diff": 0.402623,
+       "ci_low": 0.291635,
+       "ci_high": 0.512159,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "conditional_minus_reference": {
+       "n": 32,
+       "mean_a": 0.370423,
+       "mean_b": -0.01675,
+       "diff": 0.387173,
+       "ci_low": 0.278798,
+       "ci_high": 0.489678,
+       "p_value": 0.0002,
+       "confidence": 0.95
+      },
+      "pooled_minus_reference": {
+       "n": 32,
+       "mean_a": 0.216842,
+       "mean_b": -0.01675,
+       "diff": 0.233592,
+       "ci_low": 0.089217,
+       "ci_high": 0.371259,
+       "p_value": 0.003799,
+       "confidence": 0.95
+      },
+      "flat_minus_reference": {
+       "n": 32,
+       "mean_a": -0.0322,
+       "mean_b": -0.01675,
+       "diff": -0.01545,
+       "ci_low": -0.070015,
+       "ci_high": 0.02678,
+       "p_value": 0.633473,
+       "confidence": 0.95
+      },
+      "oracle_minus_conditional": {
+       "n": 32,
+       "mean_a": 0.478957,
+       "mean_b": 0.370423,
+       "diff": 0.108533,
+       "ci_low": 0.013312,
+       "ci_high": 0.205555,
+       "p_value": 0.037592,
+       "confidence": 0.95
+      }
+     },
+     "settings": [
+      {
+       "conditions": {
+        "battery_capacity_wh": 18
+       },
+       "settings": {
+        "precharge_window_s": 900.0,
+        "precharge_below": 0.6,
+        "charge_below": 0.6
+       },
+       "mean_score": -0.1583
+      },
+      {
+       "conditions": {
+        "battery_capacity_wh": 600
+       },
+       "settings": {
+        "charge_below": 0.1
+       },
+       "mean_score": 0.8991
+      }
+     ]
+    }
+   }
+  }
+ },
+ "aggregate": {
+  "interpolation (inside the studied range)": {
+   "methods": {
+    "reference": {
+     "mean_score": {
+      "n": 5,
+      "mean": 0.305,
+      "sd": 0.0,
+      "min": 0.305,
+      "max": 0.305,
+      "values": [
+       0.305,
+       0.305,
+       0.305,
+       0.305,
+       0.305
+      ]
+     },
+     "failure_rate": {
+      "n": 5,
+      "mean": 0.1953,
+      "sd": 0.0,
+      "min": 0.1953,
+      "max": 0.1953,
+      "values": [
+       0.1953,
+       0.1953,
+       0.1953,
+       0.1953,
+       0.1953
+      ]
+     },
+     "success_rate": {
+      "n": 5,
+      "mean": 0.7812,
+      "sd": 0.0,
+      "min": 0.7812,
+      "max": 0.7812,
+      "values": [
+       0.7812,
+       0.7812,
+       0.7812,
+       0.7812,
+       0.7812
+      ]
+     }
+    },
+    "flat": {
+     "mean_score": {
+      "n": 5,
+      "mean": 0.19658,
+      "sd": 0.085335,
+      "min": 0.1031,
+      "max": 0.2589,
+      "values": [
+       0.1031,
+       0.2589,
+       0.2589,
+       0.2589,
+       0.1031
+      ]
+     },
+     "failure_rate": {
+      "n": 5,
+      "mean": 0.35002,
+      "sd": 0.072738,
+      "min": 0.2969,
+      "max": 0.4297,
+      "values": [
+       0.4297,
+       0.2969,
+       0.2969,
+       0.2969,
+       0.4297
+      ]
+     },
+     "success_rate": {
+      "n": 5,
+      "mean": 0.6453,
+      "sd": 0.068465,
+      "min": 0.5703,
+      "max": 0.6953,
+      "values": [
+       0.5703,
+       0.6953,
+       0.6953,
+       0.6953,
+       0.5703
+      ]
+     }
+    },
+    "pooled": {
+     "mean_score": {
+      "n": 5,
+      "mean": 0.46034,
+      "sd": 0.039668,
+      "min": 0.4426,
+      "max": 0.5313,
+      "values": [
+       0.4426,
+       0.5313,
+       0.4426,
+       0.4426,
+       0.4426
+      ]
+     },
+     "failure_rate": {
+      "n": 5,
+      "mean": 0.0156,
+      "sd": 0.0,
+      "min": 0.0156,
+      "max": 0.0156,
+      "values": [
+       0.0156,
+       0.0156,
+       0.0156,
+       0.0156,
+       0.0156
+      ]
+     },
+     "success_rate": {
+      "n": 5,
+      "mean": 0.93752,
+      "sd": 0.017486,
+      "min": 0.9297,
+      "max": 0.9688,
+      "values": [
+       0.9297,
+       0.9688,
+       0.9297,
+       0.9297,
+       0.9297
+      ]
+     }
+    },
+    "conditional": {
+     "mean_score": {
+      "n": 5,
+      "mean": 0.61076,
+      "sd": 0.014539,
+      "min": 0.5921,
+      "max": 0.622,
+      "values": [
+       0.5979,
+       0.6209,
+       0.622,
+       0.6209,
+       0.5921
+      ]
+     },
+     "failure_rate": {
+      "n": 5,
+      "mean": 0.0156,
+      "sd": 0.0,
+      "min": 0.0156,
+      "max": 0.0156,
+      "values": [
+       0.0156,
+       0.0156,
+       0.0156,
+       0.0156,
+       0.0156
+      ]
+     },
+     "success_rate": {
+      "n": 5,
+      "mean": 0.9766,
+      "sd": 0.0,
+      "min": 0.9766,
+      "max": 0.9766,
+      "values": [
+       0.9766,
+       0.9766,
+       0.9766,
+       0.9766,
+       0.9766
+      ]
+     }
+    },
+    "oracle": {
+     "mean_score": {
+      "n": 5,
+      "mean": 0.607,
+      "sd": 0.0,
+      "min": 0.607,
+      "max": 0.607,
+      "values": [
+       0.607,
+       0.607,
+       0.607,
+       0.607,
+       0.607
+      ]
+     },
+     "failure_rate": {
+      "n": 5,
+      "mean": 0.0,
+      "sd": 0.0,
+      "min": 0.0,
+      "max": 0.0,
+      "values": [
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0
+      ]
+     },
+     "success_rate": {
+      "n": 5,
+      "mean": 0.9531,
+      "sd": 0.0,
+      "min": 0.9531,
+      "max": 0.9531,
+      "values": [
+       0.9531,
+       0.9531,
+       0.9531,
+       0.9531,
+       0.9531
+      ]
+     }
+    }
+   },
+   "comparisons": {
+    "conditional_minus_pooled": {
+     "n": 5,
+     "mean": 0.150443,
+     "sd": 0.036563,
+     "min": 0.089586,
+     "max": 0.179431,
+     "values": [
+      0.155309,
+      0.089586,
+      0.179431,
+      0.178353,
+      0.149536
+     ],
+     "intervals_above_zero": 5,
+     "intervals_below_zero": 0,
+     "by_seed_intervals_above_zero": 5,
+     "by_seed_intervals_below_zero": 0
+    },
+    "conditional_minus_flat": {
+     "n": 5,
+     "mean": 0.414192,
+     "sd": 0.070985,
+     "min": 0.362016,
+     "max": 0.494805,
+     "values": [
+      0.494805,
+      0.362016,
+      0.363093,
+      0.362016,
+      0.489032
+     ],
+     "intervals_above_zero": 5,
+     "intervals_below_zero": 0,
+     "by_seed_intervals_above_zero": 5,
+     "by_seed_intervals_below_zero": 0
+    },
+    "conditional_minus_reference": {
+     "n": 5,
+     "mean": 0.305782,
+     "sd": 0.01455,
+     "min": 0.287122,
+     "max": 0.317017,
+     "values": [
+      0.292895,
+      0.315939,
+      0.317017,
+      0.315939,
+      0.287122
+     ],
+     "intervals_above_zero": 5,
+     "intervals_below_zero": 0,
+     "by_seed_intervals_above_zero": 5,
+     "by_seed_intervals_below_zero": 0
+    },
+    "pooled_minus_reference": {
+     "n": 5,
+     "mean": 0.155339,
+     "sd": 0.039698,
+     "min": 0.137586,
+     "max": 0.226353,
+     "values": [
+      0.137586,
+      0.226353,
+      0.137586,
+      0.137586,
+      0.137586
+     ],
+     "intervals_above_zero": 5,
+     "intervals_below_zero": 0,
+     "by_seed_intervals_above_zero": 5,
+     "by_seed_intervals_below_zero": 0
+    },
+    "flat_minus_reference": {
+     "n": 5,
+     "mean": -0.10841,
+     "sd": 0.085353,
+     "min": -0.20191,
+     "max": -0.046077,
+     "values": [
+      -0.20191,
+      -0.046077,
+      -0.046077,
+      -0.046077,
+      -0.20191
+     ],
+     "intervals_above_zero": 0,
+     "intervals_below_zero": 2,
+     "by_seed_intervals_above_zero": 0,
+     "by_seed_intervals_below_zero": 2
+    },
+    "oracle_minus_conditional": {
+     "n": 5,
+     "mean": -0.003746,
+     "sd": 0.01455,
+     "min": -0.014981,
+     "max": 0.014914,
+     "values": [
+      0.009141,
+      -0.013903,
+      -0.014981,
+      -0.013903,
+      0.014914
+     ],
+     "intervals_above_zero": 0,
+     "intervals_below_zero": 0,
+     "by_seed_intervals_above_zero": 0,
+     "by_seed_intervals_below_zero": 0
+    }
+   },
+   "settings": [
+    {
+     "conditions": {
+      "battery_capacity_wh": 35
+     },
+     "choices": [
+      {
+       "settings": {
+        "charge_below": 0.6,
+        "charge_margin": 0.25,
+        "desat_above": 0.3,
+        "precharge_below": 0.6,
+        "precharge_window_s": 900.0
+       },
+       "replicates": 3
+      },
+      {
+       "settings": {
+        "charge_below": 0.6,
+        "charge_margin": 0.25,
+        "desat_above": 0.3
+       },
+       "replicates": 1
+      },
+      {
+       "settings": {
+        "charge_below": 0.6,
+        "desat_above": 0.3,
+        "precharge_below": 0.6,
+        "precharge_window_s": 900.0
+       },
+       "replicates": 1
+      }
+     ],
+     "mean_score": {
+      "n": 5,
+      "mean": 0.34914,
+      "sd": 0.016681,
+      "min": 0.3193,
+      "max": 0.3566,
+      "values": [
+       0.3566,
+       0.3566,
+       0.3566,
+       0.3566,
+       0.3193
+      ]
+     }
+    },
+    {
+     "conditions": {
+      "battery_capacity_wh": 70
+     },
+     "choices": [
+      {
+       "settings": {
+        "charge_margin": 0.25,
+        "desat_above": 0.3,
+        "precharge_below": 0.6,
+        "precharge_window_s": 900.0
+       },
+       "replicates": 4
+      },
+      {
+       "settings": {
+        "desat_above": 0.3,
+        "precharge_below": 0.6,
+        "precharge_window_s": 900.0
+       },
+       "replicates": 1
+      }
+     ],
+     "mean_score": {
+      "n": 5,
+      "mean": 0.57764,
+      "sd": 0.00635,
+      "min": 0.5748,
+      "max": 0.589,
+      "values": [
+       0.5748,
+       0.5748,
+       0.5748,
+       0.5748,
+       0.589
+      ]
+     }
+    },
+    {
+     "conditions": {
+      "battery_capacity_wh": 140
+     },
+     "choices": [
+      {
+       "settings": {
+        "charge_below": 0.1,
+        "charge_margin": 0.25,
+        "desat_above": 0.3,
+        "precharge_below": 0.6,
+        "precharge_window_s": 900.0
+       },
+       "replicates": 3
+      },
+      {
+       "settings": {
+        "desat_above": 0.3
+       },
+       "replicates": 2
+      }
+     ],
+     "mean_score": {
+      "n": 5,
+      "mean": 0.68058,
+      "sd": 0.04097,
+      "min": 0.6357,
+      "max": 0.7105,
+      "values": [
+       0.6357,
+       0.7105,
+       0.7105,
+       0.7105,
+       0.6357
+      ]
+     }
+    },
+    {
+     "conditions": {
+      "battery_capacity_wh": 280
+     },
+     "choices": [
+      {
+       "settings": {
+        "charge_below": 0.1,
+        "desat_above": 0.3
+       },
+       "replicates": 2
+      },
+      {
+       "settings": {
+        "charge_below": 0.05,
+        "charge_margin": 0.25,
+        "desat_above": 0.3
+       },
+       "replicates": 2
+      },
+      {
+       "settings": {
+        "charge_below": 0.05,
+        "desat_above": 0.3
+       },
+       "replicates": 1
+      }
+     ],
+     "mean_score": {
+      "n": 5,
+      "mean": 0.83574,
+      "sd": 0.01041,
+      "min": 0.8245,
+      "max": 0.8461,
+      "values": [
+       0.8245,
+       0.8418,
+       0.8461,
+       0.8418,
+       0.8245
+      ]
+     }
+    }
+   ]
+  },
+  "extrapolation (outside the studied range)": {
+   "methods": {
+    "reference": {
+     "mean_score": {
+      "n": 5,
+      "mean": -0.0167,
+      "sd": 0.0,
+      "min": -0.0167,
+      "max": -0.0167,
+      "values": [
+       -0.0167,
+       -0.0167,
+       -0.0167,
+       -0.0167,
+       -0.0167
+      ]
+     },
+     "failure_rate": {
+      "n": 5,
+      "mean": 0.4844,
+      "sd": 0.0,
+      "min": 0.4844,
+      "max": 0.4844,
+      "values": [
+       0.4844,
+       0.4844,
+       0.4844,
+       0.4844,
+       0.4844
+      ]
+     },
+     "success_rate": {
+      "n": 5,
+      "mean": 0.5156,
+      "sd": 0.0,
+      "min": 0.5156,
+      "max": 0.5156,
+      "values": [
+       0.5156,
+       0.5156,
+       0.5156,
+       0.5156,
+       0.5156
+      ]
+     }
+    },
+    "flat": {
+     "mean_score": {
+      "n": 5,
+      "mean": -0.03064,
+      "sd": 0.001424,
+      "min": -0.0322,
+      "max": -0.0296,
+      "values": [
+       -0.0322,
+       -0.0296,
+       -0.0296,
+       -0.0296,
+       -0.0322
+      ]
+     },
+     "failure_rate": {
+      "n": 5,
+      "mean": 0.5,
+      "sd": 0.0,
+      "min": 0.5,
+      "max": 0.5,
+      "values": [
+       0.5,
+       0.5,
+       0.5,
+       0.5,
+       0.5
+      ]
+     },
+     "success_rate": {
+      "n": 5,
+      "mean": 0.5,
+      "sd": 0.0,
+      "min": 0.5,
+      "max": 0.5,
+      "values": [
+       0.5,
+       0.5,
+       0.5,
+       0.5,
+       0.5
+      ]
+     }
+    },
+    "pooled": {
+     "mean_score": {
+      "n": 5,
+      "mean": 0.1796,
+      "sd": 0.083182,
+      "min": 0.0308,
+      "max": 0.2168,
+      "values": [
+       0.2168,
+       0.0308,
+       0.2168,
+       0.2168,
+       0.2168
+      ]
+     },
+     "failure_rate": {
+      "n": 5,
+      "mean": 0.21876,
+      "sd": 0.104782,
+      "min": 0.1719,
+      "max": 0.4062,
+      "values": [
+       0.1719,
+       0.4062,
+       0.1719,
+       0.1719,
+       0.1719
+      ]
+     },
+     "success_rate": {
+      "n": 5,
+      "mean": 0.64058,
+      "sd": 0.034927,
+      "min": 0.5781,
+      "max": 0.6562,
+      "values": [
+       0.6562,
+       0.5781,
+       0.6562,
+       0.6562,
+       0.6562
+      ]
+     }
+    },
+    "conditional": {
+     "mean_score": {
+      "n": 5,
+      "mean": 0.3722,
+      "sd": 0.007489,
+      "min": 0.3598,
+      "max": 0.3772,
+      "values": [
+       0.3768,
+       0.3768,
+       0.3598,
+       0.3772,
+       0.3704
+      ]
+     },
+     "failure_rate": {
+      "n": 5,
+      "mean": 0.2031,
+      "sd": 0.0,
+      "min": 0.2031,
+      "max": 0.2031,
+      "values": [
+       0.2031,
+       0.2031,
+       0.2031,
+       0.2031,
+       0.2031
+      ]
+     },
+     "success_rate": {
+      "n": 5,
+      "mean": 0.7719,
+      "sd": 0.034233,
+      "min": 0.7344,
+      "max": 0.7969,
+      "values": [
+       0.7969,
+       0.7969,
+       0.7344,
+       0.7969,
+       0.7344
+      ]
+     }
+    },
+    "oracle": {
+     "mean_score": {
+      "n": 5,
+      "mean": 0.479,
+      "sd": 0.0,
+      "min": 0.479,
+      "max": 0.479,
+      "values": [
+       0.479,
+       0.479,
+       0.479,
+       0.479,
+       0.479
+      ]
+     },
+     "failure_rate": {
+      "n": 5,
+      "mean": 0.0938,
+      "sd": 0.0,
+      "min": 0.0938,
+      "max": 0.0938,
+      "values": [
+       0.0938,
+       0.0938,
+       0.0938,
+       0.0938,
+       0.0938
+      ]
+     },
+     "success_rate": {
+      "n": 5,
+      "mean": 0.8281,
+      "sd": 0.0,
+      "min": 0.8281,
+      "max": 0.8281,
+      "values": [
+       0.8281,
+       0.8281,
+       0.8281,
+       0.8281,
+       0.8281
+      ]
+     }
+    }
+   },
+   "comparisons": {
+    "conditional_minus_pooled": {
+     "n": 5,
+     "mean": 0.192538,
+     "sd": 0.086038,
+     "min": 0.142914,
+     "max": 0.345932,
+     "values": [
+      0.159923,
+      0.345932,
+      0.142914,
+      0.160339,
+      0.153581
+     ],
+     "intervals_above_zero": 3,
+     "intervals_below_zero": 0,
+     "by_seed_intervals_above_zero": 3,
+     "by_seed_intervals_below_zero": 0
+    },
+    "conditional_minus_flat": {
+     "n": 5,
+     "mean": 0.402831,
+     "sd": 0.007859,
+     "min": 0.389378,
+     "max": 0.408966,
+     "values": [
+      0.408966,
+      0.406387,
+      0.389378,
+      0.406803,
+      0.402623
+     ],
+     "intervals_above_zero": 5,
+     "intervals_below_zero": 0,
+     "by_seed_intervals_above_zero": 5,
+     "by_seed_intervals_below_zero": 0
+    },
+    "conditional_minus_reference": {
+     "n": 5,
+     "mean": 0.388928,
+     "sd": 0.007492,
+     "min": 0.376506,
+     "max": 0.393931,
+     "values": [
+      0.393515,
+      0.393515,
+      0.376506,
+      0.393931,
+      0.387173
+     ],
+     "intervals_above_zero": 5,
+     "intervals_below_zero": 0,
+     "by_seed_intervals_above_zero": 5,
+     "by_seed_intervals_below_zero": 0
+    },
+    "pooled_minus_reference": {
+     "n": 5,
+     "mean": 0.19639,
+     "sd": 0.083186,
+     "min": 0.047583,
+     "max": 0.233592,
+     "values": [
+      0.233592,
+      0.047583,
+      0.233592,
+      0.233592,
+      0.233592
+     ],
+     "intervals_above_zero": 4,
+     "intervals_below_zero": 0,
+     "by_seed_intervals_above_zero": 4,
+     "by_seed_intervals_below_zero": 0
+    },
+    "flat_minus_reference": {
+     "n": 5,
+     "mean": -0.013903,
+     "sd": 0.001412,
+     "min": -0.01545,
+     "max": -0.012872,
+     "values": [
+      -0.01545,
+      -0.012872,
+      -0.012872,
+      -0.012872,
+      -0.01545
+     ],
+     "intervals_above_zero": 0,
+     "intervals_below_zero": 0,
+     "by_seed_intervals_above_zero": 0,
+     "by_seed_intervals_below_zero": 0
+    },
+    "oracle_minus_conditional": {
+     "n": 5,
+     "mean": 0.106778,
+     "sd": 0.007492,
+     "min": 0.101775,
+     "max": 0.1192,
+     "values": [
+      0.102191,
+      0.102191,
+      0.1192,
+      0.101775,
+      0.108533
+     ],
+     "intervals_above_zero": 5,
+     "intervals_below_zero": 0,
+     "by_seed_intervals_above_zero": 5,
+     "by_seed_intervals_below_zero": 0
+    }
+   },
+   "settings": [
+    {
+     "conditions": {
+      "battery_capacity_wh": 18
+     },
+     "choices": [
+      {
+       "settings": {
+        "charge_below": 0.6,
+        "charge_margin": 0.25,
+        "precharge_below": 0.6,
+        "precharge_window_s": 900.0
+       },
+       "replicates": 2
+      },
+      {
+       "settings": {
+        "charge_below": 0.6,
+        "charge_margin": 0.25
+       },
+       "replicates": 1
+      },
+      {
+       "settings": {
+        "charge_below": 0.6
+       },
+       "replicates": 1
+      },
+      {
+       "settings": {
+        "charge_below": 0.6,
+        "precharge_below": 0.6,
+        "precharge_window_s": 900.0
+       },
+       "replicates": 1
+      }
+     ],
+     "mean_score": {
+      "n": 5,
+      "mean": -0.13736,
+      "sd": 0.019116,
+      "min": -0.1583,
+      "max": -0.1234,
+      "values": [
+       -0.1234,
+       -0.1234,
+       -0.1583,
+       -0.1234,
+       -0.1583
+      ]
+     }
+    },
+    {
+     "conditions": {
+      "battery_capacity_wh": 600
+     },
+     "choices": [
+      {
+       "settings": {
+        "charge_below": 0.1,
+        "desat_above": 0.3
+       },
+       "replicates": 2
+      },
+      {
+       "settings": {
+        "charge_below": 0.05,
+        "desat_above": 0.3
+       },
+       "replicates": 2
+      },
+      {
+       "settings": {
+        "charge_below": 0.1
+       },
+       "replicates": 1
+      }
+     ],
+     "mean_score": {
+      "n": 5,
+      "mean": 0.88174,
+      "sd": 0.009713,
+      "min": 0.877,
+      "max": 0.8991,
+      "values": [
+       0.877,
+       0.877,
+       0.8778,
+       0.8778,
+       0.8991
+      ]
+     }
+    }
+   ]
+  }
+ },
+ "comparisons_in_every_replicate": [
+  "charge_below 0.05 vs 0.1",
+  "charge_below 0.1 vs 0.25",
+  "charge_below 0.4 vs 0.25",
+  "charge_below 0.6 vs 0.4",
+  "charge_below 0.8 vs 0.6",
+  "charge_margin 0.25 vs 0",
+  "desat_above 0.3 vs 0.6",
+  "precharge_below 0.6 vs 0, precharge_window_s 900 vs 0"
+ ],
+ "comparisons_in_some_replicates": [],
+ "verdict_agreement": [
+  {
+   "comparison": "charge_below 0.05 vs 0.1",
+   "conditions": "battery_capacity_wh=25",
+   "verdicts": {
+    "no_benefit": 5
+   },
+   "unanimous": true
+  },
+  {
+   "comparison": "charge_below 0.05 vs 0.1",
+   "conditions": "battery_capacity_wh=50",
+   "verdicts": {
+    "no_benefit": 5
+   },
+   "unanimous": true
+  },
+  {
+   "comparison": "charge_below 0.05 vs 0.1",
+   "conditions": "battery_capacity_wh=100",
+   "verdicts": {
+    "baseline_better": 4,
+    "no_benefit": 1
+   },
+   "unanimous": false
+  },
+  {
+   "comparison": "charge_below 0.05 vs 0.1",
+   "conditions": "battery_capacity_wh=200",
+   "verdicts": {
+    "baseline_better": 3,
+    "no_benefit": 2
+   },
+   "unanimous": false
+  },
+  {
+   "comparison": "charge_below 0.05 vs 0.1",
+   "conditions": "battery_capacity_wh=238",
+   "verdicts": {
+    "inconclusive": 3,
+    "intervention_better": 2
+   },
+   "unanimous": false
+  },
+  {
+   "comparison": "charge_below 0.05 vs 0.1",
+   "conditions": "battery_capacity_wh=283",
+   "verdicts": {
+    "intervention_better": 3,
+    "inconclusive": 2
+   },
+   "unanimous": false
+  },
+  {
+   "comparison": "charge_below 0.05 vs 0.1",
+   "conditions": "battery_capacity_wh=400",
+   "verdicts": {
+    "inconclusive": 2,
+    "intervention_better": 2,
+    "no_benefit": 1
+   },
+   "unanimous": false
+  },
+  {
+   "comparison": "charge_below 0.1 vs 0.25",
+   "conditions": "battery_capacity_wh=25",
+   "verdicts": {
+    "no_benefit": 5
+   },
+   "unanimous": true
+  },
+  {
+   "comparison": "charge_below 0.1 vs 0.25",
+   "conditions": "battery_capacity_wh=32.4",
+   "verdicts": {
+    "no_benefit": 3,
+    "baseline_better": 2
+   },
+   "unanimous": false
+  },
+  {
+   "comparison": "charge_below 0.1 vs 0.25",
+   "conditions": "battery_capacity_wh=42",
+   "verdicts": {
+    "baseline_better": 5
+   },
+   "unanimous": true
+  },
+  {
+   "comparison": "charge_below 0.1 vs 0.25",
+   "conditions": "battery_capacity_wh=50",
+   "verdicts": {
+    "baseline_better": 5
+   },
+   "unanimous": true
+  },
+  {
+   "comparison": "charge_below 0.1 vs 0.25",
+   "conditions": "battery_capacity_wh=70.7",
+   "verdicts": {
+    "baseline_better": 5
+   },
+   "unanimous": true
+  },
+  {
+   "comparison": "charge_below 0.1 vs 0.25",
+   "conditions": "battery_capacity_wh=100",
+   "verdicts": {
+    "baseline_better": 5
+   },
+   "unanimous": true
+  },
+  {
+   "comparison": "charge_below 0.1 vs 0.25",
+   "conditions": "battery_capacity_wh=119",
+   "verdicts": {
+    "baseline_better": 5
+   },
+   "unanimous": true
+  },
+  {
+   "comparison": "charge_below 0.1 vs 0.25",
+   "conditions": "battery_capacity_wh=154",
+   "verdicts": {
+    "intervention_better": 3,
+    "inconclusive": 2
+   },
+   "unanimous": false
+  },
+  {
+   "comparison": "charge_below 0.1 vs 0.25",
+   "conditions": "battery_capacity_wh=200",
+   "verdicts": {
+    "intervention_better": 5
+   },
+   "unanimous": true
+  },
+  {
+   "comparison": "charge_below 0.1 vs 0.25",
+   "conditions": "battery_capacity_wh=400",
+   "verdicts": {
+    "intervention_better": 5
+   },
+   "unanimous": true
+  },
+  {
+   "comparison": "charge_below 0.4 vs 0.25",
+   "conditions": "battery_capacity_wh=25",
+   "verdicts": {
+    "intervention_better": 5
+   },
+   "unanimous": true
+  },
+  {
+   "comparison": "charge_below 0.4 vs 0.25",
+   "conditions": "battery_capacity_wh=42",
+   "verdicts": {
+    "intervention_better": 5
+   },
+   "unanimous": true
+  },
+  {
+   "comparison": "charge_below 0.4 vs 0.25",
+   "conditions": "battery_capacity_wh=50",
+   "verdicts": {
+    "intervention_better": 5
+   },
+   "unanimous": true
+  },
+  {
+   "comparison": "charge_below 0.4 vs 0.25",
+   "conditions": "battery_capacity_wh=54.5",
+   "verdicts": {
+    "intervention_better": 4,
+    "baseline_better": 1
+   },
+   "unanimous": false
+  },
+  {
+   "comparison": "charge_below 0.4 vs 0.25",
+   "conditions": "battery_capacity_wh=70.7",
+   "verdicts": {
+    "baseline_better": 4,
+    "inconclusive": 1
+   },
+   "unanimous": false
+  },
+  {
+   "comparison": "charge_below 0.4 vs 0.25",
+   "conditions": "battery_capacity_wh=100",
+   "verdicts": {
+    "baseline_better": 5
+   },
+   "unanimous": true
+  },
+  {
+   "comparison": "charge_below 0.4 vs 0.25",
+   "conditions": "battery_capacity_wh=200",
+   "verdicts": {
+    "baseline_better": 5
+   },
+   "unanimous": true
+  },
+  {
+   "comparison": "charge_below 0.4 vs 0.25",
+   "conditions": "battery_capacity_wh=400",
+   "verdicts": {
+    "baseline_better": 5
+   },
+   "unanimous": true
+  },
+  {
+   "comparison": "charge_below 0.6 vs 0.4",
+   "conditions": "battery_capacity_wh=25",
+   "verdicts": {
+    "intervention_better": 5
+   },
+   "unanimous": true
+  },
+  {
+   "comparison": "charge_below 0.6 vs 0.4",
+   "conditions": "battery_capacity_wh=32.4",
+   "verdicts": {
+    "intervention_better": 5
+   },
+   "unanimous": true
+  },
+  {
+   "comparison": "charge_below 0.6 vs 0.4",
+   "conditions": "battery_capacity_wh=42",
+   "verdicts": {
+    "baseline_better": 2,
+    "inconclusive": 2,
+    "no_benefit": 1
+   },
+   "unanimous": false
+  },
+  {
+   "comparison": "charge_below 0.6 vs 0.4",
+   "conditions": "battery_capacity_wh=50",
+   "verdicts": {
+    "baseline_better": 3,
+    "inconclusive": 1,
+    "no_benefit": 1
+   },
+   "unanimous": false
+  },
+  {
+   "comparison": "charge_below 0.6 vs 0.4",
+   "conditions": "battery_capacity_wh=70.7",
+   "verdicts": {
+    "baseline_better": 5
+   },
+   "unanimous": true
+  },
+  {
+   "comparison": "charge_below 0.6 vs 0.4",
+   "conditions": "battery_capacity_wh=100",
+   "verdicts": {
+    "baseline_better": 5
+   },
+   "unanimous": true
+  },
+  {
+   "comparison": "charge_below 0.6 vs 0.4",
+   "conditions": "battery_capacity_wh=200",
+   "verdicts": {
+    "baseline_better": 5
+   },
+   "unanimous": true
+  },
+  {
+   "comparison": "charge_below 0.6 vs 0.4",
+   "conditions": "battery_capacity_wh=400",
+   "verdicts": {
+    "baseline_better": 5
+   },
+   "unanimous": true
+  },
+  {
+   "comparison": "charge_below 0.8 vs 0.6",
+   "conditions": "battery_capacity_wh=25",
+   "verdicts": {
+    "inconclusive": 5
+   },
+   "unanimous": true
+  },
+  {
+   "comparison": "charge_below 0.8 vs 0.6",
+   "conditions": "battery_capacity_wh=32.4",
+   "verdicts": {
+    "no_benefit": 3,
+    "baseline_better": 2
+   },
+   "unanimous": false
+  },
+  {
+   "comparison": "charge_below 0.8 vs 0.6",
+   "conditions": "battery_capacity_wh=42",
+   "verdicts": {
+    "baseline_better": 4,
+    "no_benefit": 1
+   },
+   "unanimous": false
+  },
+  {
+   "comparison": "charge_below 0.8 vs 0.6",
+   "conditions": "battery_capacity_wh=50",
+   "verdicts": {
+    "baseline_better": 5
+   },
+   "unanimous": true
+  },
+  {
+   "comparison": "charge_below 0.8 vs 0.6",
+   "conditions": "battery_capacity_wh=70.7",
+   "verdicts": {
+    "baseline_better": 5
+   },
+   "unanimous": true
+  },
+  {
+   "comparison": "charge_below 0.8 vs 0.6",
+   "conditions": "battery_capacity_wh=100",
+   "verdicts": {
+    "baseline_better": 5
+   },
+   "unanimous": true
+  },
+  {
+   "comparison": "charge_below 0.8 vs 0.6",
+   "conditions": "battery_capacity_wh=200",
+   "verdicts": {
+    "baseline_better": 5
+   },
+   "unanimous": true
+  },
+  {
+   "comparison": "charge_below 0.8 vs 0.6",
+   "conditions": "battery_capacity_wh=400",
+   "verdicts": {
+    "baseline_better": 5
+   },
+   "unanimous": true
+  },
+  {
+   "comparison": "charge_margin 0.25 vs 0",
+   "conditions": "battery_capacity_wh=25",
+   "verdicts": {
+    "intervention_better": 3,
+    "inconclusive": 1,
+    "no_benefit": 1
+   },
+   "unanimous": false
+  },
+  {
+   "comparison": "charge_margin 0.25 vs 0",
+   "conditions": "battery_capacity_wh=50",
+   "verdicts": {
+    "intervention_better": 3,
+    "inconclusive": 2
+   },
+   "unanimous": false
+  },
+  {
+   "comparison": "charge_margin 0.25 vs 0",
+   "conditions": "battery_capacity_wh=100",
+   "verdicts": {
+    "intervention_better": 5
+   },
+   "unanimous": true
+  },
+  {
+   "comparison": "charge_margin 0.25 vs 0",
+   "conditions": "battery_capacity_wh=200",
+   "verdicts": {
+    "intervention_better": 3,
+    "inconclusive": 2
+   },
+   "unanimous": false
+  },
+  {
+   "comparison": "charge_margin 0.25 vs 0",
+   "conditions": "battery_capacity_wh=400",
+   "verdicts": {
+    "inconclusive": 5
+   },
+   "unanimous": true
+  },
+  {
+   "comparison": "desat_above 0.3 vs 0.6",
+   "conditions": "battery_capacity_wh=25",
+   "verdicts": {
+    "inconclusive": 3,
+    "no_benefit": 2
+   },
+   "unanimous": false
+  },
+  {
+   "comparison": "desat_above 0.3 vs 0.6",
+   "conditions": "battery_capacity_wh=32.4",
+   "verdicts": {
+    "intervention_better": 5
+   },
+   "unanimous": true
+  },
+  {
+   "comparison": "desat_above 0.3 vs 0.6",
+   "conditions": "battery_capacity_wh=42",
+   "verdicts": {
+    "intervention_better": 5
+   },
+   "unanimous": true
+  },
+  {
+   "comparison": "desat_above 0.3 vs 0.6",
+   "conditions": "battery_capacity_wh=50",
+   "verdicts": {
+    "intervention_better": 5
+   },
+   "unanimous": true
+  },
+  {
+   "comparison": "desat_above 0.3 vs 0.6",
+   "conditions": "battery_capacity_wh=70.7",
+   "verdicts": {
+    "intervention_better": 5
+   },
+   "unanimous": true
+  },
+  {
+   "comparison": "desat_above 0.3 vs 0.6",
+   "conditions": "battery_capacity_wh=100",
+   "verdicts": {
+    "intervention_better": 5
+   },
+   "unanimous": true
+  },
+  {
+   "comparison": "desat_above 0.3 vs 0.6",
+   "conditions": "battery_capacity_wh=200",
+   "verdicts": {
+    "intervention_better": 5
+   },
+   "unanimous": true
+  },
+  {
+   "comparison": "desat_above 0.3 vs 0.6",
+   "conditions": "battery_capacity_wh=400",
+   "verdicts": {
+    "intervention_better": 4,
+    "inconclusive": 1
+   },
+   "unanimous": false
+  },
+  {
+   "comparison": "precharge_below 0.6 vs 0, precharge_window_s 900 vs 0",
+   "conditions": "battery_capacity_wh=25",
+   "verdicts": {
+    "intervention_better": 4,
+    "inconclusive": 1
+   },
+   "unanimous": false
+  },
+  {
+   "comparison": "precharge_below 0.6 vs 0, precharge_window_s 900 vs 0",
+   "conditions": "battery_capacity_wh=50",
+   "verdicts": {
+    "intervention_better": 3,
+    "inconclusive": 2
+   },
+   "unanimous": false
+  },
+  {
+   "comparison": "precharge_below 0.6 vs 0, precharge_window_s 900 vs 0",
+   "conditions": "battery_capacity_wh=100",
+   "verdicts": {
+    "intervention_better": 4,
+    "inconclusive": 1
+   },
+   "unanimous": false
+  },
+  {
+   "comparison": "precharge_below 0.6 vs 0, precharge_window_s 900 vs 0",
+   "conditions": "battery_capacity_wh=200",
+   "verdicts": {
+    "inconclusive": 4,
+    "no_benefit": 1
+   },
+   "unanimous": false
+  },
+  {
+   "comparison": "precharge_below 0.6 vs 0, precharge_window_s 900 vs 0",
+   "conditions": "battery_capacity_wh=400",
+   "verdicts": {
+    "no_benefit": 4,
+    "baseline_better": 1
+   },
+   "unanimous": false
+  }
+ ]
+}

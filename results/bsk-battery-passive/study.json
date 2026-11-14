@@ -1,0 +1,38 @@
+{
+  "rounds": 20,
+  "experiments": 73,
+  "episodes_used": 2224,
+  "episodes_simulated": 368,
+  "budget": 7200,
+  "simulation_core_s": 3201.4,
+  "wall_s": 194.8,
+  "graph": {
+    "families": 8,
+    "claims": 23,
+    "by_status": {
+      "superseded": 6,
+      "refuted": 2,
+      "supported": 13,
+      "retired": 1,
+      "contested": 1
+    },
+    "relations": 34,
+    "revisions": {
+      "propose": 8,
+      "evidence": 72,
+      "support": 17,
+      "mechanism": 33,
+      "refute": 3,
+      "specialize": 15,
+      "supersede": 6,
+      "rescope": 34,
+      "contest": 2,
+      "retire": 1
+    }
+  },
+  "confidence_per_look": 0.9779,
+  "evaluation_episodes": 2432,
+  "evaluation_core_s": 3218.4,
+  "evaluation_wall_s": 54.1,
+  "episodes_total": 24976
+}

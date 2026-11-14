@@ -1,0 +1,240 @@
+[
+  {
+    "conditions": {
+      "battery_capacity_wh": 35
+    },
+    "settings": {
+      "charge_below": 0.4,
+      "precharge_window_s": 900.0,
+      "precharge_below": 0.6,
+      "desat_above": 0.3,
+      "charge_margin": 0.25
+    },
+    "combined_minus_reference": {
+      "n": 32,
+      "mean_a": 0.388136,
+      "mean_b": -0.535161,
+      "diff": 0.923297,
+      "ci_low": 0.707632,
+      "ci_high": 1.128362,
+      "p_value": 0.0002,
+      "confidence": 0.95
+    },
+    "single_change_means": {
+      "charge_below": 0.1818,
+      "precharge_below,precharge_window_s": -0.3176,
+      "desat_above": -0.3927,
+      "charge_margin": -0.3576
+    },
+    "combined_mean": 0.3881,
+    "reference_mean": -0.5352,
+    "best_single_change": "charge_below",
+    "combined_minus_best_single": {
+      "n": 32,
+      "mean_a": 0.388136,
+      "mean_b": 0.181813,
+      "diff": 0.206323,
+      "ci_low": 0.004113,
+      "ci_high": 0.412011,
+      "p_value": 0.061988,
+      "confidence": 0.95
+    },
+    "unhelpful_alone": [],
+    "finding": "consistent"
+  },
+  {
+    "conditions": {
+      "battery_capacity_wh": 70
+    },
+    "settings": {
+      "desat_above": 0.3,
+      "charge_margin": 0.25
+    },
+    "combined_minus_reference": {
+      "n": 32,
+      "mean_a": 0.551687,
+      "mean_b": 0.423671,
+      "diff": 0.128015,
+      "ci_low": 0.062657,
+      "ci_high": 0.222196,
+      "p_value": 0.0002,
+      "confidence": 0.95
+    },
+    "single_change_means": {
+      "desat_above": 0.5166,
+      "charge_margin": 0.5106
+    },
+    "combined_mean": 0.5517,
+    "reference_mean": 0.4237,
+    "best_single_change": "desat_above",
+    "combined_minus_best_single": {
+      "n": 32,
+      "mean_a": 0.551687,
+      "mean_b": 0.516579,
+      "diff": 0.035108,
+      "ci_low": 0.003493,
+      "ci_high": 0.062837,
+      "p_value": 0.030594,
+      "confidence": 0.95
+    },
+    "unhelpful_alone": [],
+    "finding": "consistent"
+  },
+  {
+    "conditions": {
+      "battery_capacity_wh": 140
+    },
+    "settings": {
+      "desat_above": 0.3,
+      "charge_margin": 0.25
+    },
+    "combined_minus_reference": {
+      "n": 32,
+      "mean_a": 0.61462,
+      "mean_b": 0.584273,
+      "diff": 0.030347,
+      "ci_low": -0.008782,
+      "ci_high": 0.06714,
+      "p_value": 0.131974,
+      "confidence": 0.95
+    },
+    "single_change_means": {
+      "desat_above": 0.6357,
+      "charge_margin": 0.5981
+    },
+    "combined_mean": 0.6146,
+    "reference_mean": 0.5843,
+    "best_single_change": "desat_above",
+    "combined_minus_best_single": {
+      "n": 32,
+      "mean_a": 0.61462,
+      "mean_b": 0.635691,
+      "diff": -0.021071,
+      "ci_low": -0.044278,
+      "ci_high": 0.00347,
+      "p_value": 0.089382,
+      "confidence": 0.95
+    },
+    "unhelpful_alone": [],
+    "finding": "negative interaction"
+  },
+  {
+    "conditions": {
+      "battery_capacity_wh": 280
+    },
+    "settings": {
+      "charge_below": 0.1,
+      "desat_above": 0.3
+    },
+    "combined_minus_reference": {
+      "n": 32,
+      "mean_a": 0.824455,
+      "mean_b": 0.747171,
+      "diff": 0.077284,
+      "ci_low": 0.027041,
+      "ci_high": 0.125946,
+      "p_value": 0.005999,
+      "confidence": 0.95
+    },
+    "single_change_means": {
+      "charge_below": 0.8244,
+      "desat_above": 0.7596
+    },
+    "combined_mean": 0.8245,
+    "reference_mean": 0.7472,
+    "best_single_change": "charge_below",
+    "combined_minus_best_single": {
+      "n": 32,
+      "mean_a": 0.824455,
+      "mean_b": 0.824437,
+      "diff": 1.8e-05,
+      "ci_low": -0.027749,
+      "ci_high": 0.024479,
+      "p_value": 0.9992,
+      "confidence": 0.95
+    },
+    "unhelpful_alone": [],
+    "finding": "consistent"
+  },
+  {
+    "conditions": {
+      "battery_capacity_wh": 18
+    },
+    "settings": {
+      "precharge_window_s": 900.0,
+      "precharge_below": 0.6,
+      "charge_margin": 0.25,
+      "charge_below": 0.6
+    },
+    "combined_minus_reference": {
+      "n": 32,
+      "mean_a": -0.123436,
+      "mean_b": -0.876811,
+      "diff": 0.753375,
+      "ci_low": 0.526676,
+      "ci_high": 0.971068,
+      "p_value": 0.0002,
+      "confidence": 0.95
+    },
+    "single_change_means": {
+      "precharge_below,precharge_window_s": -0.8813,
+      "charge_margin": -0.869,
+      "charge_below": -0.1583
+    },
+    "combined_mean": -0.1234,
+    "reference_mean": -0.8768,
+    "best_single_change": "charge_below",
+    "combined_minus_best_single": {
+      "n": 32,
+      "mean_a": -0.123436,
+      "mean_b": -0.158286,
+      "diff": 0.03485,
+      "ci_low": -0.161855,
+      "ci_high": 0.235345,
+      "p_value": 0.730254,
+      "confidence": 0.95
+    },
+    "unhelpful_alone": [],
+    "finding": "consistent"
+  },
+  {
+    "conditions": {
+      "battery_capacity_wh": 600
+    },
+    "settings": {
+      "charge_below": 0.1,
+      "desat_above": 0.3
+    },
+    "combined_minus_reference": {
+      "n": 32,
+      "mean_a": 0.876966,
+      "mean_b": 0.843311,
+      "diff": 0.033655,
+      "ci_low": -0.016391,
+      "ci_high": 0.089019,
+      "p_value": 0.230554,
+      "confidence": 0.95
+    },
+    "single_change_means": {
+      "charge_below": 0.8991,
+      "desat_above": 0.8299
+    },
+    "combined_mean": 0.877,
+    "reference_mean": 0.8433,
+    "best_single_change": "charge_below",
+    "combined_minus_best_single": {
+      "n": 32,
+      "mean_a": 0.876966,
+      "mean_b": 0.899132,
+      "diff": -0.022165,
+      "ci_low": -0.047846,
+      "ci_high": -0.00273,
+      "p_value": 0.029394,
+      "confidence": 0.95
+    },
+    "unhelpful_alone": [
+      "desat_above"
+    ],
+    "finding": "unhelpful change"
+  }
+]

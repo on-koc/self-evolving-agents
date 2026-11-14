@@ -1,0 +1,612 @@
+{
+  "interpolation (inside the studied range)": {
+    "test_points": [
+      {
+        "battery_capacity_wh": 35
+      },
+      {
+        "battery_capacity_wh": 70
+      },
+      {
+        "battery_capacity_wh": 140
+      },
+      {
+        "battery_capacity_wh": 280
+      }
+    ],
+    "seeds": [
+      5000,
+      5031
+    ],
+    "n_seeds": 32,
+    "overall": {
+      "conditional": {
+        "mean_score": 0.5939,
+        "failure_rate": 0.0156,
+        "episodes": 128
+      },
+      "flat": {
+        "mean_score": 0.1031,
+        "failure_rate": 0.4297,
+        "episodes": 128
+      },
+      "reference": {
+        "mean_score": 0.305,
+        "failure_rate": 0.1953,
+        "episodes": 128
+      },
+      "oracle": {
+        "mean_score": 0.607,
+        "failure_rate": 0.0,
+        "episodes": 128
+      }
+    },
+    "comparisons": {
+      "conditional_minus_flat": {
+        "score": {
+          "n": 128,
+          "mean_a": 0.59389,
+          "mean_b": 0.103078,
+          "diff": 0.490811,
+          "ci_low": 0.384586,
+          "ci_high": 0.599732,
+          "p_value": 0.0002,
+          "confidence": 0.95
+        },
+        "failure_rate": {
+          "n": 128,
+          "mean_a": 0.015625,
+          "mean_b": 0.429688,
+          "diff": -0.414062,
+          "ci_low": -0.5,
+          "ci_high": -0.335938,
+          "p_value": 0.0002,
+          "confidence": 0.95
+        }
+      },
+      "conditional_minus_reference": {
+        "score": {
+          "n": 128,
+          "mean_a": 0.59389,
+          "mean_b": 0.304989,
+          "diff": 0.288901,
+          "ci_low": 0.20495,
+          "ci_high": 0.375381,
+          "p_value": 0.0002,
+          "confidence": 0.95
+        },
+        "failure_rate": {
+          "n": 128,
+          "mean_a": 0.015625,
+          "mean_b": 0.195312,
+          "diff": -0.179688,
+          "ci_low": -0.25,
+          "ci_high": -0.117188,
+          "p_value": 0.0002,
+          "confidence": 0.95
+        }
+      },
+      "flat_minus_reference": {
+        "score": {
+          "n": 128,
+          "mean_a": 0.103078,
+          "mean_b": 0.304989,
+          "diff": -0.20191,
+          "ci_low": -0.296902,
+          "ci_high": -0.112772,
+          "p_value": 0.0002,
+          "confidence": 0.95
+        },
+        "failure_rate": {
+          "n": 128,
+          "mean_a": 0.429688,
+          "mean_b": 0.195312,
+          "diff": 0.234375,
+          "ci_low": 0.164062,
+          "ci_high": 0.3125,
+          "p_value": 0.0002,
+          "confidence": 0.95
+        }
+      },
+      "oracle_minus_conditional": {
+        "score": {
+          "n": 128,
+          "mean_a": 0.607024,
+          "mean_b": 0.59389,
+          "diff": 0.013135,
+          "ci_low": -0.015156,
+          "ci_high": 0.04819,
+          "p_value": 0.445511,
+          "confidence": 0.95
+        },
+        "failure_rate": {
+          "n": 128,
+          "mean_a": 0.0,
+          "mean_b": 0.015625,
+          "diff": -0.015625,
+          "ci_low": -0.039062,
+          "ci_high": 0.0,
+          "p_value": 0.5019,
+          "confidence": 0.95
+        }
+      }
+    },
+    "per_point": [
+      {
+        "conditions": {
+          "battery_capacity_wh": 35
+        },
+        "methods": {
+          "conditional": {
+            "mean_score": 0.3566,
+            "failure_rate": 0.0625,
+            "failures": {
+              "battery": 2
+            },
+            "settings": {
+              "charge_below": 0.6,
+              "precharge_window_s": 900.0,
+              "precharge_below": 0.6,
+              "desat_above": 0.3,
+              "charge_margin": 0.25
+            },
+            "claims_applied": [
+              "claim_770674116107",
+              "claim_0e274264ebb3",
+              "claim_e30852c4c952",
+              "claim_02c6b490235d",
+              "claim_e60f5d1e9baf"
+            ]
+          },
+          "flat": {
+            "mean_score": -0.7618,
+            "failure_rate": 0.9375,
+            "failures": {
+              "battery": 30
+            },
+            "settings": {
+              "charge_below": 0.1,
+              "desat_above": 0.3
+            },
+            "claims_applied": [
+              "claim_86195822c600",
+              "claim_02c6b490235d"
+            ]
+          },
+          "reference": {
+            "mean_score": -0.5352,
+            "failure_rate": 0.75,
+            "failures": {
+              "battery": 24
+            },
+            "settings": {},
+            "claims_applied": []
+          },
+          "oracle": {
+            "mean_score": 0.3479,
+            "failure_rate": 0.0,
+            "failures": {},
+            "settings": {
+              "charge_below": 0.6,
+              "desat_above": 0.6
+            },
+            "claims_applied": []
+          }
+        }
+      },
+      {
+        "conditions": {
+          "battery_capacity_wh": 70
+        },
+        "methods": {
+          "conditional": {
+            "mean_score": 0.5748,
+            "failure_rate": 0.0,
+            "failures": {},
+            "settings": {
+              "precharge_window_s": 900.0,
+              "precharge_below": 0.6,
+              "desat_above": 0.3,
+              "charge_margin": 0.25
+            },
+            "claims_applied": [
+              "claim_e30852c4c952",
+              "claim_02c6b490235d",
+              "claim_e60f5d1e9baf"
+            ]
+          },
+          "flat": {
+            "mean_score": -0.3678,
+            "failure_rate": 0.7812,
+            "failures": {
+              "battery": 25
+            },
+            "settings": {
+              "charge_below": 0.1,
+              "desat_above": 0.3
+            },
+            "claims_applied": [
+              "claim_86195822c600",
+              "claim_02c6b490235d"
+            ]
+          },
+          "reference": {
+            "mean_score": 0.4237,
+            "failure_rate": 0.0312,
+            "failures": {
+              "battery": 1
+            },
+            "settings": {},
+            "claims_applied": []
+          },
+          "oracle": {
+            "mean_score": 0.5166,
+            "failure_rate": 0.0,
+            "failures": {},
+            "settings": {
+              "charge_below": 0.25,
+              "desat_above": 0.3
+            },
+            "claims_applied": []
+          }
+        }
+      },
+      {
+        "conditions": {
+          "battery_capacity_wh": 140
+        },
+        "methods": {
+          "conditional": {
+            "mean_score": 0.6552,
+            "failure_rate": 0.0,
+            "failures": {},
+            "settings": {
+              "precharge_window_s": 900.0,
+              "precharge_below": 0.6,
+              "desat_above": 0.3,
+              "charge_margin": 0.25
+            },
+            "claims_applied": [
+              "claim_e30852c4c952",
+              "claim_02c6b490235d",
+              "claim_e60f5d1e9baf"
+            ]
+          },
+          "flat": {
+            "mean_score": 0.7175,
+            "failure_rate": 0.0,
+            "failures": {},
+            "settings": {
+              "charge_below": 0.1,
+              "desat_above": 0.3
+            },
+            "claims_applied": [
+              "claim_86195822c600",
+              "claim_02c6b490235d"
+            ]
+          },
+          "reference": {
+            "mean_score": 0.5843,
+            "failure_rate": 0.0,
+            "failures": {},
+            "settings": {},
+            "claims_applied": []
+          },
+          "oracle": {
+            "mean_score": 0.7175,
+            "failure_rate": 0.0,
+            "failures": {},
+            "settings": {
+              "charge_below": 0.1,
+              "desat_above": 0.3
+            },
+            "claims_applied": []
+          }
+        }
+      },
+      {
+        "conditions": {
+          "battery_capacity_wh": 280
+        },
+        "methods": {
+          "conditional": {
+            "mean_score": 0.789,
+            "failure_rate": 0.0,
+            "failures": {},
+            "settings": {
+              "charge_below": 0.1,
+              "precharge_window_s": 900.0,
+              "precharge_below": 0.6,
+              "desat_above": 0.3,
+              "charge_margin": 0.25
+            },
+            "claims_applied": [
+              "claim_85a2d1cd0a3a",
+              "claim_e30852c4c952",
+              "claim_02c6b490235d",
+              "claim_e60f5d1e9baf"
+            ]
+          },
+          "flat": {
+            "mean_score": 0.8245,
+            "failure_rate": 0.0,
+            "failures": {},
+            "settings": {
+              "charge_below": 0.1,
+              "desat_above": 0.3
+            },
+            "claims_applied": [
+              "claim_86195822c600",
+              "claim_02c6b490235d"
+            ]
+          },
+          "reference": {
+            "mean_score": 0.7472,
+            "failure_rate": 0.0,
+            "failures": {},
+            "settings": {},
+            "claims_applied": []
+          },
+          "oracle": {
+            "mean_score": 0.8461,
+            "failure_rate": 0.0,
+            "failures": {},
+            "settings": {
+              "charge_below": 0.05,
+              "desat_above": 0.3
+            },
+            "claims_applied": []
+          }
+        }
+      }
+    ]
+  },
+  "extrapolation (outside the studied range)": {
+    "test_points": [
+      {
+        "battery_capacity_wh": 18
+      },
+      {
+        "battery_capacity_wh": 600
+      }
+    ],
+    "seeds": [
+      5000,
+      5031
+    ],
+    "n_seeds": 32,
+    "overall": {
+      "conditional": {
+        "mean_score": 0.3766,
+        "failure_rate": 0.1719,
+        "episodes": 64
+      },
+      "flat": {
+        "mean_score": -0.0322,
+        "failure_rate": 0.5,
+        "episodes": 64
+      },
+      "reference": {
+        "mean_score": -0.0167,
+        "failure_rate": 0.4844,
+        "episodes": 64
+      },
+      "oracle": {
+        "mean_score": 0.479,
+        "failure_rate": 0.0938,
+        "episodes": 64
+      }
+    },
+    "comparisons": {
+      "conditional_minus_flat": {
+        "score": {
+          "n": 64,
+          "mean_a": 0.376579,
+          "mean_b": -0.0322,
+          "diff": 0.408779,
+          "ci_low": 0.258045,
+          "ci_high": 0.572423,
+          "p_value": 0.0002,
+          "confidence": 0.95
+        },
+        "failure_rate": {
+          "n": 64,
+          "mean_a": 0.171875,
+          "mean_b": 0.5,
+          "diff": -0.328125,
+          "ci_low": -0.453125,
+          "ci_high": -0.21875,
+          "p_value": 0.0002,
+          "confidence": 0.95
+        }
+      },
+      "conditional_minus_reference": {
+        "score": {
+          "n": 64,
+          "mean_a": 0.376579,
+          "mean_b": -0.01675,
+          "diff": 0.393329,
+          "ci_low": 0.243514,
+          "ci_high": 0.549277,
+          "p_value": 0.0002,
+          "confidence": 0.95
+        },
+        "failure_rate": {
+          "n": 64,
+          "mean_a": 0.171875,
+          "mean_b": 0.484375,
+          "diff": -0.3125,
+          "ci_low": -0.421875,
+          "ci_high": -0.203125,
+          "p_value": 0.0002,
+          "confidence": 0.95
+        }
+      },
+      "flat_minus_reference": {
+        "score": {
+          "n": 64,
+          "mean_a": -0.0322,
+          "mean_b": -0.01675,
+          "diff": -0.01545,
+          "ci_low": -0.066337,
+          "ci_high": 0.027899,
+          "p_value": 0.628474,
+          "confidence": 0.95
+        },
+        "failure_rate": {
+          "n": 64,
+          "mean_a": 0.5,
+          "mean_b": 0.484375,
+          "diff": 0.015625,
+          "ci_low": 0.0,
+          "ci_high": 0.046875,
+          "p_value": 1.0,
+          "confidence": 0.95
+        }
+      },
+      "oracle_minus_conditional": {
+        "score": {
+          "n": 64,
+          "mean_a": 0.478957,
+          "mean_b": 0.376579,
+          "diff": 0.102378,
+          "ci_low": -0.013628,
+          "ci_high": 0.21908,
+          "p_value": 0.092581,
+          "confidence": 0.95
+        },
+        "failure_rate": {
+          "n": 64,
+          "mean_a": 0.09375,
+          "mean_b": 0.171875,
+          "diff": -0.078125,
+          "ci_low": -0.171875,
+          "ci_high": 0.015625,
+          "p_value": 0.176765,
+          "confidence": 0.95
+        }
+      }
+    },
+    "per_point": [
+      {
+        "conditions": {
+          "battery_capacity_wh": 18
+        },
+        "methods": {
+          "conditional": {
+            "mean_score": -0.0652,
+            "failure_rate": 0.3438,
+            "failures": {
+              "battery": 11
+            },
+            "settings": {
+              "charge_below": 0.6,
+              "precharge_window_s": 900.0,
+              "precharge_below": 0.6,
+              "desat_above": 0.3,
+              "charge_margin": 0.25
+            },
+            "claims_applied": [
+              "claim_770674116107",
+              "claim_0e274264ebb3",
+              "claim_e30852c4c952",
+              "claim_02c6b490235d",
+              "claim_e60f5d1e9baf"
+            ]
+          },
+          "flat": {
+            "mean_score": -0.9414,
+            "failure_rate": 1.0,
+            "failures": {
+              "battery": 32
+            },
+            "settings": {
+              "charge_below": 0.1,
+              "desat_above": 0.3
+            },
+            "claims_applied": [
+              "claim_86195822c600",
+              "claim_02c6b490235d"
+            ]
+          },
+          "reference": {
+            "mean_score": -0.8768,
+            "failure_rate": 0.9688,
+            "failures": {
+              "battery": 31
+            },
+            "settings": {},
+            "claims_applied": []
+          },
+          "oracle": {
+            "mean_score": 0.0801,
+            "failure_rate": 0.1875,
+            "failures": {
+              "battery": 6
+            },
+            "settings": {
+              "charge_below": 0.8,
+              "desat_above": 0.6
+            },
+            "claims_applied": []
+          }
+        }
+      },
+      {
+        "conditions": {
+          "battery_capacity_wh": 600
+        },
+        "methods": {
+          "conditional": {
+            "mean_score": 0.8183,
+            "failure_rate": 0.0,
+            "failures": {},
+            "settings": {
+              "charge_below": 0.1,
+              "precharge_window_s": 900.0,
+              "precharge_below": 0.6,
+              "desat_above": 0.3,
+              "charge_margin": 0.25
+            },
+            "claims_applied": [
+              "claim_85a2d1cd0a3a",
+              "claim_e30852c4c952",
+              "claim_02c6b490235d",
+              "claim_e60f5d1e9baf"
+            ]
+          },
+          "flat": {
+            "mean_score": 0.877,
+            "failure_rate": 0.0,
+            "failures": {},
+            "settings": {
+              "charge_below": 0.1,
+              "desat_above": 0.3
+            },
+            "claims_applied": [
+              "claim_86195822c600",
+              "claim_02c6b490235d"
+            ]
+          },
+          "reference": {
+            "mean_score": 0.8433,
+            "failure_rate": 0.0,
+            "failures": {},
+            "settings": {},
+            "claims_applied": []
+          },
+          "oracle": {
+            "mean_score": 0.8778,
+            "failure_rate": 0.0,
+            "failures": {},
+            "settings": {
+              "charge_below": 0.05,
+              "desat_above": 0.3
+            },
+            "claims_applied": []
+          }
+        }
+      }
+    ]
+  }
+}

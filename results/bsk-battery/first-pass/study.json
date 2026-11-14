@@ -1,0 +1,30 @@
+{
+  "rounds": 15,
+  "experiments": 51,
+  "episodes_run": 2208,
+  "budget": 4500,
+  "wall_s": 756.3,
+  "graph": {
+    "families": 8,
+    "claims": 16,
+    "by_status": {
+      "superseded": 3,
+      "supported": 11,
+      "refuted": 2
+    },
+    "relations": 19,
+    "revisions": {
+      "propose": 8,
+      "evidence": 50,
+      "support": 14,
+      "mechanism": 17,
+      "refute": 2,
+      "specialize": 8,
+      "supersede": 3,
+      "rescope": 17
+    }
+  },
+  "confidence_per_look": 0.9779,
+  "evaluation_wall_s": 885.1,
+  "episodes_total": 4736
+}

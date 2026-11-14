@@ -1,0 +1,66 @@
+{
+  "name": "scan-policy-agent",
+  "title": "Memory methods on the scanning task, policy-writing agent (one call per episode)",
+  "stream": {
+    "env": "bsk-scan",
+    "regimes": [
+      "nominal",
+      "small_battery"
+    ],
+    "order": "interleaved",
+    "seeds": "0:15"
+  },
+  "agent": "policy_program",
+  "model": {
+    "llm": "anthropic:claude-opus-5-5",
+    "effort": null,
+    "embedder": "hashing"
+  },
+  "budget": {
+    "max_cost_usd_per_run": 5
+  },
+  "repeats": 3,
+  "baseline": "reasoningbank",
+  "arms": {
+    "no_memory": {
+      "method": "no_memory"
+    },
+    "reasoningbank": {
+      "method": "reasoningbank"
+    },
+    "reasoningbank_newest_on_ties": {
+      "method": "reasoningbank",
+      "options": {
+        "tie_break": "newest"
+      }
+    },
+    "reasoningbank_success_only": {
+      "method": "reasoningbank",
+      "options": {
+        "include_failures": false
+      }
+    },
+    "reasoningbank_env_judge": {
+      "method": "reasoningbank",
+      "options": {
+        "judge": "env"
+      }
+    },
+    "conditioned_retrieval": {
+      "method": "conditioned_retrieval"
+    },
+    "claim_memory": {
+      "method": "claim_memory",
+      "options": {
+        "claims": "results/bsk-battery"
+      }
+    },
+    "claim_memory_plus_reasoningbank": {
+      "method": "claim_memory",
+      "options": {
+        "claims": "results/bsk-battery",
+        "with_reasoningbank": true
+      }
+    }
+  }
+}
