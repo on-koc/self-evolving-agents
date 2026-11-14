@@ -84,7 +84,8 @@ All are off by default: `inject_description`, `extractor_sees_judge_rationale`,
 `revised_prompts`, `judge_strict`, `query_instruction`.
 
 Chosen outside the method: the model (`--llm`), the agent (`--agent stepwise` is the
-paper's) and the embedder (`--embedder gemini` is the paper's `gemini-embedding-001`;
+paper's and the default; DiscoveryWorld's agents can carry it too, see
+[`../agents.md`](../agents.md)) and the embedder (`--embedder gemini` is the paper's `gemini-embedding-001`;
 the default `hashing` works offline and measures word overlap, not meaning).
 
 ## Differences from the published method

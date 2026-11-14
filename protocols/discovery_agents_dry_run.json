@@ -1,0 +1,88 @@
+{
+  "name": "discovery-agents-dry-run",
+  "title": "Dry run: DiscoveryWorld's baselines with and without memory (plumbing check with the stand-in model, not a result)",
+  "model": {
+    "llm": "offline-demo",
+    "embedder": "hashing"
+  },
+  "grader": {
+    "llm": "offline-demo"
+  },
+  "agent": "hypothesizer",
+  "agent_options": {
+    "observation": "json"
+  },
+  "max_steps": 6,
+  "experience": {
+    "order": "interleaved",
+    "worlds": [
+      {
+        "scenario": "Combinatorial Chemistry",
+        "difficulty": "Easy",
+        "seeds": [
+          0,
+          1
+        ]
+      }
+    ]
+  },
+  "transfer": {
+    "same_world": [
+      {
+        "scenario": "Combinatorial Chemistry",
+        "difficulty": "Easy",
+        "seeds": [
+          0
+        ]
+      }
+    ],
+    "new_world": [
+      {
+        "scenario": "Combinatorial Chemistry",
+        "difficulty": "Easy",
+        "seeds": [
+          2
+        ]
+      }
+    ],
+    "new_theme": [
+      {
+        "scenario": "Proteomics",
+        "difficulty": "Easy",
+        "seeds": [
+          0
+        ]
+      }
+    ]
+  },
+  "arms": {
+    "hypothesizer": {
+      "method": "hypothesizer"
+    },
+    "react": {
+      "method": "no_memory",
+      "agent": "react"
+    },
+    "react_reasoningbank": {
+      "method": "reasoningbank",
+      "agent": "react"
+    },
+    "react_investigation_memory": {
+      "method": "investigation_memory",
+      "agent": "react"
+    },
+    "plan_execute": {
+      "method": "no_memory",
+      "agent": "plan_execute"
+    },
+    "plan_execute_reasoningbank": {
+      "method": "reasoningbank",
+      "agent": "plan_execute"
+    },
+    "random": {
+      "method": "no_memory",
+      "agent": "random"
+    }
+  },
+  "repeats": 1
+}

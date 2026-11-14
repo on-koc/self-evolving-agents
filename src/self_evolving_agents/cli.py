@@ -1,6 +1,7 @@
 """``sea`` command line.
 
     sea methods                           the methods, where each comes from, what is known
+    sea agents                            the agents, and the environments each can play
     sea run --method NAME ...             run one method on a stream of tasks
     sea show RUN                          summary and memory items of a run
     sea compare run|report ...            several methods on the same stream (a protocol)
@@ -65,17 +66,20 @@ def build_tasks(args: argparse.Namespace) -> list[Task]:
     params: dict[str, Any] = dict(parse_assignments(args.param))
     if args.duration:
         params["duration_s"] = args.duration
-    return task_stream(
-        args.env,
-        parse_seeds(args.seeds),
-        regimes=[r.strip() for r in args.regime.split(",") if r.strip()],
-        order=args.order,
-        conditions=parse_assignments(args.condition) or None,
-        params=params,
-        scenarios=[s.strip() for s in (args.scenario or "").split(";") if s.strip()],
-        difficulty=args.difficulty,
-        max_steps=args.max_steps,
-    )
+    try:
+        return task_stream(
+            args.env,
+            parse_seeds(args.seeds),
+            regimes=[r.strip() for r in args.regime.split(",") if r.strip()],
+            order=args.order,
+            conditions=parse_assignments(args.condition) or None,
+            params=params,
+            scenarios=[s.strip() for s in (args.scenario or "").split(";") if s.strip()],
+            difficulty=[d.strip() for d in args.difficulty.split(",") if d.strip()],
+            max_steps=args.max_steps,
+        )
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from None
 
 
 def _add_task_options(p: argparse.ArgumentParser) -> None:
@@ -100,11 +104,24 @@ def _add_task_options(p: argparse.ArgumentParser) -> None:
         help="override an episode parameter (scanning)",
     )
     g.add_argument("--duration", type=float, help="episode length in seconds (scanning)")
-    g.add_argument("--scenario", help='DiscoveryWorld scenario name(s), separated by ";"')
     g.add_argument(
-        "--difficulty", default="Normal", help="DiscoveryWorld difficulty (Easy, Normal, Challenge)"
+        "--scenario",
+        help='DiscoveryWorld scenario name(s), separated by ";"; "themes" and "unit-tests" '
+        "stand for their members (see `sea envs`)",
     )
-    g.add_argument("--max-steps", type=int, default=100, help="DiscoveryWorld step limit")
+    g.add_argument(
+        "--difficulty",
+        default="Normal",
+        help="DiscoveryWorld difficulty: Easy, Normal or Challenge, or several separated by "
+        "commas (the unit tests and the tutorial exist in Normal only)",
+    )
+    g.add_argument(
+        "--max-steps",
+        type=int,
+        default=None,
+        help="DiscoveryWorld step limit (default: the paper's, 100 for Easy and the unit "
+        "tests, 1000 for Normal and Challenge)",
+    )
     g.add_argument(
         "--order",
         default="sequential",
@@ -157,10 +174,32 @@ def _add_model_options(p: argparse.ArgumentParser) -> None:
 
 
 def cmd_envs(args: argparse.Namespace) -> int:
+    from .envs import (
+        BENCHMARK_SEEDS,
+        DISCOVERY_THEMES,
+        TUTORIAL,
+        UNIT_TESTS,
+        paper_step_limit,
+        scenario_difficulties,
+    )
+
     print("Environments:", ", ".join(available_envs()))
     print("\nScanning regimes (single-factor departures from the reference spacecraft):")
     for name, overrides in REGIMES.items():
         print(f"  {name:18s} {overrides or 'reference configuration'}")
+    seeds = ", ".join(str(s) for s in BENCHMARK_SEEDS)
+    print(f"\nDiscoveryWorld scenarios (--env discoveryworld --scenario NAME); seeds {seeds}:")
+    print("  Discovery themes (--scenario themes), difficulty: default step limit")
+    for theme in DISCOVERY_THEMES:
+        limits = ", ".join(
+            f"{d}: {paper_step_limit(theme, d)}" for d in scenario_difficulties(theme)
+        )
+        print(f"    {theme:30s} {limits}")
+    print("  Unit tests (--scenario unit-tests), Normal only: 100 steps")
+    for test in UNIT_TESTS:
+        print(f"    {test}")
+    print(f"  {TUTORIAL} (Normal, seed 0; not part of the benchmark)")
+    print("Documentation of each scenario: docs/discoveryworld/tasks/")
     return 0
 
 
@@ -180,6 +219,24 @@ def cmd_methods(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_agents(args: argparse.Namespace) -> int:
+    from .methods.registry import AGENT_SPECS, DEFAULT_AGENT
+
+    for spec in AGENT_SPECS.values():
+        envs = ", ".join(spec.environments) if spec.environments else "every environment"
+        default_for = [m for m, a in DEFAULT_AGENT.items() if a == spec.name]
+        print(f"{spec.name}  ({spec.origin})")
+        print(f"    {spec.summary}")
+        print(f"    environments: {envs}; reads memory: {'yes' if spec.reads_memory else 'no'}")
+        if spec.name == "stepwise":
+            print("    default agent of every method that names no other")
+        elif default_for:
+            print(f"    default agent of: {', '.join(default_for)}")
+        print()
+    print("Which method combines with which agent: docs/agents.md")
+    return 0
+
+
 def cmd_run(args: argparse.Namespace) -> int:
     from .methods.run import run_method
 
@@ -191,6 +248,7 @@ def cmd_run(args: argparse.Namespace) -> int:
             llm=args.llm,
             options=parse_options(args.set),
             agent=args.agent,
+            agent_options=parse_options(args.agent_option),
             embedder=args.embedder,
             effort=args.effort,
             llm_options=parse_options(args.llm_option),
@@ -314,6 +372,9 @@ def build_parser() -> argparse.ArgumentParser:
     methods.add_argument("--options", action="store_true", help="also print every option's default")
     methods.set_defaults(func=cmd_methods)
 
+    agents = sub.add_parser("agents", help="list the agents and where each can run")
+    agents.set_defaults(func=cmd_agents)
+
     stream_methods = [m.name for m in METHODS.values() if m.runner == "stream"]
     run = sub.add_parser(
         "run",
@@ -330,10 +391,19 @@ def build_parser() -> argparse.ArgumentParser:
     )
     g.add_argument(
         "--agent",
-        default="stepwise",
+        default=None,
         choices=list(AGENTS),
-        help="stepwise: one model call per action, as in the paper. policy_program: one call "
-        "per episode writes a rule policy that is then executed",
+        help="the agent (default: the method's own; stepwise for most). stepwise: one model "
+        "call per action, as in the ReasoningBank paper. policy_program: one call per episode "
+        "writes a rule policy. hypothesizer, react, plan_execute, random: DiscoveryWorld's "
+        "baselines (docs/agents.md)",
+    )
+    g.add_argument(
+        "--agent-option",
+        action="append",
+        metavar="NAME=VALUE",
+        help="a constructor option of the agent, e.g. observation=text (hypothesizer) or "
+        "temperature=0.7 (react)",
     )
     _add_task_options(run)
     _add_model_options(run)

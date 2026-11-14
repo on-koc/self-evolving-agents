@@ -94,6 +94,15 @@ of prompt needs `observation=text`.
 sea run --method hypothesizer --env discoveryworld --scenario "Combinatorial Chemistry" --difficulty Easy --seeds 0:1 --max-steps 100 --llm ollama:qwen2.5:14b --llm-option num_ctx=16384 --out runs/hyp
 ```
 
+As the actor of another method (here ReasoningBank), with an agent option:
+
+```bash
+sea run --method reasoningbank --agent hypothesizer --agent-option observation=text --env discoveryworld --scenario "Combinatorial Chemistry" --difficulty Easy --seeds 0:5 --llm ollama:qwen2.5:14b --llm-option num_ctx=16384 --out runs/hyp-rb
+```
+
+DiscoveryWorld's other baselines (ReAct, Plan-and-Execute, random) are agents too; all of
+them, and which methods each can carry: [`../agents.md`](../agents.md).
+
 ## Expected behaviour
 
 From the DiscoveryWorld paper: the strongest of its baselines, completing a minority

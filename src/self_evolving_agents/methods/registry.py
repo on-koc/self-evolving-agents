@@ -11,6 +11,7 @@ study and is run with ``sea claims study``.
 from __future__ import annotations
 
 import dataclasses
+import json
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -21,7 +22,156 @@ from ..embeddings import Embedder
 from ..provenance import ProvenanceStore
 from .stream import EnvJudge, Judge, Memory, Scaling, StreamLoop
 
-AGENTS = ("stepwise", "policy_program", "hypothesizer")
+AGENTS = ("stepwise", "policy_program", "hypothesizer", "react", "plan_execute", "random")
+
+#: Environments of the scanning task, which share its conditions and rule policies.
+SCANNING_ENVS = ("bsk-scan", "toy-scan")
+
+
+@dataclass(frozen=True)
+class AgentSpec:
+    name: str
+    origin: str
+    summary: str
+    #: Environments the agent can play; ``None`` for any text environment.
+    environments: tuple[str, ...] | None = None
+    #: Whether a method's memory reaches the agent's prompt.
+    reads_memory: bool = True
+
+
+AGENT_SPECS: dict[str, AgentSpec] = {
+    spec.name: spec
+    for spec in (
+        AgentSpec(
+            "stepwise",
+            "ReasoningBank paper",
+            "one model call per action: task, memory, recent steps and the observation as text",
+        ),
+        AgentSpec(
+            "policy_program",
+            "adaptation",
+            "one model call per episode writes a rule policy over numeric features, which is run",
+            environments=SCANNING_ENVS,
+        ),
+        AgentSpec(
+            "hypothesizer",
+            "DiscoveryWorld",
+            "acts, then records measurements and hypotheses after every step (two calls per step)",
+            environments=("discoveryworld",),
+        ),
+        AgentSpec(
+            "react",
+            "DiscoveryWorld",
+            "one call per action on the API's JSON observation with the history of actions "
+            "and results; SUBMIT ends the episode",
+            environments=("discoveryworld",),
+        ),
+        AgentSpec(
+            "plan_execute",
+            "DiscoveryWorld",
+            "a planner writes one step at a time; a ReAct executor carries each step out "
+            "and reports its result",
+            environments=("discoveryworld",),
+        ),
+        AgentSpec(
+            "random",
+            "DiscoveryWorld",
+            "random actions on random objects within reach; no model",
+            environments=("discoveryworld",),
+            reads_memory=False,
+        ),
+    )
+}
+
+#: The agent a method uses unless another is named.
+DEFAULT_AGENT = {
+    "policy_program": "policy_program",
+    "hypothesizer": "hypothesizer",
+    "investigation_memory": "hypothesizer",
+}
+#: Methods that only work with one agent.
+FIXED_AGENT = {"policy_program": "policy_program", "hypothesizer": "hypothesizer"}
+
+
+def default_agent(method: str) -> str:
+    return DEFAULT_AGENT.get(method, "stepwise")
+
+
+def resolve_agent(method: str, agent: str | None) -> str:
+    """The agent a method runs with; an error for an agent the method cannot use."""
+    if agent is None:
+        return default_agent(method)
+    if agent not in AGENTS:
+        raise ValueError(f"unknown agent {agent!r}; one of {', '.join(AGENTS)}")
+    fixed = FIXED_AGENT.get(method)
+    if fixed and agent != fixed:
+        raise ValueError(
+            f"the {method} method is its own agent ({fixed}); it cannot run with the {agent} "
+            f"agent. To give the {agent} agent no memory, use the no_memory method"
+        )
+    if not AGENT_SPECS[agent].reads_memory and method != "no_memory":
+        raise ValueError(
+            f"the {agent} agent reads no memory, so {method} would change nothing; run it "
+            "with the no_memory method"
+        )
+    return agent
+
+
+def protocol_agent(protocol: dict[str, Any], arm: dict[str, Any]) -> tuple[str, dict[str, Any]]:
+    """The agent and agent options of one arm of a protocol.
+
+    An arm may name its agent; otherwise the protocol's agent applies, except to a
+    method that is its own agent. The protocol's agent options apply to arms that use
+    the protocol's agent (they are constructor options of that agent); an arm's own
+    options are added on top.
+    """
+    method = arm["method"]
+    if arm.get("agent"):
+        agent = arm["agent"]
+    elif method in FIXED_AGENT:
+        agent = FIXED_AGENT[method]
+    else:
+        agent = protocol.get("agent")
+    resolved = resolve_agent(method, agent)
+    options: dict[str, Any] = {}
+    if resolved == protocol.get("agent"):
+        options.update(protocol.get("agent_options") or {})
+    options.update(arm.get("agent_options") or {})
+    return resolved, options
+
+
+def check_combination(
+    method: str, agent: str | None, env_ids: set[str], options: dict[str, Any] | None = None
+) -> str:
+    """Refuse, before anything is spent, a method, agent and environment that cannot work.
+
+    Returns the resolved agent.
+    """
+    resolved = resolve_agent(method, agent)
+    allowed = AGENT_SPECS[resolved].environments
+    for env_id in sorted(env_ids):
+        if allowed is not None and env_id not in allowed:
+            if resolved == "policy_program":
+                raise ValueError(
+                    f"the policy_program agent writes rule policies over named numeric "
+                    f"features, which {env_id} does not expose; it runs on "
+                    f"{', '.join(allowed)}"
+                )
+            raise ValueError(f"the {resolved} agent plays {', '.join(allowed)}, not {env_id}")
+    if method == "claim_memory":
+        claims = (options or {}).get("claims")
+        study_env = "a scanning environment"
+        if claims and (Path(claims) / "config.json").exists():
+            domain = json.loads((Path(claims) / "config.json").read_text()).get("domain") or {}
+            study_env = domain.get("env_id") or study_env
+        for env_id in sorted(env_ids):
+            if env_id not in SCANNING_ENVS:
+                raise ValueError(
+                    f"claim_memory shows claims about the parameters of the scanning task's "
+                    f"rule policies (tested on {study_env}); they say nothing about {env_id}. "
+                    "Claim studies exist only for the scanning environments"
+                )
+    return resolved
 
 
 @dataclass(frozen=True)
@@ -226,6 +376,18 @@ def _agent(kind: str, llm: Any, options: dict[str, Any]) -> Agent:
         from .hypothesizer import HypothesizerAgent
 
         return HypothesizerAgent(llm, **options)
+    if kind == "react":
+        from ..agents.discoveryworld import ReActAgent
+
+        return ReActAgent(llm, **options)
+    if kind == "plan_execute":
+        from ..agents.discoveryworld import PlanExecuteAgent
+
+        return PlanExecuteAgent(llm, **options)
+    if kind == "random":
+        from ..agents.discoveryworld import RandomAgent
+
+        return RandomAgent(llm, **options)
     raise ValueError(f"agent must be one of {AGENTS}")
 
 
@@ -234,7 +396,7 @@ def build_stream(
     options: dict[str, Any] | None = None,
     *,
     llm: Any,
-    agent: str = "stepwise",
+    agent: str | None = None,
     agent_options: dict[str, Any] | None = None,
     bank_path: str | Path | None = None,
     embedder: Embedder | None = None,
@@ -250,8 +412,9 @@ def build_stream(
         options: overrides of the method's configuration defaults.
         llm: the model, used by the agent and by every other component of the
             method (the paper uses one backbone throughout).
-        agent: ``"stepwise"`` (the paper's) or ``"policy_program"``. The
-            ``policy_program`` method always uses the latter.
+        agent: one of :data:`AGENTS`, or ``None`` for the method's default
+            (:func:`default_agent`). The ``policy_program`` and ``hypothesizer``
+            methods are their own agents and refuse any other.
         agent_options: constructor options of the agent (history window, ...).
         bank_path: where a learning memory keeps its bank.
         embedder: embeds queries for retrieval.
@@ -259,14 +422,9 @@ def build_stream(
     """
     config = make_config(method, options)
     agent_options = dict(agent_options or {})
-    if method == "policy_program":
-        agent = "policy_program"
+    agent = resolve_agent(method, agent)
     if method == "hypothesizer":
-        agent = "hypothesizer"
         agent_options = {**config.agent_options(), **agent_options}
-    if method == "investigation_memory" and agent == "stepwise":
-        # Built for DiscoveryWorld, where the benchmark's own agent is the natural actor.
-        agent = "hypothesizer"
     policy_agent = agent == "policy_program"
     the_agent = _agent(agent, llm, agent_options)
 

@@ -85,6 +85,8 @@ class OllamaBackend:
             options["temperature"] = float(request.temperature)
         if self.seed is not None:
             options["seed"] = int(self.seed) + int(request.sample)
+        if request.stop:
+            options["stop"] = list(request.stop)
         options.update(self.options)
         return options
 

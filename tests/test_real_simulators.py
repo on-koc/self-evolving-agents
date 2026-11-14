@@ -294,7 +294,20 @@ def test_discoveryworld_parsing_and_step_limit(tmp_path, monkeypatch):
 @requires_dw
 @pytest.mark.discoveryworld
 def test_discoveryworld_rejects_unknown_scenarios(tmp_path, monkeypatch):
+    from self_evolving_agents.types import Task
+
     monkeypatch.chdir(tmp_path)
-    env = make_env(discoveryworld_task("Not A Scenario", "Normal"))
+    # Refused when the task is built, with the list of scenarios.
+    with pytest.raises(ValueError, match="unknown DiscoveryWorld scenario"):
+        discoveryworld_task("Not A Scenario", "Normal")
+    # A task built by hand gets past that, and the simulator refuses it.
+    task = Task(
+        env_id="discoveryworld",
+        name="Not A Scenario/Normal",
+        seed=0,
+        conditions={"scenario": "Not A Scenario", "difficulty": "Normal"},
+        params={"max_steps": 5},
+    )
+    env = make_env(task)
     with pytest.raises(ValueError, match="could not load"):
         env.reset()

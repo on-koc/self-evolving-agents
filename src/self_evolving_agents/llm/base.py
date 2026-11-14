@@ -63,6 +63,11 @@ class LLMRequest:
     ``temperature`` is a hint. Backends whose API no longer accepts sampling
     parameters (current Claude models) ignore it; the others apply it and report what
     they applied in ``LLMResponse.meta``.
+
+    ``stop`` lists strings at which the reply ends. Backends pass them to the server
+    where it accepts them, and the reply is also cut at the first one on this side
+    (:func:`apply_stop`), so the result is the same whether or not the server
+    honoured them.
     """
 
     system: str
@@ -72,6 +77,7 @@ class LLMRequest:
     temperature: float | None = None
     sample: int = 0
     meta: dict[str, Any] = field(default_factory=dict)
+    stop: list[str] | None = None
 
     def cache_key(self, model: str, extra: dict[str, Any] | None = None) -> str:
         """Key of this request in the response cache.
@@ -89,7 +95,21 @@ class LLMRequest:
         }
         if extra:
             payload["extra"] = extra
+        if self.stop:
+            payload["stop"] = list(self.stop)
         return stable_hash(payload, length=32)
+
+
+def apply_stop(text: str, stop: list[str] | None) -> str:
+    """The reply up to the first occurrence of any stop string.
+
+    Cutting at each stop string in turn, as ReComA's generator does, gives the same
+    result: every cut can only shorten the text.
+    """
+    for marker in stop or []:
+        if marker and marker in text:
+            text = text[: text.index(marker)]
+    return text
 
 
 @dataclass
@@ -283,20 +303,26 @@ class TrackedLLM:
         else:
             self.cached_calls += 1
         self.calls += 1
+        if request.stop:
+            # The cache keeps what the backend returned; the caller gets the cut reply.
+            response.text = apply_stop(response.text, request.stop)
         response.call_id = new_id("llm")
         if self.store is not None:
+            details: dict[str, Any] = {
+                "system": request.system,
+                "messages": request.messages,
+                "sample": request.sample,
+                "temperature": request.temperature,
+                "meta": request.meta,
+                "applied": response.meta,
+            }
+            if request.stop:
+                details["stop"] = list(request.stop)
             self.store.record_llm_call(
                 response.call_id,
                 purpose=request.purpose,
                 model=response.model,
-                request={
-                    "system": request.system,
-                    "messages": request.messages,
-                    "sample": request.sample,
-                    "temperature": request.temperature,
-                    "meta": request.meta,
-                    "applied": response.meta,
-                },
+                request=details,
                 response=response.text,
                 usage=response.usage.to_dict(),
                 latency_s=response.latency_s,

@@ -19,7 +19,7 @@ from typing import Any
 
 from ..embeddings import make_embedder
 from ..types import Task
-from .registry import METHODS, build_stream
+from .registry import METHODS, build_stream, check_combination
 
 
 def run_method(
@@ -29,7 +29,7 @@ def run_method(
     *,
     llm: str,
     options: dict[str, Any] | None = None,
-    agent: str = "stepwise",
+    agent: str | None = None,
     agent_options: dict[str, Any] | None = None,
     embedder: str = "hashing",
     effort: str | None = None,
@@ -57,6 +57,8 @@ def run_method(
 
     if method not in METHODS:
         raise ValueError(f"unknown method {method!r}; one of {sorted(METHODS)}")
+    # A combination that cannot work is refused before a model is built or called.
+    agent = check_combination(method, agent, {task.env_id for task in tasks}, options)
     out = Path(out)
     out.mkdir(parents=True, exist_ok=True)
     store = ProvenanceStore(out / "provenance.sqlite")

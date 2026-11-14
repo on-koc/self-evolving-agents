@@ -37,6 +37,33 @@ def cmd_run(args: argparse.Namespace) -> int:
     return 2 if any(s for runs in statuses.values() for s in runs) else 0
 
 
+def cmd_check(args: argparse.Namespace) -> int:
+    """Print what each transfer world shares with the experience worlds."""
+    from .experiment import check_design, load_protocol
+
+    try:
+        design = check_design(load_protocol(args.protocol))
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from None
+    for condition, rows in design["conditions"].items():
+        print(f"{condition}:")
+        for row in rows:
+            w = row["world"]
+            note = "experience world" if row["experience_world"] else "not in the experience phase"
+            if row["same_answer_as"]:
+                note += ", same answer as an experience world"
+            elif row["shared_questions"]:
+                note += f", shares {len(row['shared_questions'])} of {row['questions']} questions"
+            print(f"  {w['scenario']} / {w['difficulty']} / seed {w['seed']}: {note}")
+    for problem in design["problems"]:
+        print(f"PROBLEM: {problem}")
+    for warning in design["warnings"]:
+        print(f"warning: {warning}")
+    if not design["problems"]:
+        print("No problems: every transfer world is what its condition claims.")
+    return 1 if design["problems"] else 0
+
+
 def cmd_grade(args: argparse.Namespace) -> int:
     from .experiment import grade_protocol
 
@@ -129,6 +156,12 @@ def add_discovery_commands(sub: Any) -> None:
     run.add_argument("--arms", help="comma-separated subset of the arms")
     run.add_argument("--repeats", type=int)
     run.set_defaults(func=cmd_run)
+
+    check = discovery.add_parser(
+        "check", help="check that the transfer worlds are what their conditions claim"
+    )
+    check.add_argument("protocol")
+    check.set_defaults(func=cmd_check)
 
     grade = discovery.add_parser("grade", help="knowledge scores and behaviour codes")
     grade.add_argument("out")

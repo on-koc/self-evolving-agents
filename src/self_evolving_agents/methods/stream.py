@@ -308,7 +308,7 @@ class StreamLoop:
                 score=outcome.score if outcome else 0.0,
                 success=outcome.success if outcome else None,
                 failure=outcome.failure if outcome else None,
-                steps=len(chosen.steps),
+                steps=world_steps(chosen),
                 total_reward=chosen.total_reward,
                 judged_success=verdict.success if verdict else None,
                 judge_source=verdict.source if verdict else "",
@@ -342,6 +342,17 @@ class StreamLoop:
         with path.open("w") as fh:
             for record in self.records:
                 fh.write(json.dumps(record.to_dict()) + "\n")
+
+
+def world_steps(traj: Trajectory) -> int:
+    """Actions taken in the environment.
+
+    The environment's own count where it reports one (``n_steps``): an agent may end an
+    episode with a decision that is not an action in the world (DiscoveryWorld's
+    ``SUBMIT``), and that decision is not a step.
+    """
+    count = traj.outcome.metrics.get("n_steps") if traj.outcome is not None else None
+    return int(count) if isinstance(count, int) else len(traj.steps)
 
 
 def load_records(path: str | Path) -> list[TaskRecord]:

@@ -1,0 +1,706 @@
+{
+ "source": "allenai/discoveryworld fd59132 agents/recoma (ReComA b262ab5), run with the scripted replies of tests/dw_scripted.py; worlds seeded as by envs/discoveryworld.install_python312_compat",
+ "templates": {
+  "react_prompt.txt": "9dfdc58c9ef10f72f0de11d7b83d01648fcc59d8e146eae31ad681a90fe13d8e",
+  "executer_prompt.txt": "af2913f82d5f574978dad562d139860ea2b5e0d750b69356f94de3f12b122d75",
+  "planner_prompt.txt": "1a401fb4c3b0d60d8cdbd104877b73cd2ffd41facf83d100d17ef1c7d19d1f0b"
+ },
+ "cases": [
+  {
+   "agent": "react",
+   "world": [
+    "Small Skills: Dialog Test",
+    "Normal",
+    0
+   ],
+   "max_steps": 30,
+   "calls": [
+    {
+     "sha256": "365ff87ffe1ea7ce1595514155a7650045164386e14d1aae9a72a26cfb7becc5",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "a74297c0a426facc83de3245f8ab9fad1a58a37b8db9a947a95ef2b1e8a3ec92",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "792955dc6593405c77d814c344ed45cc79908ad1d151e9d6abaee9ffe4cc28c1",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "ee2b005b2376f59380aab4d36fb99918cab1b8d3737a6931d97ba863eaae6487",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "fd8f91cd4343246368de5d4ba01f6e22480221a9ff2fd7f775a33d901336040d",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "b56c3e04a36c59a4c5db87e249cbbbcf9f12d61cd9099a8cad2e22f8f21e7a13",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "3688bbaa2585dd15886937157296401a2ef42a8e204ee11ea00837cde1f1696e",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "b888dd5f07ec0af2d85166ca2ca18b78ae20bc85a2aa934c9d6c07771f1cd472",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "626377a5f904d9189b50b30ce4221b70c84cbc2e48f1138d8d516b26cf632610",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "9eb5c11b8b8f1713a852266750b573c8e535d0a7560efab386bfb7b9ecc37620",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "c63a228a23ab1f26d106d0c9c788e76af2074487147051744e3067ff14cbdf25",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "60dfa58524bb790d0afc52ffad0ef31790b314c483271096813dc0370d138f26",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "79ce490f28628ac0bb976c99efce50203d08d50a83acf1fca79b57f203e86270",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "32df2f0d36fedb57b2ac26c35dd8d6cef7c8f80587d05c46b6465f6689a0b29e",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "4446e5fd5c09119ce99adb8755784f295d28992ce9b9207f03386e5ccdc1ac67",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "3e1c0bf52baa5bf9de5af4a5c70acbfc632985dc4f92e93c28dc43e2f251f466",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "262181945a31c0486e17252251bb91e43d45224fc4a356d6c37555aaa4676b0c",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "da223783bc17adb100ab81a0604315e5bf9a66254861846a0b15bafdd59e229b",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "5b5701a77b5595064b152fde93ffb5bf1ac05e5d69ace12b41e2e554eb61b953",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "e9eaf46b975c2102794781337b83eda5a890a1a61c5fad9c5aa5235a43576382",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "59b6365ab44bdae65fac8fd87245baadb79d48aa3c95760e2c181c01bc286a87",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "1be7fa7bf0c53ad313cb4a0cc3e1b2fe4b85778c3221414816c7ba2c1117d834",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "3884dc7c6fa60f243b397f477258c2cee07fdd5ada6c8bd730f977fed8596848",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "b79c0badec560dbe40b2f12d71a1b9c1427095b997d0d61e08ab967a8c5c3870",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "a7b9ae4eb0162536b8ffd05b8eb80d823dcb37084901293cf367261dcef58049",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "280a2ea3e7960da2b17442d6f6ce018a2caa35d86bd983fc68574e8f43e7648f",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    }
+   ],
+   "actions": 25,
+   "score": 0.25
+  },
+  {
+   "agent": "plan_execute",
+   "world": [
+    "Small Skills: Dialog Test",
+    "Normal",
+    0
+   ],
+   "max_steps": 30,
+   "calls": [
+    {
+     "sha256": "e45720b4e34abde2d97104dbda15b0aa27fad040cce885801c8aa690e6aa6736",
+     "messages": 17,
+     "max_tokens": 100,
+     "stop": [
+      "\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "936e8e6179f0b8979307790b4c0e8d593d9db1e67279693bb9e58b12cf1f89ae",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "e72c51cf1c0bb96a93dc04c45e34dc5ce599e94d797ebad6cfc42aa39008652b",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "65bc533ec9423716bfbe55136f4e92b5bdaf35cb0e25eda6442ba71ec685f741",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "188a61c477e8ad77d46efc6781f0f461052b199e58ee685eaf6cae3ceb7b6989",
+     "messages": 19,
+     "max_tokens": 100,
+     "stop": [
+      "\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "a84b1a676b0927cb7d4559f181a76e8df8da9ab82a473f006da83540e5a39fad",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "232b98cc460598e68a52cc066b1a215b57ba73517232beb4aaea7365f9281bbf",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "c206f5e2b02ecebabf90a2478fe93f37f906014cebb1b761e352668c747c0b2f",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "a592ee7634df8e79be39180cb3fa131e57f5eb775238d41e06f2f685062e5d32",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "ea9d347905b3ca78fe48d11b39153376dcc25dfb3baf6d01a61dfd2f4cee6cd5",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "3d54741637f6914fcfe15cae0e26be99659d7814e6ebdc2993e64a46bd87490c",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "9932d9fc66f27209e2ce22ef5258dd9ec87618d932cd03fed05c317360ae818e",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "0c8017c1529c85172029ec46487f3b64f3e993eae192193f9b7de994eb6d7a4b",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "3a86894e81136c9319cc1f65645667ae8566ac3ea811cf233c72e07e14ef2d1e",
+     "messages": 21,
+     "max_tokens": 100,
+     "stop": [
+      "\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "d6b20b66325ec99c8ad06fa150d679fe96e008296d01e666d1fea92006b8dae1",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "6d8c6ef55c8e71d2a9f113e0fd32b292a6cbd069e8bd7f49dcc1d896c963046f",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "40e82dba2bb4e1c905aa815b2ead301101df3c043bb98778a8a7f02dafa4b147",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "a230067bb5750037a6ae242131d27c006dead21593d1a56e3126a8f2adb427ca",
+     "messages": 23,
+     "max_tokens": 100,
+     "stop": [
+      "\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "bbe99b456ece34ba999e6db94a1356d73de69a0f2e506854edb2772a75b860a3",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "ad734962d1fe068f24f0ea34ee07cd7974f236938bf376e67e8a7f731876068a",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "211b606afad9ebe0e4778ff6ee0e39a31f8f4dcac7fd6f0307b159d6324d04f0",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "1604a74db530f863f16af3fb61c43ab6682e3021df071bd8064d0d20a6d5c3cf",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "8603a6b29778bab6fe8299b60cbbb3ed9e1bcd72e541a5aabedd12789dc7a0cc",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "c4cd5559295f144d20d352eebd341ea50ba7334bf8b7c4785a62c336bc69b220",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "3e673bbd4c0de7e405764e7298e1ab318b6a489ed7d027a7a023265dd0bc755a",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "21780634e470b336a8de3d9223d85a6226639c50f7052bc24ce8448c8aa2e4ce",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "3509eecd904048c39b3a281fd02c84cf5ce66d19a611f3ad922cdce89502e58a",
+     "messages": 25,
+     "max_tokens": 100,
+     "stop": [
+      "\n"
+     ],
+     "temperature": 0.0
+    }
+   ],
+   "actions": 18,
+   "score": 0.0
+  },
+  {
+   "agent": "react",
+   "world": [
+    "Small Skills: Instrument Measurement Test",
+    "Normal",
+    0
+   ],
+   "max_steps": 20,
+   "calls": [
+    {
+     "sha256": "c4076ad494ee2cebe1f70cdb91e8e67992d7969ec7788c2a1f3ebbe121708414",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "95032fa72dbdbb0d1c06d9177137ce4c23808a4ddba3156484ed0ebfe55c9daf",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "b82085677b35bbb20c49a82cb0676c9772e48d11d74e930739a48357be9c8629",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "02b7ff5c8b7ceb43e7d655f0f7b894ce5c6402a246d619b4143978ebad526f69",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "33648ef8a5e67def146436971f1eebd39f064cae7623e6f1d04b8da631c9c8a9",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "8777c7005060208937d2ac8771aeba7463cb4b09484710e9b83b95b9a2e989a3",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "5d8ae28ef6b6deff8a0ed37fcbde0e036683c9784442a8ad52db9e4536a5d796",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "bd86cd6be9ca75b19034dae92eea6eebc3a1366a7e08b840a4ebbf0b95d7b009",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "f6a3ff3b8d0c94685373655d8af101df648e169255a122bf92241d137ab0a7a7",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "eb3e06044b7f20c5ddb29a06ba75bafc76a8d434eb20a75848b55549f6bfa908",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "01aff7f492550117e4c9db38b4db9fefd04ecbd7a1c37bdd1e51277cb4e54676",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "51ac2ee0dd2b35f54d3be293f21b62b75a43d4f7c17f4b5691651812eb78f1d8",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "74cda3b8f23d9c375b539185f92c9b2929fede9affe46c739770ac461ca65a39",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "3267447fbe83ffb5f6cd57fa793cc16845822e0affd59cd89339b1cb864973f5",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "7c20d06fa55a846ebf4fec9c137599d1552c22ef2e142a44965e9f649dbdfec4",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "d356add9b8547b956df3b18b7a9968b9d4479bad67b3db9c451fc8da51b9dc42",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "8dc7e7720118b646836a90940d83ed8de48ed178e82c6dd3ae4ebdc8264a7ebc",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "1f07f7ac67e045cf1abcb4b7a0a6cbf6d71f18936b49339df1931dc635ad8631",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "51f7bc400529b4f2789b41c813f3921e2332bab0799b4303f98f8f0b672216d4",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    },
+    {
+     "sha256": "2148766657e2aa32c0113a233326730f0c93f060d60f0aa64ab935c52904f88e",
+     "messages": 1,
+     "max_tokens": 400,
+     "stop": [
+      "```\n"
+     ],
+     "temperature": 0.0
+    }
+   ],
+   "actions": 19,
+   "score": 0.0
+  }
+ ]
+}

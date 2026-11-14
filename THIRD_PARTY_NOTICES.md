@@ -44,12 +44,28 @@ implementation's observed behaviour; the comparison row by row is in
 |---|---|---|---|
 | `methods/hypothesizer/prompts.py` | the Hypothesizer agent's action, dialog, knowledge and consolidation prompts | `agents/HypothesizerAgent.py` | none; one optional insertion point for cross-episode memory, empty when unused |
 | `discovery/knowledge.py` | the knowledge-scoring prompt | `scripts/knowledgeScorer.py` | none |
+| `agents/discoveryworld/prompts.py` | the ReAct, Plan-and-Execute planner and executor prompt templates | `agents/recoma/prompts/react_prompt.txt`, `planner_prompt.txt`, `executer_prompt.txt` | none (compared by SHA-256); one optional insertion point for cross-episode memory, empty when unused |
 
-The Hypothesizer's control flow was re-implemented on this repository's agent
-interface; tests check that it produces the original's prompts byte for byte.
-`envs/discoveryworld.py` contains a compatibility shim for DiscoveryWorld's scenario
-generator under Python 3.12 and later; DiscoveryWorld itself is a dependency and is
-not redistributed.
+The control flow of the Hypothesizer, ReAct, Plan-and-Execute and random agents was
+re-implemented on this repository's agent interface (`agents/RandomAgent.py`,
+`agents/recoma/react_controller.py`, `plan_and_execute.py`, `discoveryworld_promptlm.py`);
+tests check that the ports produce the originals' prompts, and the random agent its
+actions, exactly. `envs/discoveryworld.py` contains a compatibility shim for
+DiscoveryWorld's random generators (Python 3.12 and later; seeding of generators that
+DiscoveryWorld leaves unseeded); DiscoveryWorld itself is a dependency and is not
+redistributed.
+
+## ReComA (behaviour re-implemented)
+
+- Source: https://github.com/allenai/recoma (commit `b262ab5`), the framework
+  DiscoveryWorld's ReAct and Plan-and-Execute agents run on
+- License: Apache License 2.0, Copyright Allen Institute for AI
+
+`agents/discoveryworld/recoma.py` re-implements the parts those agents rely on: how a
+prompt is split into chat messages (`LMGenerator.extract_role_messages`), how replies are
+cut at stop strings and stripped (`LiteLLMGenerator.generate`), how the JSON action is
+taken from a reply and how the action-observation history is written into the next
+prompt (`DiscoveryWorldReactController`). Each function names the original it follows.
 
 ## Used as dependencies (not redistributed)
 

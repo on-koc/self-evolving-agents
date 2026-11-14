@@ -20,6 +20,12 @@ and its default.
 stand-ins for the model, and no language model has been called. Nothing is known
 about how these methods perform.
 
+A method is combined with an agent: the `stepwise` agent of the ReasoningBank paper by
+default, or one of DiscoveryWorld's baselines (Hypothesizer, ReAct, Plan-and-Execute,
+random). Every agent, which method it can carry, and how the DiscoveryWorld ports were
+checked against the released code: [`../agents.md`](../agents.md). DiscoveryWorld's
+scenarios: [`../discoveryworld/`](../discoveryworld/README.md).
+
 ## How the folders depend on each other
 
 ```
@@ -51,7 +57,7 @@ A stream method is three parts handed to one loop (`methods/stream.py`):
 
 | Part | Interface | The baseline's | Replaced by |
 |---|---|---|---|
-| agent | `Agent.run(env, memory, notes)` | `StepwiseAgent` | `policy_program` |
+| agent | `Agent.run(env, memory, notes)` | `StepwiseAgent` | `policy_program`, `hypothesizer`; or any agent with `--agent` ([`../agents.md`](../agents.md)) |
 | memory | `Memory.retrieve`, `Memory.learn_single` | `ReasoningBankMemory` | `no_memory`, `conditioned_retrieval`, `claim_memory` |
 | scaling | `Scaling.attempts`, `Scaling.learn` | one attempt | `matts` |
 

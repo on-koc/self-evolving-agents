@@ -541,9 +541,22 @@ scenario-difficulty combinations.
 | explanatory knowledge | share of the world's critical questions a grader model answers 1 for, given the agent's knowledge | 0 to 1, higher | depends on the grader; judges what is written, not what was understood |
 
 The knowledge graded is the Hypothesizer's knowledge store at the end of the episode,
-as in the DiscoveryWorld paper; for other agents, their reasoning at every step, as
-the paper did for ReAct. The grading prompt is DiscoveryWorld's own, quoted
-unchanged; temperature 0. An unreadable grade counts as 0, as in the original.
+as in the DiscoveryWorld paper; for ReAct and Plan-and-Execute, the thoughts of the
+actions they sent to the game, numbered, as the paper's scripts did; for the `stepwise`
+agent, its reasoning at every step ([`agents.md`](agents.md)). The grading prompt is
+DiscoveryWorld's own, quoted unchanged; temperature 0. An unreadable grade counts as 0,
+as in the original. Unit tests and the tutorial have no critical questions and so no
+knowledge score.
+
+| Measure | Definition | Range, direction | Limitations |
+|---|---|---|---|
+| knowledge on unseen questions (`knowledge_novel`) | the same grades, averaged over only those critical questions that no earlier experience world has | 0 to 1, higher; missing when every question was seen | fewer questions per world, so noisier; no extra grader calls |
+| steps | actions taken in the world (the environment's own count): a ReAct `SUBMIT` or a Plan-and-Execute "Done!" ends the episode without being a step | count, lower is more efficient | an action the game rejects still counts |
+| how the episode ended (`ended_by`) | `task_marked_complete`, `agent_submitted` (ReAct's `SUBMIT`, Plan-and-Execute's "Done!"), `step_limit`, `agent_call_limit` or `stopped_early` | category | DiscoveryWorld's ReAct and Plan-and-Execute stop one action before the step limit, as released |
+
+Some worlds of one kind share part of their answer (Archaeology Dating, Easy, seeds 2 to
+4 all have their oldest artifact at 890,000 years). Remembering the shared part would
+score on `knowledge` in a new world; `knowledge_novel` leaves it out.
 
 ### 10.2 Remembering instead of finding
 

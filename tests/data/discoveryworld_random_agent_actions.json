@@ -1,0 +1,488 @@
+{
+ "source": "allenai/discoveryworld fd59132 agents/RandomAgent.py randomAgent(api, numSteps, seed)",
+ "cases": [
+  {
+   "world": [
+    "Combinatorial Chemistry",
+    "Easy",
+    0
+   ],
+   "rng_seed": 7,
+   "steps": 25,
+   "actions": [
+    {
+     "action": "USE",
+     "arg1": 44861,
+     "arg2": 47477
+    },
+    {
+     "action": "DROP",
+     "arg1": 44861,
+     "arg2": null
+    },
+    {
+     "action": "OPEN",
+     "arg1": 47477,
+     "arg2": null
+    },
+    {
+     "action": "DROP",
+     "arg1": 44861,
+     "arg2": null
+    },
+    {
+     "action": "DROP",
+     "arg1": 44861,
+     "arg2": null
+    },
+    {
+     "action": "TELEPORT_TO_LOCATION",
+     "arg1": "shed",
+     "arg2": null
+    },
+    {
+     "action": "TALK",
+     "arg1": 44861,
+     "arg2": null
+    },
+    {
+     "action": "TELEPORT_TO_LOCATION",
+     "arg1": "shed",
+     "arg2": null
+    },
+    {
+     "action": "TALK",
+     "arg1": 44861,
+     "arg2": null
+    },
+    {
+     "action": "ROTATE_DIRECTION",
+     "arg1": "east",
+     "arg2": null
+    },
+    {
+     "action": "DROP",
+     "arg1": 25494,
+     "arg2": null
+    },
+    {
+     "action": "READ",
+     "arg1": 47477,
+     "arg2": null
+    },
+    {
+     "action": "CLOSE",
+     "arg1": 25494,
+     "arg2": null
+    },
+    {
+     "action": "READ",
+     "arg1": 25494,
+     "arg2": null
+    },
+    {
+     "action": "OPEN",
+     "arg1": 25494,
+     "arg2": null
+    },
+    {
+     "action": "MOVE_DIRECTION",
+     "arg1": "north",
+     "arg2": null
+    },
+    {
+     "action": "DROP",
+     "arg1": 25494,
+     "arg2": null
+    },
+    {
+     "action": "DISCOVERY_FEED_GET_UPDATES",
+     "arg1": null,
+     "arg2": null
+    },
+    {
+     "action": "TELEPORT_TO_LOCATION",
+     "arg1": "shed",
+     "arg2": null
+    },
+    {
+     "action": "TELEPORT_TO_OBJECT",
+     "arg1": 47477,
+     "arg2": null
+    },
+    {
+     "action": "READ",
+     "arg1": 25494,
+     "arg2": null
+    },
+    {
+     "action": "ACTIVATE",
+     "arg1": 25494,
+     "arg2": null
+    },
+    {
+     "action": "PUT",
+     "arg1": 47477,
+     "arg2": 47477
+    },
+    {
+     "action": "USE",
+     "arg1": 47477,
+     "arg2": 47477
+    },
+    {
+     "action": "PUT",
+     "arg1": 25494,
+     "arg2": 47477
+    }
+   ]
+  },
+  {
+   "world": [
+    "Small Skills: Dialog Test",
+    "Normal",
+    0
+   ],
+   "rng_seed": 3,
+   "steps": 40,
+   "actions": [
+    {
+     "action": "TALK",
+     "arg1": 50350,
+     "arg2": null
+    },
+    {
+     "action": "CLOSE",
+     "arg1": 18573,
+     "arg2": null
+    },
+    {
+     "action": "DISCOVERY_FEED_GET_UPDATES",
+     "arg1": null,
+     "arg2": null
+    },
+    {
+     "action": "PUT",
+     "arg1": 50350,
+     "arg2": 1787
+    },
+    {
+     "action": "DISCOVERY_FEED_GET_UPDATES",
+     "arg1": null,
+     "arg2": null
+    },
+    {
+     "action": "EAT",
+     "arg1": 50350,
+     "arg2": null
+    },
+    {
+     "action": "TALK",
+     "arg1": 1787,
+     "arg2": null
+    },
+    {
+     "action": "DISCOVERY_FEED_GET_UPDATES",
+     "arg1": null,
+     "arg2": null
+    },
+    {
+     "action": "DISCOVERY_FEED_GET_UPDATES",
+     "arg1": null,
+     "arg2": null
+    },
+    {
+     "action": "ROTATE_DIRECTION",
+     "arg1": "east",
+     "arg2": null
+    },
+    {
+     "action": "TALK",
+     "arg1": 18573,
+     "arg2": null
+    },
+    {
+     "action": "DISCOVERY_FEED_GET_POST_BY_ID",
+     "arg1": 95,
+     "arg2": null
+    },
+    {
+     "action": "PICKUP",
+     "arg1": 18573,
+     "arg2": null
+    },
+    {
+     "action": "ACTIVATE",
+     "arg1": 18573,
+     "arg2": null
+    },
+    {
+     "action": "READ",
+     "arg1": 18573,
+     "arg2": null
+    },
+    {
+     "action": "EAT",
+     "arg1": 20359,
+     "arg2": null
+    },
+    {
+     "action": "ROTATE_DIRECTION",
+     "arg1": "west",
+     "arg2": null
+    },
+    {
+     "action": "TELEPORT_TO_OBJECT",
+     "arg1": 18573,
+     "arg2": null
+    },
+    {
+     "action": "MOVE_DIRECTION",
+     "arg1": "north",
+     "arg2": null
+    },
+    {
+     "action": "CLOSE",
+     "arg1": 4766,
+     "arg2": null
+    },
+    {
+     "action": "DEACTIVATE",
+     "arg1": 4766,
+     "arg2": null
+    },
+    {
+     "action": "TELEPORT_TO_LOCATION",
+     "arg1": "initial location",
+     "arg2": null
+    },
+    {
+     "action": "TELEPORT_TO_LOCATION",
+     "arg1": "initial location",
+     "arg2": null
+    },
+    {
+     "action": "TELEPORT_TO_LOCATION",
+     "arg1": "initial location",
+     "arg2": null
+    },
+    {
+     "action": "PICKUP",
+     "arg1": 56583,
+     "arg2": null
+    },
+    {
+     "action": "ACTIVATE",
+     "arg1": 56583,
+     "arg2": null
+    },
+    {
+     "action": "OPEN",
+     "arg1": 47309,
+     "arg2": null
+    },
+    {
+     "action": "EAT",
+     "arg1": 56583,
+     "arg2": null
+    },
+    {
+     "action": "OPEN",
+     "arg1": 18573,
+     "arg2": null
+    },
+    {
+     "action": "DISCOVERY_FEED_GET_UPDATES",
+     "arg1": null,
+     "arg2": null
+    },
+    {
+     "action": "DISCOVERY_FEED_GET_UPDATES",
+     "arg1": null,
+     "arg2": null
+    },
+    {
+     "action": "PUT",
+     "arg1": 56583,
+     "arg2": 18573
+    },
+    {
+     "action": "TELEPORT_TO_LOCATION",
+     "arg1": "initial location",
+     "arg2": null
+    },
+    {
+     "action": "READ",
+     "arg1": 60834,
+     "arg2": null
+    },
+    {
+     "action": "TELEPORT_TO_LOCATION",
+     "arg1": "initial location",
+     "arg2": null
+    },
+    {
+     "action": "DROP",
+     "arg1": 60834,
+     "arg2": null
+    },
+    {
+     "action": "USE",
+     "arg1": 56583,
+     "arg2": 47309
+    },
+    {
+     "action": "DROP",
+     "arg1": 56583,
+     "arg2": null
+    },
+    {
+     "action": "PICKUP",
+     "arg1": 18573,
+     "arg2": null
+    },
+    {
+     "action": "OPEN",
+     "arg1": 18573,
+     "arg2": null
+    }
+   ]
+  },
+  {
+   "world": [
+    "Space Sick",
+    "Normal",
+    1
+   ],
+   "rng_seed": 11,
+   "steps": 25,
+   "actions": [
+    {
+     "action": "TELEPORT_TO_OBJECT",
+     "arg1": 50319,
+     "arg2": null
+    },
+    {
+     "action": "TELEPORT_TO_OBJECT",
+     "arg1": 50319,
+     "arg2": null
+    },
+    {
+     "action": "DISCOVERY_FEED_GET_POST_BY_ID",
+     "arg1": 24,
+     "arg2": null
+    },
+    {
+     "action": "DISCOVERY_FEED_GET_POST_BY_ID",
+     "arg1": 81,
+     "arg2": null
+    },
+    {
+     "action": "ACTIVATE",
+     "arg1": 7732,
+     "arg2": null
+    },
+    {
+     "action": "TELEPORT_TO_OBJECT",
+     "arg1": 39132,
+     "arg2": null
+    },
+    {
+     "action": "CLOSE",
+     "arg1": 7732,
+     "arg2": null
+    },
+    {
+     "action": "DROP",
+     "arg1": 39132,
+     "arg2": null
+    },
+    {
+     "action": "TELEPORT_TO_OBJECT",
+     "arg1": 39132,
+     "arg2": null
+    },
+    {
+     "action": "ACTIVATE",
+     "arg1": 39132,
+     "arg2": null
+    },
+    {
+     "action": "PICKUP",
+     "arg1": 7732,
+     "arg2": null
+    },
+    {
+     "action": "DROP",
+     "arg1": 7732,
+     "arg2": null
+    },
+    {
+     "action": "DEACTIVATE",
+     "arg1": 7732,
+     "arg2": null
+    },
+    {
+     "action": "PICKUP",
+     "arg1": 39132,
+     "arg2": null
+    },
+    {
+     "action": "USE",
+     "arg1": 39132,
+     "arg2": 7732
+    },
+    {
+     "action": "DISCOVERY_FEED_GET_POST_BY_ID",
+     "arg1": 82,
+     "arg2": null
+    },
+    {
+     "action": "READ",
+     "arg1": 39132,
+     "arg2": null
+    },
+    {
+     "action": "PICKUP",
+     "arg1": 20330,
+     "arg2": null
+    },
+    {
+     "action": "TELEPORT_TO_OBJECT",
+     "arg1": 10200,
+     "arg2": null
+    },
+    {
+     "action": "TELEPORT_TO_LOCATION",
+     "arg1": "farmers field",
+     "arg2": null
+    },
+    {
+     "action": "USE",
+     "arg1": 27066,
+     "arg2": 37297
+    },
+    {
+     "action": "PICKUP",
+     "arg1": 20330,
+     "arg2": null
+    },
+    {
+     "action": "OPEN",
+     "arg1": 27066,
+     "arg2": null
+    },
+    {
+     "action": "OPEN",
+     "arg1": 27066,
+     "arg2": null
+    },
+    {
+     "action": "ROTATE_DIRECTION",
+     "arg1": "north",
+     "arg2": null
+    }
+   ]
+  }
+ ]
+}

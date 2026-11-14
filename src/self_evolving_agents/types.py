@@ -101,10 +101,17 @@ class Observation:
 
 @dataclass(frozen=True)
 class Action:
-    """A parsed action. ``name`` is canonical; ``args`` carries parameters if any."""
+    """A parsed action. ``name`` is canonical; ``args`` carries parameters if any.
+
+    ``payload``, when set, is what an environment that speaks JSON should send to its
+    simulator verbatim instead of building the request from ``name`` and ``args``.
+    Ports of agents that hand their model's JSON straight to the simulator use it, so
+    that the simulator answers malformed actions exactly as it did for the original.
+    """
 
     name: str
     args: dict[str, Any] = field(default_factory=dict)
+    payload: dict[str, Any] | None = field(default=None, compare=False, repr=False)
 
     def render(self) -> str:
         if not self.args:

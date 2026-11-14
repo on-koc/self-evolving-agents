@@ -74,3 +74,36 @@ validation for it.
 - Changes to prompts, defaults or protocols after the pilot, with the reason.
 - Runs that stopped early (budget, errors), with the number of episodes completed.
 - The coder agreement table, whatever it shows.
+
+## Amendment 1 (before any run)
+
+Made on 2026-11-14 while auditing the DiscoveryWorld integration, before the pilot or
+any other run with a model. Nothing had been observed that could favour an arm.
+
+1. **Seeds of the main protocol.** In Combinatorial Chemistry (Easy) seeds 2 and 4 hide
+   the same answer (Substance C), so the original design's `new_world` seed 4 repeated an
+   experience world's answer; in Archaeology Dating (Easy) seeds 2, 3 and 4 share one of
+   their two critical questions (the oldest artifact is 890,000 years old). Both would
+   have let a memory of answers score on `new_world`. Seeds are now chosen per theme:
+   Combinatorial Chemistry experience 0, 2, 4 and `new_world` 1, 3; Archaeology Dating
+   experience 2, 3, 4, `same_world` 2 and `new_world` 0, 1; the other themes unchanged.
+   The number of worlds is unchanged.
+2. **Design check.** `sea discovery run` now refuses a protocol whose `new_world` world
+   is an experience world or hides the same answer as one, whose `same_world` world is
+   not an experience world, or whose `new_theme` world is of an experienced scenario;
+   it warns about partly shared answers (`sea discovery check` prints the analysis). All
+   three protocols pass without problems or warnings.
+3. **Knowledge on unseen questions.** Grades also report the knowledge score over the
+   critical questions that no earlier experience world has (`knowledge_novel`), from the
+   same grader answers. D1, D3 and D5 are evaluated on `knowledge` as written; the
+   `knowledge_novel` comparison is reported beside them.
+4. **Deterministic worlds.** DiscoveryWorld draws some details (mushroom colours, plant
+   growth times, radiation background, wandering characters) from generators seeded by
+   the operating system. They are now seeded from the world, so every arm meets exactly
+   the same world for the same seed ([`../discoveryworld/README.md`](../discoveryworld/README.md#determinism)).
+   Without this, arms compared "on the same world" could have met different mushroom
+   colours.
+5. **Further baselines.** DiscoveryWorld's ReAct, Plan-and-Execute and random agents are
+   now available ([`../agents.md`](../agents.md)). The arms of this protocol are
+   unchanged (all use the Hypothesizer as the actor); comparisons with other actors are
+   exploratory and are labelled as such if run.

@@ -448,7 +448,7 @@ def test_any_memory_method_can_be_paired_with_the_policy_writing_agent(tmp_path)
     made = built(tmp_path, script, "no_memory", agent="policy_program")
     made.loop.run_task(tasks(1)[0])
     assert script.purposes() == ["policy"]
-    with pytest.raises(ValueError, match="agent must be"):
+    with pytest.raises(ValueError, match="unknown agent 'telepathic'"):
         built(tmp_path / "x", script, "no_memory", agent="telepathic")
 
 

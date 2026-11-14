@@ -30,9 +30,9 @@ from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
 
-from ..envs import discoveryworld_task
+from ..envs import answer_key, discoveryworld_task
 from ..llm import split_spec
-from ..methods.registry import METHODS, make_config
+from ..methods.registry import METHODS, check_combination, make_config, protocol_agent
 from ..methods.run import run_method
 from ..tasks import parse_seeds
 from ..types import Task, Trajectory
@@ -41,20 +41,24 @@ CONDITIONS = ("same_world", "new_world", "new_theme")
 
 
 def world_tasks(
-    specs: list[dict[str, Any]], max_steps: int, order: str = "sequential"
+    specs: list[dict[str, Any]], max_steps: int | None, order: str = "sequential"
 ) -> list[Task]:
-    """Tasks from ``[{"scenario", "difficulty", "seeds"}]``; interleaved by seed if asked."""
+    """Tasks from ``[{"scenario", "difficulty", "seeds"}]``; interleaved by seed if asked.
+
+    Without a step limit (here or in a spec) a world gets the paper's for its difficulty.
+    """
     groups = []
     for spec in specs:
         seeds = spec["seeds"]
         seeds = parse_seeds(seeds) if isinstance(seeds, str) else [int(s) for s in seeds]
+        limit = spec.get("max_steps", max_steps)
         groups.append(
             [
                 discoveryworld_task(
                     spec["scenario"],
                     spec.get("difficulty", "Normal"),
                     seed=seed,
-                    max_steps=int(spec.get("max_steps", max_steps)),
+                    max_steps=None if limit is None else int(limit),
                 )
                 for seed in seeds
             ]
@@ -76,6 +80,8 @@ def load_protocol(path: str | Path) -> dict[str, Any]:
         if method not in METHODS or METHODS[method].runner != "stream":
             raise ValueError(f"arm {name!r}: {method!r} is not a stream method")
         make_config(method, arm.get("options"))
+        agent, _ = protocol_agent({"agent": "hypothesizer", **protocol}, arm)
+        check_combination(method, agent, {"discoveryworld"}, arm.get("options"))
         for lesion in (protocol.get("lesions") or {}).get(name, []):
             make_config(method, {**(arm.get("options") or {}), **(lesion.get("options") or {})})
     for name in protocol.get("lesions") or {}:
@@ -83,11 +89,91 @@ def load_protocol(path: str | Path) -> dict[str, Any]:
             raise ValueError(f"lesion for unknown arm {name!r}")
     if not isinstance(protocol["transfer"], dict) or not protocol["transfer"]:
         raise ValueError("'transfer' must name at least one condition")
-    max_steps = int(protocol.get("max_steps", 100))
+    max_steps = protocol.get("max_steps")
     world_tasks(protocol["experience"]["worlds"], max_steps)
     for specs in protocol["transfer"].values():
         world_tasks(specs, max_steps)
     return protocol
+
+
+def _questions(world: dict[str, Any]) -> frozenset[str]:
+    key = answer_key(world["scenario"], world["difficulty"], int(world["seed"]))
+    return frozenset(q for task in key for q in task["critical_questions"])
+
+
+def check_design(protocol: dict[str, Any]) -> dict[str, Any]:
+    """Whether the transfer worlds are what their conditions claim, judged by the answers.
+
+    The answer a world hides is read from its critical questions. ``new_world`` worlds
+    must not be experience worlds and must not hide the same answer as one (in
+    Combinatorial Chemistry, Easy, seeds 2 and 4 both hide Substance C);
+    ``same_world`` worlds must be experience worlds; ``new_theme`` worlds must be of a
+    scenario the experience phase does not contain. These are ``problems``. A
+    ``new_world`` world that shares some critical questions with experience worlds
+    (Archaeology Dating, Easy, seeds 2 to 4 all have their oldest artifact at 890,000
+    years) is a ``warning``: remembering the shared part would score on it, which is
+    why grades also give the knowledge score on the questions no experience world has
+    (``knowledge_novel``). Needs DiscoveryWorld (the answers are read from the worlds).
+    """
+    max_steps = protocol.get("max_steps")
+    experience = [
+        world_of_record(t.to_dict())
+        for t in world_tasks(protocol["experience"]["worlds"], max_steps)
+    ]
+    seen_worlds = {(w["scenario"], w["difficulty"], w["seed"]) for w in experience}
+    seen_scenarios = {w["scenario"] for w in experience}
+    seen_questions: dict[str, dict[str, Any]] = {}
+    for world in experience:
+        for question in _questions(world):
+            seen_questions.setdefault(question, world)
+    result: dict[str, Any] = {"conditions": {}, "problems": [], "warnings": []}
+    for condition, specs in protocol["transfer"].items():
+        rows = []
+        for task in world_tasks(specs, max_steps):
+            world = world_of_record(task.to_dict())
+            name = f"{world['scenario']} / {world['difficulty']} / seed {world['seed']}"
+            questions = _questions(world)
+            shared = sorted(q for q in questions if q in seen_questions)
+            identical = [
+                e for e in experience if questions and _questions(e) == questions and e != world
+            ]
+            is_seen = (world["scenario"], world["difficulty"], world["seed"]) in seen_worlds
+            rows.append(
+                {
+                    "world": world,
+                    "questions": len(questions),
+                    "shared_questions": shared,
+                    "same_answer_as": identical,
+                    "experience_world": is_seen,
+                }
+            )
+            if condition == "same_world" and not is_seen:
+                result["problems"].append(f"same_world: {name} is not an experience world")
+            if condition == "new_world":
+                if is_seen:
+                    result["problems"].append(f"new_world: {name} is an experience world")
+                elif identical:
+                    other = identical[0]
+                    result["problems"].append(
+                        f"new_world: {name} hides the same answer as experience world "
+                        f"{other['scenario']} / {other['difficulty']} / seed {other['seed']}"
+                    )
+                elif shared:
+                    result["warnings"].append(
+                        f"new_world: {name} shares {len(shared)} of {len(questions)} critical "
+                        "questions with experience worlds"
+                    )
+                if world["scenario"] not in seen_scenarios:
+                    result["warnings"].append(
+                        f"new_world: {name} is of a scenario the experience phase does not "
+                        "contain (that is a new theme)"
+                    )
+            if condition == "new_theme" and world["scenario"] in seen_scenarios:
+                result["problems"].append(
+                    f"new_theme: {name} is of a scenario the experience phase contains"
+                )
+        result["conditions"][condition] = rows
+    return result
 
 
 def _seeded(llm: str, options: dict[str, Any], repeat: int) -> dict[str, Any]:
@@ -118,7 +204,7 @@ def run_protocol(
     elif llm_options:
         model["llm_options"] = {**(model.get("llm_options") or {}), **llm_options}
     n_repeats = int(repeats or protocol.get("repeats", 1))
-    max_steps = int(protocol.get("max_steps", 100))
+    max_steps = protocol.get("max_steps")
     experience = world_tasks(
         protocol["experience"]["worlds"],
         max_steps,
@@ -128,6 +214,17 @@ def run_protocol(
         condition: world_tasks(specs, max_steps)
         for condition, specs in protocol["transfer"].items()
     }
+    design = check_design(protocol)
+    (out / "design.json").write_text(json.dumps(design, indent=2))
+    if design["problems"] and not protocol.get("allow_design_problems"):
+        raise ValueError(
+            "the protocol's transfer worlds are not what their conditions claim:\n  "
+            + "\n  ".join(design["problems"])
+            + "\n(set allow_design_problems to run it anyway)"
+        )
+    if not quiet:
+        for warning in design["warnings"]:
+            print(f"warning: {warning}")
     resolved = {**protocol, "model": model, "repeats": n_repeats}
     (out / "protocol.json").write_text(json.dumps(resolved, indent=2))
     budget = protocol.get("budget") or {}
@@ -137,11 +234,7 @@ def run_protocol(
         if arms and name not in arms:
             continue
         statuses[name] = []
-        agent = arm.get("agent", protocol.get("agent", "hypothesizer"))
-        agent_options = {
-            **(protocol.get("agent_options") or {}),
-            **(arm.get("agent_options") or {}),
-        }
+        agent, agent_options = protocol_agent({"agent": "hypothesizer", **protocol}, arm)
         for rep in range(n_repeats):
             base = out / name / f"rep-{rep}"
             common = dict(
@@ -288,7 +381,7 @@ def grade_protocol(
                 done.add((row["key"], row["grader"]))
     experience_worlds = [
         world_of_record(t.to_dict())
-        for t in world_tasks(protocol["experience"]["worlds"], int(protocol.get("max_steps", 100)))
+        for t in world_tasks(protocol["experience"]["worlds"], protocol.get("max_steps"))
     ]
     with path.open("a") as fh:
         for episode in episodes(out):
@@ -301,10 +394,20 @@ def grade_protocol(
                 if episode["phase"] == "experience"
                 else experience_worlds
             )
+            graded = scorer.grade(episode["world"], knowledge)
+            known = {q for w in earlier for q in _questions(w)}
+            novel = [
+                a["evaluation"] or 0 for a in graded["questions"] if a["question"] not in known
+            ]
             row: dict[str, Any] = {
                 "key": episode["key"],
                 "grader": llm.model,
-                "knowledge": scorer.grade(episode["world"], knowledge),
+                "knowledge": graded,
+                # The same grades, on the questions no earlier experience world has.
+                "knowledge_novel": {
+                    "score": sum(novel) / len(novel) if novel else None,
+                    "questions": len(novel),
+                },
                 "stale": scorer.stale(episode["world"], knowledge, earlier),
             }
             if code and traj is not None:

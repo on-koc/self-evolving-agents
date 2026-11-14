@@ -142,6 +142,9 @@ class OpenAIBackend:
             params["reasoning_effort"] = self.reasoning_effort
         if self.extra_body:
             params["extra_body"] = self.extra_body
+        if request.stop:
+            # The API takes at most four; any others are applied to the reply afterwards.
+            params["stop"] = list(request.stop)[:4]
         return params
 
     def complete(self, request: LLMRequest) -> LLMResponse:

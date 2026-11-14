@@ -19,7 +19,7 @@ from __future__ import annotations
 import time
 from typing import Any, Protocol
 
-from .base import LLMError, LLMRequest, LLMResponse, Usage
+from .base import LLMError, LLMRequest, LLMResponse, Usage, apply_stop
 
 
 class Runner(Protocol):
@@ -36,7 +36,10 @@ class Runner(Protocol):
     def generate(
         self, prompt: str, *, max_new_tokens: int, temperature: float | None, seed: int
     ) -> tuple[str, int, str]:
-        """``(reply text, tokens generated, "stop" or "length")``."""
+        """``(reply text, tokens generated, "stop" or "length")``.
+
+        Called with an extra ``stop=[...]`` keyword only when a request has stop strings.
+        """
 
 
 class TransformersRunner:
@@ -122,7 +125,13 @@ class TransformersRunner:
         return int(self._encode(prompt)["input_ids"].shape[1])
 
     def generate(
-        self, prompt: str, *, max_new_tokens: int, temperature: float | None, seed: int
+        self,
+        prompt: str,
+        *,
+        max_new_tokens: int,
+        temperature: float | None,
+        seed: int,
+        stop: list[str] | None = None,
     ) -> tuple[str, int, str]:
         torch = self._torch
         inputs = self._encode(prompt).to(self.device)
@@ -134,11 +143,23 @@ class TransformersRunner:
                 kwargs["top_p"] = float(self.top_p)
         if self.tokenizer.pad_token_id is None and self.tokenizer.eos_token_id is not None:
             kwargs["pad_token_id"] = self.tokenizer.eos_token_id
+        if stop:
+            # Ends generation early where transformers supports it; the reply is cut
+            # at the stop strings by the backend either way.
+            kwargs["stop_strings"] = list(stop)
+            kwargs["tokenizer"] = self.tokenizer
         torch.manual_seed(seed)
         if self.device.startswith("cuda"):
             torch.cuda.manual_seed_all(seed)
         with torch.no_grad():
-            output = self.lm.generate(**inputs, **kwargs)
+            try:
+                output = self.lm.generate(**inputs, **kwargs)
+            except (TypeError, ValueError):
+                if not stop:
+                    raise
+                kwargs.pop("stop_strings")
+                kwargs.pop("tokenizer")
+                output = self.lm.generate(**inputs, **kwargs)
         new_tokens = output[0][inputs["input_ids"].shape[1] :]
         text = self.tokenizer.decode(new_tokens, skip_special_tokens=True)
         ended = self.tokenizer.eos_token_id is not None and bool(
@@ -228,9 +249,11 @@ class HuggingFaceBackend:
             limit = min(limit, window - prompt_tokens)
         temperature = self._temperature(request)
         seed = self.seed + int(request.sample)
+        extra: dict[str, Any] = {"stop": list(request.stop)} if request.stop else {}
         text, reply_tokens, finish = self.runner.generate(
-            prompt, max_new_tokens=limit, temperature=temperature, seed=seed
+            prompt, max_new_tokens=limit, temperature=temperature, seed=seed, **extra
         )
+        text = apply_stop(text, request.stop)
         if not text.strip() and finish == "length":
             raise LLMError(
                 f"{self.model} used its whole reply limit ({limit} tokens) without producing "

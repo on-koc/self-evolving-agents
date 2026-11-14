@@ -20,7 +20,7 @@ from .behaviours import detect
 from .experiment import episodes, world_of_record, world_tasks
 
 #: Per-episode values that the tables summarise, in display order.
-OUTCOMES = ("completion", "progress", "knowledge", "stale", "steps")
+OUTCOMES = ("completion", "progress", "knowledge", "knowledge_novel", "stale", "steps")
 BEHAVIOURS = (
     "alternatives",
     "confounds",
@@ -83,7 +83,7 @@ def collect(out: str | Path) -> list[dict[str, Any]]:
                 grades[row["key"]] = row  # the last grade of an episode wins
     experience_worlds = [
         world_of_record(t.to_dict())
-        for t in world_tasks(protocol["experience"]["worlds"], int(protocol.get("max_steps", 100)))
+        for t in world_tasks(protocol["experience"]["worlds"], protocol.get("max_steps"))
     ]
     strategies: dict[str, dict[str, str]] = {}
     rows = []
@@ -106,6 +106,7 @@ def collect(out: str | Path) -> list[dict[str, Any]]:
             "progress": float(record.score),
             "steps": float(record.steps),
             "knowledge": (grade.get("knowledge") or {}).get("score"),
+            "knowledge_novel": (grade.get("knowledge_novel") or {}).get("score"),
             "stale": (grade.get("stale") or {}).get("score"),
             "detected": found,
         }

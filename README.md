@@ -30,7 +30,8 @@ Two use cases:
 | Each method is separate and runs on its own | one folder and one page per method; dependencies between folders enforced by a test. [`docs/methods/`](docs/methods/README.md) |
 | The claim graph (needs no language model) | **measured** on Basilisk: two studies, a five-fold replication, one ablation; about 25,000 simulated episodes |
 | Every method that needs a language model, the baseline included | **not measured.** No model was available for this work. Each is tested for its mechanics with scripted stand-ins, and the comparison that would measure it is specified in advance. [`docs/protocols/model-comparison.md`](docs/protocols/model-comparison.md), [`docs/protocols/discoveryworld.md`](docs/protocols/discoveryworld.md) |
-| DiscoveryWorld's Hypothesizer baseline | ported so that its prompts are byte-identical to the released agent's (31 of 31 checked); its knowledge grader's prompt likewise |
+| DiscoveryWorld's baselines | all four ported: the Hypothesizer, ReAct and Plan-and-Execute send prompts byte-identical to the released agents' (checked side by side with the original code), the random agent takes the same actions; each combines with every memory method that suits it. [`docs/agents.md`](docs/agents.md) |
+| DiscoveryWorld's scenarios | all 35 scenario-difficulty combinations load and step, at the paper's step limits; a page per task. [`docs/discoveryworld/`](docs/discoveryworld/README.md) |
 | Model backends | Claude, any OpenAI-compatible server, Ollama, and Hugging Face models on this machine, for every component; verified against local stand-in servers and tiny local models. [`docs/models.md`](docs/models.md) |
 
 Nothing here is a measured statement about how ReasoningBank performs in these
@@ -53,6 +54,11 @@ environments.
 ```bash
 sea methods
 ```
+
+Each method runs with an agent: the ReasoningBank paper's `stepwise` agent by default,
+or one of DiscoveryWorld's baselines (`hypothesizer`, `react`, `plan_execute`,
+`random`) with `--agent` (`sea agents` lists them). Which combinations work:
+[`docs/agents.md`](docs/agents.md).
 
 ## Results so far (simulator only, no language model)
 
@@ -173,6 +179,13 @@ Any other model works the same way, e.g. a local one through Ollama:
 sea run --method reasoningbank --env toy-scan --seeds 0:3 --llm ollama:qwen2.5:7b --llm-option num_ctx=16384 --out runs/rb-ollama
 ```
 
+DiscoveryWorld's ReAct baseline with ReasoningBank as its memory, dry run with the
+stand-in:
+
+```bash
+sea run --method reasoningbank --agent react --env discoveryworld --scenario "Combinatorial Chemistry" --difficulty Easy --seeds 0:2 --max-steps 10 --llm offline-demo --out runs/dw-react-rb-dry
+```
+
 The DiscoveryWorld experiment, dry run with the stand-in (a few minutes):
 
 ```bash
@@ -193,6 +206,8 @@ sea discovery report runs/discovery-dry
 |---|---|
 | [`docs/metrics.md`](docs/metrics.md) | every reported metric: definition, formula, direction, relevance, limitations |
 | [`docs/discoveryworld.md`](docs/discoveryworld.md) | the DiscoveryWorld use case: question, memory types, design, measures, emergence criteria |
+| [`docs/discoveryworld/`](docs/discoveryworld/README.md) | every DiscoveryWorld scenario: one page per task (difficulties, sub-goals, critical questions, answers by seed, detectors), seeds, step limits, determinism |
+| [`docs/agents.md`](docs/agents.md) | every agent, including DiscoveryWorld's ReAct, Plan-and-Execute and random baselines: which methods each can carry, where memory goes, how the ports were checked, where they depart from the originals |
 | [`docs/models.md`](docs/models.md) | model and embedding backends and their options |
 | [`docs/reasoningbank-fidelity.md`](docs/reasoningbank-fidelity.md) | the baseline against the paper and the reference code, row by row; what can and cannot be claimed |
 | [`docs/methods/`](docs/methods/README.md) | one page per method: motivation, approach, implementation, differences from the baseline, parameters, how to run it, limitations |
@@ -208,6 +223,7 @@ sea discovery report runs/discovery-dry
 ```
 src/self_evolving_agents/
   envs/  agents/  llm/  experiments/  provenance/     shared, method-independent
+  agents/discoveryworld/                              DiscoveryWorld's ReAct, Plan-and-Execute, random
   policies.py  embeddings.py  tasks.py
   methods/
     stream.py  registry.py  run.py                    the loop, and how methods are built
@@ -220,7 +236,7 @@ src/self_evolving_agents/
 protocols/     comparison protocols (model-dependent; not yet run with a model)
 studies/       claim-study configurations
 results/       compact outputs of the studies run on Basilisk
-tests/         311 tests
+tests/         376 tests
 ```
 
 ## Limits

@@ -32,7 +32,8 @@ investigation in a simulated world. It scores three things separately:
 
 One property makes it suited to the question: **the answer changes with the seed.**
 In 23 of the 24 theme-difficulty combinations, seeds 0 and 1 hide different
-discoveries (checked from the scorecards):
+discoveries (checked from the scorecards; every seed of every combination is listed on
+the scenario pages, [`discoveryworld/`](discoveryworld/README.md)):
 
 | Task | Seed 0 | Seed 1 |
 |---|---|---|
@@ -43,7 +44,10 @@ discoveries (checked from the scorecards):
 | Space Sick, Challenge | the glowing rock detects harmful mushrooms | the same (the one exception) |
 
 So a memory of answers can be told apart from a memory of methods, by testing in a
-world of the same kind with another seed.
+world of the same kind with another seed, provided the other seed hides a different
+answer: a few pairs of seeds share one (Combinatorial Chemistry Easy seeds 2 and 4, for
+instance), and `sea discovery check` refuses a design that would use such a pair as a
+"new world".
 
 ## Three kinds of memory
 
@@ -70,6 +74,12 @@ the released agent's. It keeps measurements and hypotheses within an episode and
 starts each episode empty. The arms differ only in what memory across episodes is
 placed in its prompt.
 
+DiscoveryWorld's other baselines, ReAct, Plan-and-Execute and the random agent, are
+also ported faithfully and can carry any of these memories
+([`agents.md`](agents.md)); an arm names its agent with `"agent": "react"`. The
+pre-registered arms keep the Hypothesizer, the strongest of DiscoveryWorld's
+baselines and the one that already keeps hypotheses and evidence.
+
 ### Arms
 
 | Arm | Memory across episodes | Isolates |
@@ -86,8 +96,9 @@ findings (evidence and hypotheses) removed.
 
 ### Phases
 
-1. **Experience:** the same stream of worlds for every arm (four themes, Easy, seeds
-   0 to 2, interleaved). Memories learn.
+1. **Experience:** the same stream of worlds for every arm (four themes, Easy, three
+   seeds each, interleaved). Memories learn. The seeds differ by theme so that no
+   transfer world hides an experienced answer (protocol, amendment 1).
 2. **Transfer, memory frozen**, in three conditions:
 
 | Condition | Worlds | Answer memory should | Strategy memory should |
@@ -108,7 +119,7 @@ Defined in [`metrics.md`](metrics.md), section 10.
 
 | Group | Measures |
 |---|---|
-| DiscoveryWorld's own | task completion, procedural progress, explanatory knowledge |
+| DiscoveryWorld's own | task completion, procedural progress, explanatory knowledge; knowledge on the questions no experience world has (`knowledge_novel`) |
 | remembering instead of finding | stale knowledge: the knowledge written in a new world states an earlier world's answer (graded with the earlier world's critical questions); in chemistry, the first test is an earlier world's answer |
 | efficiency | steps; candidates tested before the final answer |
 | investigative behaviours | controls, alternatives, confounds, revision, premature commitment: from the actions where they can be read, and coded by a model blind to the arm |
@@ -152,8 +163,11 @@ discovery agreement` computes Cohen's kappa against people's labels.
 | Part | How |
 |---|---|
 | The Hypothesizer port | run side by side with the released code on the same worlds and replies: 31 of 31 prompts byte-identical, with their temperatures and reply limits |
+| ReAct, Plan-and-Execute, random | run side by side with the released code (ReComA for the first two): every prompt byte-identical in 19 runs on six scenario-difficulty combinations (472 prompts); the random agent's 90 actions identical ([`agents.md`](agents.md)) |
 | The knowledge grader | its prompt is byte-identical to DiscoveryWorld's `scripts/knowledgeScorer.py` |
-| All scenarios load | "It's (not) Rocket Science!" failed on Python 3.12 and later; a compatibility shim gives the numbers Python 3.11 gives from the same seed. All 24 combinations load |
+| All scenarios load | "It's (not) Rocket Science!" failed on Python 3.12 and later; a compatibility shim gives the numbers Python 3.11 gives from the same seed. All 35 scenario-difficulty combinations (themes, unit tests, tutorial) load and step, at seeds 0 to 5 |
+| Same world in every process | DiscoveryWorld draws some details from generators seeded by the operating system; they are seeded from the world, and a test compares two processes |
+| Transfer worlds are what they claim | `sea discovery check`: every protocol's `new_world` worlds hide answers no experience world hides |
 | Behaviour detectors | on scripted real investigations (above) and constructed episodes |
 | The memory | extraction, scoping of findings to their world, transfer of strategies, review and replacement, lesions, variants, freezing: unit tests |
 | The whole experiment | dry run on real DiscoveryWorld with the rule-based stand-in: experience, three transfer conditions, a lesion, grading, report |
@@ -197,7 +211,9 @@ episodes) is about a seventh of the main one (200 episodes per repeat, three rep
 - **Answer leakage within a theme.** Hypotheses from other worlds of the same kind
   are shown with their conditions (`other_worlds=scoped`). If that hurts on new
   worlds, `other_worlds=hide` is the arm to compare with.
-- **Few worlds.** Five seeds per combination limit how many distinct worlds exist;
-  the protocol uses seeds 0 to 4 and all differences are paired by world.
+- **Few worlds.** Five seeds per combination limit how many distinct worlds exist, and
+  a few seeds share an answer; the protocol uses seeds 0 to 4, chooses them per theme
+  so that no new world repeats an experienced answer, and pairs all differences by
+  world.
 - **One actor.** All arms share the Hypothesizer; conclusions are about memory on
   that agent.

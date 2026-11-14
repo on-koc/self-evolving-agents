@@ -85,6 +85,11 @@ class AnthropicBackend:
             params["system"] = [block]
         if self.effort:
             params["output_config"] = {"effort": self.effort}
+        # The API refuses stop sequences made only of whitespace; those are applied
+        # to the reply afterwards (TrackedLLM cuts at every stop string).
+        stops = [s for s in request.stop or [] if s.strip()]
+        if stops:
+            params["stop_sequences"] = stops
         return params
 
     def complete(self, request: LLMRequest) -> LLMResponse:

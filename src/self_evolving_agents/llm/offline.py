@@ -89,6 +89,17 @@ class OfflineDemoLLM:
     def _reply(thought: str, action: str) -> str:
         return f"<think>{thought}</think>\n<action>{action}</action>"
 
+    def _plan(self, request: LLMRequest) -> str:
+        """The planner of DiscoveryWorld's Plan-and-Execute agent: two steps, then done."""
+        turns = request.messages
+        start = max(
+            (i for i, m in enumerate(turns) if "Now solve this task" in m["content"]), default=0
+        )
+        done = sum(1 for m in turns[start + 1 :] if m["role"] == "assistant")
+        if done >= 2:
+            return f"Step {done + 1}: Done!"
+        return f"Step {done + 1}: Explore the area and use an instrument on an object"
+
     def _policy(self, request: LLMRequest) -> str:
         rules = _rules(request.system)
         policy = {
@@ -283,12 +294,41 @@ def _json_after(text: str, marker: str) -> dict | None:
     return value if isinstance(value, dict) else None
 
 
+_REACT_OBSERVATION = "Current Environment Observation:"
+
+
 def _dw_act(prompt: str) -> str:
-    """A rule-based explorer for DiscoveryWorld: valid actions, no intelligence."""
-    observation = _json_after(prompt, "Environment Observation (as JSON):") or {}
+    """A rule-based explorer for DiscoveryWorld: valid actions, no intelligence.
+
+    Answers the Hypothesizer's prompt and the ReAct-style prompts of DiscoveryWorld's
+    ReAct agent and Plan-and-Execute executor (which also get a ``thought``; the
+    executor submits after two actions, so that its planner moves on).
+    """
+    react = _REACT_OBSERVATION in prompt
+    observation = (
+        _json_after(prompt, "Environment Observation (as JSON):")
+        or _json_after(prompt, _REACT_OBSERVATION)
+        or {}
+    )
     ui = observation.get("ui") or {}
+    if react and "Previous Sub-Tasks:" in prompt:
+        history = prompt.split("History of action-observations:", 1)[-1]
+        if history.count("Action:\n```json\n") >= 2:
+            return json.dumps(
+                {
+                    "action": "SUBMIT",
+                    "arg1": "Task completed!",
+                    "thought": "offline-demo carried out the subtask",
+                }
+            )
     if (ui.get("dialog_box") or {}).get("is_in_dialog"):
-        return json.dumps({"chosen_dialog_option_int": 1, "explanation": "offline-demo"})
+        return json.dumps(
+            {
+                "chosen_dialog_option_int": 1,
+                "explanation": "offline-demo",
+                "thought": "offline-demo",
+            }
+        )
     step = int(ui.get("world_steps") or 0)
     inventory = [o for o in ui.get("inventoryObjects") or [] if o.get("name") not in _SCENERY]
     reach = [
@@ -318,6 +358,8 @@ def _dw_act(prompt: str) -> str:
         action = {"action": "TELEPORT_TO_OBJECT", "arg1": nearby[step % len(nearby)]["uuid"]}
     else:
         action = {"action": "DISCOVERY_FEED_GET_UPDATES"}
+    if react:
+        return "```json\n" + json.dumps({**action, "thought": "offline-demo explores"}) + "\n```"
     return json.dumps(
         {**action, "explanation": "offline-demo explores", "memory": "", "running_hypotheses": []}
     )

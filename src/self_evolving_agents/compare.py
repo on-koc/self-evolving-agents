@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import Any
 
 from .experiments import paired_compare
-from .methods.registry import METHODS, make_config
+from .methods.registry import METHODS, check_combination, make_config, protocol_agent
 from .methods.run import run_method
 from .methods.stream import TaskRecord, load_records, summarise
 from .tasks import parse_seeds, task_stream
@@ -40,6 +40,8 @@ def load_protocol(path: str | Path) -> dict[str, Any]:
         if method not in METHODS or METHODS[method].runner != "stream":
             raise ValueError(f"arm {name!r}: {method!r} is not a stream method")
         make_config(method, arm.get("options"))  # raises on an unknown option
+        agent, _ = protocol_agent(protocol, arm)
+        check_combination(method, agent, {protocol["stream"]["env"]}, arm.get("options"))
     return protocol
 
 
@@ -93,6 +95,7 @@ def run_protocol(
         if arms and name not in arms:
             continue
         statuses[name] = []
+        agent, agent_options = protocol_agent(protocol, arm)
         for rep in range(n_repeats):
             if not quiet:
                 print(f"=== arm {name} (method {arm['method']}), repeat {rep + 1} of {n_repeats}")
@@ -102,8 +105,8 @@ def run_protocol(
                 out / name / f"rep-{rep}",
                 llm=model.get("llm", "anthropic:claude-opus-5-5"),
                 options=arm.get("options"),
-                agent=arm.get("agent", protocol.get("agent", "stepwise")),
-                agent_options=protocol.get("agent_options"),
+                agent=agent,
+                agent_options=agent_options,
                 embedder=model.get("embedder", "hashing"),
                 effort=model.get("effort"),
                 llm_options=model.get("llm_options"),

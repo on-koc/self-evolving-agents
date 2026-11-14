@@ -75,7 +75,9 @@ extraction prompt, and it is a design choice to keep in mind when interpreting
 | `config.py` | `InvestigationMemoryConfig` |
 
 It builds on the shared stream loop and takes ReasoningBank's judge
-(`methods/reasoningbank`). Its default agent is the Hypothesizer.
+(`methods/reasoningbank`). Its default agent is the Hypothesizer; any agent that reads
+memory can carry it instead (`--agent stepwise`, `react` or `plan_execute`; see
+[`../agents.md`](../agents.md)).
 
 ## Parameters
 
@@ -101,6 +103,12 @@ It builds on the shared stream loop and takes ReasoningBank's judge
 
 ```bash
 sea run --method investigation_memory --env discoveryworld --scenario "Combinatorial Chemistry" --difficulty Easy --seeds 0:3 --max-steps 100 --llm ollama:qwen2.5:14b --llm-option num_ctx=16384 --out runs/inv
+```
+
+With DiscoveryWorld's ReAct agent as the actor:
+
+```bash
+sea run --method investigation_memory --agent react --env discoveryworld --scenario "Combinatorial Chemistry" --difficulty Easy --seeds 0:3 --llm ollama:qwen2.5:14b --llm-option num_ctx=16384 --out runs/inv-react
 ```
 
 As part of the experiment:

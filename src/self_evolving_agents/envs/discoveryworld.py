@@ -22,6 +22,7 @@ import os
 import random
 import re
 import shutil
+import sys
 import tempfile
 import types
 import warnings
@@ -56,23 +57,85 @@ DISCOVERY_THEMES = [
     "Space Sick",
     "It's (not) Rocket Science!",
 ]
+#: A short guided scenario; not part of the benchmark.
+TUTORIAL = "Tutorial"
+DIFFICULTIES = ("Easy", "Normal", "Challenge")
+#: The seeds of the benchmark ("parametric variations"). DiscoveryWorld's catalogue
+#: numbers them 1 to 5 and its runners subtract one; seeds above 4 are not vetted
+#: upstream, and seed 5 repeats seed 0's answer in several themes.
+BENCHMARK_SEEDS = (0, 1, 2, 3, 4)
 
-DEFAULT_PARAMS: dict[str, Any] = {"max_steps": 100, "nearby_limit": 40}
+DEFAULT_PARAMS: dict[str, Any] = {"nearby_limit": 40}
 
 _DIRECTION_ACTIONS = {"MOVE_DIRECTION", "ROTATE_DIRECTION"}
 _DIRECTIONS = {"north", "east", "south", "west"}
 
 
+def scenario_kind(scenario: str) -> str:
+    """``"theme"`` (a discovery task), ``"unit_test"`` or ``"tutorial"``."""
+    if scenario in DISCOVERY_THEMES:
+        return "theme"
+    if scenario in UNIT_TESTS:
+        return "unit_test"
+    if scenario == TUTORIAL:
+        return "tutorial"
+    raise ValueError(
+        f"unknown DiscoveryWorld scenario {scenario!r}; the discovery themes are "
+        f"{', '.join(DISCOVERY_THEMES)}; the unit tests are {', '.join(UNIT_TESTS)}; "
+        f"and there is {TUTORIAL!r}"
+    )
+
+
+def scenario_difficulties(scenario: str) -> tuple[str, ...]:
+    """The difficulties a scenario exists in: themes in all three, the rest in Normal."""
+    return DIFFICULTIES if scenario_kind(scenario) == "theme" else ("Normal",)
+
+
+def scenario_seeds(scenario: str) -> tuple[int, ...]:
+    """The benchmark seeds of a scenario (the tutorial has one world)."""
+    return (0,) if scenario_kind(scenario) == "tutorial" else BENCHMARK_SEEDS
+
+
+def paper_step_limit(scenario: str, difficulty: str) -> int:
+    """The step limit of the DiscoveryWorld paper's runs.
+
+    100 for Easy and the unit tests, 1000 for Normal and Challenge (Jansen et al., 2024;
+    ``agents/README.md``). The tutorial was not benchmarked; it gets 100.
+    """
+    if scenario_kind(scenario) == "theme" and difficulty in ("Normal", "Challenge"):
+        return 1000
+    return 100
+
+
+def all_scenarios() -> list[tuple[str, str]]:
+    """Every (scenario, difficulty) combination: 24 themes, 10 unit tests, the tutorial."""
+    out = [(theme, d) for theme in DISCOVERY_THEMES for d in DIFFICULTIES]
+    out += [(test, "Normal") for test in UNIT_TESTS]
+    return out + [(TUTORIAL, "Normal")]
+
+
 def discoveryworld_task(
     scenario: str, difficulty: str = "Normal", seed: int = 0, **params: Any
 ) -> Task:
-    """Build a DiscoveryWorld task. Benchmark seeds are 0-4; others are unvetted upstream."""
+    """Build a DiscoveryWorld task.
+
+    Without ``max_steps`` the task gets the paper's limit (:func:`paper_step_limit`).
+    Benchmark seeds are 0-4; others load but are not vetted upstream.
+    """
+    allowed = scenario_difficulties(scenario)
+    if difficulty not in allowed:
+        raise ValueError(
+            f"{scenario!r} exists at difficulty {' / '.join(allowed)}, not {difficulty!r}"
+        )
+    params = dict(params)
+    if params.get("max_steps") is None:
+        params["max_steps"] = paper_step_limit(scenario, difficulty)
     return Task(
         env_id="discoveryworld",
         name=f"{scenario}/{difficulty}",
         seed=seed,
         conditions={"scenario": scenario, "difficulty": difficulty},
-        params=dict(params),
+        params=params,
     )
 
 
@@ -104,24 +167,92 @@ class _IntegralFloatRandom(random.Random):
         )
 
 
+#: Draws the seeds of the generators DiscoveryWorld creates without one.
+_SEEDS = random.Random(0)
+
+
+class _WorldSeededRandom(_IntegralFloatRandom):
+    """A generator that, created without a seed, takes one derived from the world's seed.
+
+    DiscoveryWorld 0.0.2 gives every object its own ``random.Random()``, which Python
+    seeds from the operating system: mushroom colours, plant sprouting and growth
+    times, the background of radiation readings and some sprites differ from one
+    process to the next for the same scenario and seed. NPCs wander and some timers
+    are drawn from the module-level generator, which is also seeded from the
+    operating system. With this generator in their place, the same world and the same
+    actions give the same observations in every process. The draws come from the same
+    distributions as before.
+    """
+
+    def __init__(self, x: Any = None) -> None:
+        super().__init__(_SEEDS.getrandbits(64) if x is None else x)
+
+
+#: Stands in for the module-level generator of ``random`` inside DiscoveryWorld.
+_GLOBAL = _WorldSeededRandom(0)
+
+
+def seed_world(scenario: str, difficulty: str, seed: int) -> None:
+    """Seed DiscoveryWorld's unseeded generators from the world (done on every load)."""
+    _SEEDS.seed(f"discoveryworld-objects|{scenario}|{difficulty}|{int(seed)}")
+    _GLOBAL.seed(f"discoveryworld-global|{scenario}|{difficulty}|{int(seed)}")
+
+
+def _shim_module() -> types.ModuleType:
+    module = types.ModuleType("random")
+    module.__dict__.update(random.__dict__)
+    module.Random = _WorldSeededRandom  # type: ignore[attr-defined]
+    for name in random.__all__:
+        value = getattr(random, name, None)
+        if getattr(value, "__self__", None) is random._inst:  # type: ignore[attr-defined]
+            setattr(module, name, getattr(_GLOBAL, name))
+    return module
+
+
+_SHIM = _shim_module()
 _COMPAT_INSTALLED = False
 
 
-def install_python312_compat() -> None:
-    """Give DiscoveryWorld's scenario builder the generator above (idempotent).
+def _patch_modules() -> None:
+    for name, module in list(sys.modules.items()):
+        if (name == "discoveryworld" or name.startswith("discoveryworld.")) and getattr(
+            module, "random", None
+        ) is random:
+            module.random = _SHIM  # type: ignore[attr-defined]
 
-    Only the world generator created by ``ScenarioMaker`` is affected; every other
-    use of ``random`` in DiscoveryWorld is untouched.
+
+def install_python312_compat() -> None:
+    """Make DiscoveryWorld load on Python 3.12+ and give the same world in every process.
+
+    Idempotent. Every DiscoveryWorld module's ``random`` is replaced by a module whose
+    generators accept integral floats as range bounds (as Python 3.11 did; see
+    :class:`_IntegralFloatRandom`) and, where DiscoveryWorld creates them without a
+    seed, are seeded from the world (:class:`_WorldSeededRandom`). Generators that
+    DiscoveryWorld seeds itself (the world generator, object ids) give exactly the
+    numbers they give without this. ``loadScenario`` is wrapped to reseed per world.
     """
     global _COMPAT_INSTALLED
     if _COMPAT_INSTALLED:
         return
     with _quiet():
-        import discoveryworld.ScenarioMaker as scenario_maker
-    module = types.ModuleType("random")
-    module.__dict__.update(random.__dict__)
-    module.Random = _IntegralFloatRandom  # type: ignore[attr-defined]
-    scenario_maker.random = module  # type: ignore[attr-defined]
+        import discoveryworld.DiscoveryWorldAPI as api_module
+        import discoveryworld.ScenarioMaker  # noqa: F401 - imports the scenario modules
+    _patch_modules()
+    original = api_module.DiscoveryWorldAPI.loadScenario
+
+    def load_scenario(
+        self: Any,
+        scenarioName: str,
+        difficultyStr: str,
+        randomSeed: int = 0,
+        numUserAgents: int = 1,
+    ) -> Any:
+        _patch_modules()  # modules imported since installation
+        seed_world(scenarioName, difficultyStr, randomSeed)
+        return original(self, scenarioName, difficultyStr, randomSeed, numUserAgents)
+
+    load_scenario.__wrapped__ = original  # type: ignore[attr-defined]
+    api_module.DiscoveryWorldAPI.loadScenario = load_scenario
     _COMPAT_INSTALLED = True
 
 
@@ -194,6 +325,8 @@ class DiscoveryWorldEnv(TextEnv):
         self.params = {**DEFAULT_PARAMS, **task.params}
         self.scenario = task.conditions["scenario"]
         self.difficulty = task.conditions.get("difficulty", "Normal")
+        if self.params.get("max_steps") is None:
+            self.params["max_steps"] = paper_step_limit(self.scenario, self.difficulty)
         self._api: Any = None
         self._frame_dir: str | None = None
         self._spec: EnvSpec | None = None
@@ -201,6 +334,14 @@ class DiscoveryWorldEnv(TextEnv):
         self._ready = False
         self._names: dict[int, str] = {}
         self._api_observation: dict[str, Any] = {}
+        self._observation: Observation | None = None
+        self._last_result: dict[str, Any] | None = None
+        self._submitted: str | None = None
+        #: Read the observation once between an action and the world's tick, as the
+        #: logging of DiscoveryWorld's ReAct and Plan-and-Execute runs does. Reading
+        #: an observation removes the first queued high-importance message, so this
+        #: changes what the agent is shown next; their ports switch it on.
+        self.read_after_action = False
 
     # ------------------------------------------------------------------ setup
 
@@ -395,7 +536,8 @@ class DiscoveryWorldEnv(TextEnv):
         brief = f"at ({loc.get('x')}, {loc.get('y')}) carrying {carried}"
         if self._in_dialog:
             brief += " (in dialog)"
-        return Observation(text=self._render(ui), features={}, raw=ui, brief=brief)
+        self._observation = Observation(text=self._render(ui), features={}, raw=ui, brief=brief)
+        return self._observation
 
     # ------------------------------------------------------------------ TextEnv
 
@@ -417,6 +559,8 @@ class DiscoveryWorldEnv(TextEnv):
         self._steps = 0
         self._score_trace: list[float] = []
         self._invalid_actions = 0
+        self._last_result = None
+        self._submitted = None
         observation = self._observe()
         progress = observation.raw.get("taskProgress") or []
         description = "\n".join(t.get("description", "").strip() for t in progress).strip()
@@ -467,6 +611,8 @@ class DiscoveryWorldEnv(TextEnv):
     def step(self, action: Action) -> StepResult:
         if not self._ready:
             raise RuntimeError("call reset() before step()")
+        if action.name == "SUBMIT":
+            return self._submit(action)
         arg_names = {
             key: self._names.get(_as_int(value))
             for key, value in action.args.items()
@@ -478,14 +624,22 @@ class DiscoveryWorldEnv(TextEnv):
             with _quiet():
                 self._api.tick()
             result = {"success": False, "errors": [action.args.get("reason", "no action taken")]}
+            self._last_result = None
         else:
-            if action.name == "DIALOG":
+            if action.payload is not None:
+                # Sent as the agent wrote it, as DiscoveryWorld's own agents do; the
+                # simulator answers a malformed action with its own error message.
+                payload = dict(action.payload)
+            elif action.name == "DIALOG":
                 payload = dict(action.args)
             else:
                 payload = {"action": action.name, "arg1": None, "arg2": None, **action.args}
             with _quiet():
                 result = self._api.performAgentAction(agentIdx=0, actionJSON=payload)
+                if self.read_after_action:
+                    self._api.getAgentObservation(agentIdx=0)
                 self._api.tick()
+            self._last_result = result
         self._steps += 1
         success = bool(result.get("success"))
         if not success:
@@ -514,6 +668,30 @@ class DiscoveryWorldEnv(TextEnv):
             observation, 0.0, complete, truncated, info, summary=summary[:400], event=event
         )
 
+    def _submit(self, action: Action) -> StepResult:
+        """The agent declares the episode over (ReAct's ``SUBMIT``).
+
+        Nothing is sent to the simulator and no time passes, as in DiscoveryWorld's own
+        runner, where ``SUBMIT`` ends the episode before the environment is called. The
+        step limit is not charged for it. Whether the task was done is decided by the
+        scorecard, as for every other ending.
+        """
+        self._submitted = str(action.args.get("arg1", ""))
+        self._submit_reason = str(action.args.get("reason", "agent"))
+        observation = self._observation
+        if observation is None:  # pragma: no cover - reset() always observes
+            observation = self._observe()
+        text = " ".join(self._submitted.split())[:300]
+        return StepResult(
+            observation,
+            0.0,
+            True,
+            False,
+            {"action_ok": True, "errors": [], "arg_names": {}, "submitted": True},
+            summary=f"submitted: {text}" if text else "submitted",
+            event="Episode over: the agent declared the episode finished.",
+        )
+
     def outcome(self) -> Outcome:
         with _quiet():
             scorecard = self._api.getTaskScorecard() or []
@@ -526,6 +704,17 @@ class DiscoveryWorldEnv(TextEnv):
         elif not completed:
             failure = "incomplete"
         subgoals = card.get("scoreCard") or []
+        if completed:
+            ended_by = "task_marked_complete"
+        elif self._submitted is not None:
+            reason = getattr(self, "_submit_reason", "agent")
+            ended_by = {"llm_call_limit": "agent_call_limit", "env_call_limit": "step_limit"}.get(
+                reason, "agent_submitted"
+            )
+        elif self._steps >= int(self.params["max_steps"]):
+            ended_by = "step_limit"
+        else:
+            ended_by = "stopped_early"
         return Outcome(
             score=float(card.get("scoreNormalized", 0.0)),
             success=succeeded,
@@ -536,6 +725,8 @@ class DiscoveryWorldEnv(TextEnv):
                 "completed": completed,
                 "completed_successfully": succeeded,
                 "n_steps": self._steps,
+                "max_steps": int(self.params["max_steps"]),
+                "ended_by": ended_by,
                 "invalid_actions": self._invalid_actions,
                 "subgoals_done": sum(1 for g in subgoals if g.get("completed")),
                 "subgoals_total": len(subgoals),
@@ -551,6 +742,22 @@ class DiscoveryWorldEnv(TextEnv):
         if not self._ready:
             raise RuntimeError("call reset() first")
         return self._api_observation
+
+    def refresh_observation(self) -> dict[str, Any]:
+        """Read the observation again, as an agent does that asks the API before each call.
+
+        Every read removes the first queued high-importance message (DiscoveryWorld's
+        ``renderJSON``), so ports that must match the original's prompts read exactly
+        as often as the original did.
+        """
+        if not self._ready:
+            raise RuntimeError("call reset() first")
+        self._observe()
+        return self._api_observation
+
+    def last_action_result(self) -> dict[str, Any] | None:
+        """What the API returned for the last action (``errors``, ``success``)."""
+        return self._last_result
 
     def known_actions(self) -> dict[str, Any]:
         with _quiet():

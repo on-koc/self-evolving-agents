@@ -16,6 +16,8 @@ src/self_evolving_agents/
 │     scanning         task definition shared by bsk_scan and toy
 ├── agents/          StepwiseAgent (one model call per action),
 │                    PolicyAgent (executes a given rule policy, no model)
+│     discoveryworld   DiscoveryWorld's ReAct, Plan-and-Execute and random agents
+│                      (faithful ports; the ReComA pieces they rely on)
 ├── policies.py      rule policies as JSON
 ├── llm/             request and response types, Claude backend, stand-ins,
 │                    cache, budget guard
@@ -109,7 +111,13 @@ Wraps `DiscoveryWorldAPI`: the JSON observation is rendered as compact text (abo
 a sixth of the raw size; scenery tiles are dropped), actions are JSON as in
 DiscoveryWorld itself, dialogs are handled, stdout is silenced and frame images go to
 a temporary directory. Reward is always 0: the scorecard is oracle knowledge and is
-only read into `Outcome`.
+only read into `Outcome`. Every scenario, difficulty and seed loads; a task without a
+step limit gets the paper's (100 for Easy and the unit tests, 1000 otherwise).
+DiscoveryWorld's agents use the API's own formats through accessors
+(`api_observation`, `refresh_observation`, `last_action_result`, ...), may send an
+action's JSON verbatim (`Action.payload`), and end an episode with `SUBMIT`.
+Generators DiscoveryWorld leaves unseeded are seeded from the world, so a world is the
+same in every process ([`discoveryworld/README.md`](discoveryworld/README.md)).
 
 ### `toy-scan`
 
@@ -132,6 +140,9 @@ testable: the same policy can be rerun on the same seeds with one parameter chan
 | `StepwiseAgent` | `agents/stepwise.py` | one per action | the paper's setting: reasoning, then one action, at every step |
 | `PolicyProgramAgent` | `methods/policy_program/` | one per episode, plus repairs | the model writes a rule policy, which is validated and executed |
 | `HypothesizerAgent` | `methods/hypothesizer/` | two per step, plus a consolidation every ten | DiscoveryWorld's own agent; reads the API's JSON observation |
+| `ReActAgent` | `agents/discoveryworld/react.py` | one per step | DiscoveryWorld's ReAct baseline; history of actions and results, `SUBMIT` |
+| `PlanExecuteAgent` | `agents/discoveryworld/plan_execute.py` | one per step, plus one per plan step | DiscoveryWorld's Plan-and-Execute baseline |
+| `RandomAgent` | `agents/discoveryworld/random_agent.py` | none | DiscoveryWorld's random baseline |
 | `PolicyAgent` | `agents/rule.py` | none | executes a given rule policy; used by every simulator experiment |
 
 An agent receives a `MemoryBlock` (text for its prompt, and the ids of the items in
