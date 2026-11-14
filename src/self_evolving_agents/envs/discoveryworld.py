@@ -19,9 +19,13 @@ import contextlib
 import io
 import json
 import os
+import random
 import re
 import shutil
 import tempfile
+import types
+import warnings
+from functools import lru_cache
 from typing import Any
 
 from ..types import Action, Observation, Outcome, Task
@@ -78,6 +82,109 @@ def _quiet():
         yield
 
 
+class _IntegralFloatRandom(random.Random):
+    """``random.Random`` that accepts integral floats as range bounds, as Python 3.11 did.
+
+    DiscoveryWorld 0.0.2 calls ``world.rng.randint(1e3, 1e4)`` in "It's (not) Rocket
+    Science!". Python 3.10 and 3.11 accepted integral floats there (converting them
+    to ints, with a deprecation warning); Python 3.12 removed that, and the scenario
+    no longer loads. Converting such bounds here gives exactly the numbers the
+    scenario produces under Python 3.11, from the same seed.
+    """
+
+    @staticmethod
+    def _int(value: Any) -> Any:
+        if isinstance(value, float) and value.is_integer():
+            return int(value)
+        return value
+
+    def randrange(self, start: Any, stop: Any = None, step: Any = 1) -> int:  # type: ignore[override]
+        return super().randrange(
+            self._int(start), None if stop is None else self._int(stop), self._int(step)
+        )
+
+
+_COMPAT_INSTALLED = False
+
+
+def install_python312_compat() -> None:
+    """Give DiscoveryWorld's scenario builder the generator above (idempotent).
+
+    Only the world generator created by ``ScenarioMaker`` is affected; every other
+    use of ``random`` in DiscoveryWorld is untouched.
+    """
+    global _COMPAT_INSTALLED
+    if _COMPAT_INSTALLED:
+        return
+    with _quiet():
+        import discoveryworld.ScenarioMaker as scenario_maker
+    module = types.ModuleType("random")
+    module.__dict__.update(random.__dict__)
+    module.Random = _IntegralFloatRandom  # type: ignore[attr-defined]
+    scenario_maker.random = module  # type: ignore[attr-defined]
+    _COMPAT_INSTALLED = True
+
+
+def _as_int(value: Any) -> int | None:
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _object_names(ui: dict[str, Any]) -> dict[int, str]:
+    """UUID to name, for every object the agent can see or carries."""
+    names: dict[int, str] = {}
+    for obj in (ui.get("inventoryObjects") or []) + (ui.get("accessibleEnvironmentObjects") or []):
+        if _as_int(obj.get("uuid")) is not None:
+            names[int(obj["uuid"])] = obj.get("name", "?")
+    for objects in ((ui.get("nearbyObjects") or {}).get("objects") or {}).values():
+        for obj in objects:
+            if _as_int(obj.get("uuid")) is not None:
+                names.setdefault(int(obj["uuid"]), obj.get("name", "?"))
+    return names
+
+
+@lru_cache(maxsize=256)
+def _answer_key(scenario: str, difficulty: str, seed: int) -> str:
+    os.environ.setdefault("SDL_VIDEODRIVER", "dummy")
+    install_python312_compat()
+    with _quiet(), warnings.catch_warnings():
+        warnings.simplefilter("ignore", RuntimeWarning)
+        from discoveryworld.DiscoveryWorldAPI import DiscoveryWorldAPI
+
+        frames = tempfile.mkdtemp(prefix="sea_dw_key_")
+        try:
+            api = DiscoveryWorldAPI(threadID=900000 + seed)
+            api.FRAME_DIR = frames + "/"
+            if not api.loadScenario(
+                scenarioName=scenario, difficultyStr=difficulty, randomSeed=seed, numUserAgents=1
+            ):
+                raise ValueError(f"DiscoveryWorld could not load {scenario!r} / {difficulty!r}")
+            tasks = [
+                {
+                    "task_name": task.taskName,
+                    "task_description": task.taskDescription,
+                    "critical_questions": list(task.criticalQuestions),
+                    "critical_hypotheses": list(task.criticalHypotheses),
+                }
+                for task in api.world.taskScorer.tasks
+            ]
+        finally:
+            shutil.rmtree(frames, ignore_errors=True)
+    return json.dumps(tasks)
+
+
+def answer_key(scenario: str, difficulty: str, seed: int) -> list[dict[str, Any]]:
+    """The discovery a world hides: its critical questions and hypotheses.
+
+    This is oracle knowledge, used to grade an agent's knowledge after an episode, as
+    DiscoveryWorld's own knowledge scorer does. Nothing an agent is shown comes from
+    here.
+    """
+    return json.loads(_answer_key(scenario, difficulty, int(seed)))
+
+
 class DiscoveryWorldEnv(TextEnv):
     env_id = "discoveryworld"
     _next_thread_id = 1000
@@ -92,6 +199,8 @@ class DiscoveryWorldEnv(TextEnv):
         self._spec: EnvSpec | None = None
         self._task_text = ""
         self._ready = False
+        self._names: dict[int, str] = {}
+        self._api_observation: dict[str, Any] = {}
 
     # ------------------------------------------------------------------ setup
 
@@ -104,10 +213,14 @@ class DiscoveryWorldEnv(TextEnv):
             raise ImportError(
                 "discoveryworld is not installed: pip install 'self-evolving-agents[discoveryworld]'"
             ) from exc
+        install_python312_compat()
         DiscoveryWorldEnv._next_thread_id += 1
         self._cleanup_frames()
         self._frame_dir = tempfile.mkdtemp(prefix="sea_dw_frames_")
-        with _quiet():
+        with _quiet(), warnings.catch_warnings():
+            # "It's (not) Rocket Science!" overflows numpy arrays while it searches for
+            # a fuel; the overflowing candidates are discarded. Upstream behaviour.
+            warnings.simplefilter("ignore", RuntimeWarning)
             api = DiscoveryWorldAPI(threadID=DiscoveryWorldEnv._next_thread_id)
             # The API clears and writes PNG frames here on every observation.
             api.FRAME_DIR = self._frame_dir + "/"
@@ -269,7 +382,11 @@ class DiscoveryWorldEnv(TextEnv):
             raw = self._api.getAgentObservation(agentIdx=0)
         if raw.get("errors"):
             raise RuntimeError(f"DiscoveryWorld observation error: {raw['errors']}")
+        # What the API returns, without the rendered images: the DiscoveryWorld
+        # Hypothesizer shows exactly this to its model.
+        self._api_observation = {k: v for k, v in raw.items() if k != "vision"}
         ui = raw["ui"]
+        self._names = _object_names(ui)
         self._in_dialog = bool((ui.get("dialog_box") or {}).get("is_in_dialog"))
         loc = ui.get("agentLocation", {})
         carried = (
@@ -350,13 +467,25 @@ class DiscoveryWorldEnv(TextEnv):
     def step(self, action: Action) -> StepResult:
         if not self._ready:
             raise RuntimeError("call reset() before step()")
-        if action.name == "DIALOG":
-            payload = dict(action.args)
+        arg_names = {
+            key: self._names.get(_as_int(value))
+            for key, value in action.args.items()
+            if key in ("arg1", "arg2") and _as_int(value) is not None
+        }
+        if action.name == "NOOP":
+            # Time passes without an action: what the DiscoveryWorld Hypothesizer does
+            # when its model's reply cannot be read.
+            with _quiet():
+                self._api.tick()
+            result = {"success": False, "errors": [action.args.get("reason", "no action taken")]}
         else:
-            payload = {"action": action.name, "arg1": None, "arg2": None, **action.args}
-        with _quiet():
-            result = self._api.performAgentAction(agentIdx=0, actionJSON=payload)
-            self._api.tick()
+            if action.name == "DIALOG":
+                payload = dict(action.args)
+            else:
+                payload = {"action": action.name, "arg1": None, "arg2": None, **action.args}
+            with _quiet():
+                result = self._api.performAgentAction(agentIdx=0, actionJSON=payload)
+                self._api.tick()
         self._steps += 1
         success = bool(result.get("success"))
         if not success:
@@ -368,7 +497,11 @@ class DiscoveryWorldEnv(TextEnv):
         if scorecard:
             self._score_trace.append(float(scorecard[0].get("scoreNormalized", 0.0)))
         truncated = (not complete) and self._steps >= int(self.params["max_steps"])
-        info = {"action_ok": success, "errors": [str(e) for e in result.get("errors") or []][:3]}
+        info = {
+            "action_ok": success,
+            "errors": [str(e) for e in result.get("errors") or []][:3],
+            "arg_names": arg_names,
+        }
         summary = " ".join((observation.raw.get("lastActionMessage") or "").split())
         if not summary:
             summary = "action accepted" if success else "action had no effect or was invalid"
@@ -409,6 +542,36 @@ class DiscoveryWorldEnv(TextEnv):
                 "score_trace": self._score_trace,
             },
         )
+
+    # ------------------------------------------------------------------ for agents that
+    # use the API's own formats (the DiscoveryWorld Hypothesizer)
+
+    def api_observation(self) -> dict[str, Any]:
+        """The last observation as the API returned it, without the rendered images."""
+        if not self._ready:
+            raise RuntimeError("call reset() first")
+        return self._api_observation
+
+    def known_actions(self) -> dict[str, Any]:
+        with _quiet():
+            return self._api.listKnownActions(limited=False)
+
+    def action_help(self) -> str:
+        with _quiet():
+            return self._api.additionalActionDescriptionString()
+
+    def teleport_locations(self) -> dict[str, Any]:
+        with _quiet():
+            return self._api.listTeleportLocationsDict()
+
+    def in_dialog(self) -> bool:
+        with _quiet():
+            return bool(self._api.isAgentInDialog(agentIdx=0))
+
+    @property
+    def world(self) -> dict[str, Any]:
+        """Which world this is: scenario, difficulty and seed."""
+        return {"scenario": self.scenario, "difficulty": self.difficulty, "seed": self.task.seed}
 
     def close(self) -> None:
         self._api = None

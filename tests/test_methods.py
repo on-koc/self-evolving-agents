@@ -99,6 +99,8 @@ ALLOWED = {
     "policy_program": {"reasoningbank"},
     "claim_graph": set(),
     "claim_memory": {"stream", "reasoningbank", "claim_graph"},
+    "hypothesizer": set(),
+    "investigation_memory": {"stream", "reasoningbank"},
 }
 
 
@@ -131,7 +133,13 @@ def test_every_method_has_a_folder_a_page_and_a_registry_entry():
     docs = SRC.parent.parent / "docs" / "methods"
     for spec in registry.METHODS.values():
         assert (docs / f"{spec.name}.md").exists(), f"no documentation page for {spec.name}"
-        assert spec.origin in ("paper", "reference point", "adaptation", "extension")
+        assert spec.origin in (
+            "paper",
+            "reference point",
+            "adaptation",
+            "extension",
+            "baseline (DiscoveryWorld)",
+        )
     assert registry.METHODS["claim_graph"].runner == "study"
     assert not registry.METHODS["claim_graph"].needs_model
 

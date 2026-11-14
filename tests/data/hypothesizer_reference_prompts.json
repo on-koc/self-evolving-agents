@@ -1,0 +1,253 @@
+{
+ "what": "SHA-256 fingerprints of every prompt DiscoveryWorld's original Hypothesizer (agents/HypothesizerAgent.py, allenai/discoveryworld at fd59132) builds when run with includeImages=False and the scripted replies below, on discoveryworld 0.0.2. The port must reproduce each prompt byte for byte.",
+ "cases": [
+  {
+   "world": [
+    "Combinatorial Chemistry",
+    "Easy",
+    0
+   ],
+   "max_steps": 3,
+   "act": [
+    "```json\n{\"action\": \"TELEPORT_TO_OBJECT\", \"arg1\": 35632, \"explanation\": \"go to the jar\", \"memory\": \"jar first\", \"running_hypotheses\": [\"one substance removes rust\"]}\n```",
+    "not json at all",
+    "{\"action\": \"PICKUP\", \"arg1\": 35632, \"explanation\": \"take the jar\"}"
+   ],
+   "knowledge": [
+    "```json\n{\"scientific_knowledge\": [{\"measurement\": \"the key is heavily rusted\"}]}\n```",
+    "nothing new",
+    "```json\n{\"scientific_knowledge\": [{\"hypothesis\": \"if the key is put in substance A then rust is removed\", \"status\": \"pending\", \"supporting evidence\": \"none\"}]}\n```"
+   ],
+   "consolidate": [],
+   "prompts": [
+    {
+     "sha256": "07038d2dd89fdea10dc7162385fdc404e3a8ac27ec74195eae307dcd3b405249",
+     "chars": 27743,
+     "max_tokens": 800,
+     "temperature": 0.1
+    },
+    {
+     "sha256": "695acfc36855d49ccd8877e552defbc0661beb2c29a1dd4935e5c948d13c6733",
+     "chars": 27730,
+     "max_tokens": 3000,
+     "temperature": 0.1
+    },
+    {
+     "sha256": "bd092fbaf98397d4b756a7f7889defaa48f9647ac9fcd05e86d48d3eb1eacb3a",
+     "chars": 29080,
+     "max_tokens": 800,
+     "temperature": 0.1
+    },
+    {
+     "sha256": "4cad289b7ee1928afcb72a6ed25963963bcc36fe8d135a8591972bb5ef85950f",
+     "chars": 28944,
+     "max_tokens": 3000,
+     "temperature": 0.1
+    },
+    {
+     "sha256": "f665b5d7190174d8fce2489593a69adbb81422ceb1075a9a0492a2e96a42b976",
+     "chars": 29480,
+     "max_tokens": 800,
+     "temperature": 0.1
+    },
+    {
+     "sha256": "ed4d67d2e0dbfd3a3d72b96febf111e57dc2fe3a714885aca135589d5ad8ed7b",
+     "chars": 29344,
+     "max_tokens": 3000,
+     "temperature": 0.1
+    }
+   ]
+  },
+  {
+   "world": [
+    "Lost in Translation",
+    "Easy",
+    0
+   ],
+   "max_steps": 12,
+   "act": [
+    "{\"action\": \"TELEPORT_TO_OBJECT\", \"arg1\": 46475, \"explanation\": \"go to Gail\", \"memory\": \"m0\", \"running_hypotheses\": [\"h0\"]}",
+    "{\"action\": \"TALK\", \"arg1\": 46475, \"explanation\": \"talk\", \"memory\": \"m1\", \"running_hypotheses\": [\"h1\"]}",
+    "```json\n{\"chosen_dialog_option_int\": 1, \"memory\": \"m2\"}\n```",
+    "{\"action\": \"DISCOVERY_FEED_GET_UPDATES\", \"explanation\": \"read the feed 3\"}",
+    "{\"action\": \"DISCOVERY_FEED_GET_UPDATES\", \"explanation\": \"read the feed 4\"}",
+    "{\"action\": \"DISCOVERY_FEED_GET_UPDATES\", \"explanation\": \"read the feed 5\"}",
+    "{\"action\": \"DISCOVERY_FEED_GET_UPDATES\", \"explanation\": \"read the feed 6\"}",
+    "{\"action\": \"DISCOVERY_FEED_GET_UPDATES\", \"explanation\": \"read the feed 7\"}",
+    "{\"action\": \"DISCOVERY_FEED_GET_UPDATES\", \"explanation\": \"read the feed 8\"}",
+    "{\"action\": \"DISCOVERY_FEED_GET_UPDATES\", \"explanation\": \"read the feed 9\"}",
+    "{\"action\": \"DISCOVERY_FEED_GET_UPDATES\", \"explanation\": \"read the feed 10\"}",
+    "{\"action\": \"DISCOVERY_FEED_GET_UPDATES\", \"explanation\": \"read the feed 11\"}"
+   ],
+   "knowledge": [
+    "{\"scientific_knowledge\": [{\"measurement\": \"observation 0\"}]}",
+    "{\"scientific_knowledge\": [{\"measurement\": \"observation 1\"}]}",
+    "{\"scientific_knowledge\": [{\"measurement\": \"observation 2\"}]}",
+    "{\"scientific_knowledge\": [{\"measurement\": \"observation 3\"}]}",
+    "{\"scientific_knowledge\": [{\"measurement\": \"observation 4\"}]}",
+    "{\"scientific_knowledge\": [{\"measurement\": \"observation 5\"}]}",
+    "{\"scientific_knowledge\": [{\"measurement\": \"observation 6\"}]}",
+    "{\"scientific_knowledge\": [{\"measurement\": \"observation 7\"}]}",
+    "{\"scientific_knowledge\": [{\"measurement\": \"observation 8\"}]}",
+    "{\"scientific_knowledge\": [{\"measurement\": \"observation 9\"}]}",
+    "{\"scientific_knowledge\": [{\"measurement\": \"observation 10\"}]}",
+    "{\"scientific_knowledge\": [{\"measurement\": \"observation 11\"}]}"
+   ],
+   "consolidate": [
+    "```json\n{\"scientific_knowledge\": [{\"measurement\": \"consolidated\"}]}\n```"
+   ],
+   "prompts": [
+    {
+     "sha256": "1693a040ddd586cf22ef8341f6f4c11dbd890c7ad8c8b7b1746df6885a676f74",
+     "chars": 27605,
+     "max_tokens": 800,
+     "temperature": 0.1
+    },
+    {
+     "sha256": "485b827e6da4f007bab57f3cf596dddd00d829f0e94db4cbefcfad193b56361b",
+     "chars": 27559,
+     "max_tokens": 3000,
+     "temperature": 0.1
+    },
+    {
+     "sha256": "fbd42f2686bd531ef8b38d6aa33ef6ba6c2e2adfd8552d341ed0db81af0150f3",
+     "chars": 27585,
+     "max_tokens": 800,
+     "temperature": 0.1
+    },
+    {
+     "sha256": "f16d2bef691af127fc6bb26feab17c7012e82a9f8ccd92720e26d743680c78f2",
+     "chars": 27538,
+     "max_tokens": 3000,
+     "temperature": 0.1
+    },
+    {
+     "sha256": "79fe6a660273b1c40226ac1e434f1c581abfcace83951c6706783d8f7cb96e1c",
+     "chars": 28586,
+     "max_tokens": 800,
+     "temperature": 0.1
+    },
+    {
+     "sha256": "6f46b175638f7daba9d39524e1d3ec0e8f2586bf478b2aa6bdb6a90d3e1af37d",
+     "chars": 28192,
+     "max_tokens": 3000,
+     "temperature": 0.1
+    },
+    {
+     "sha256": "e4d6f9a1ad50989cc63a5a8b8aa21382ed2ce64e9d7c90db4b3bc406f88cf213",
+     "chars": 28132,
+     "max_tokens": 800,
+     "temperature": 0.1
+    },
+    {
+     "sha256": "a842c74f9d9231b6d5a52dfd2a273279803e216f558c10a738a720a917a0526f",
+     "chars": 28085,
+     "max_tokens": 3000,
+     "temperature": 0.1
+    },
+    {
+     "sha256": "5a8503a540d81069e0b5f19af6bbffae513c3f0599e77b3690c3cb58a292ecb4",
+     "chars": 29250,
+     "max_tokens": 800,
+     "temperature": 0.1
+    },
+    {
+     "sha256": "08f1480a1ff699f10ef22e34e8a4685f788fbf21225373ee2a9df71d306f0503",
+     "chars": 29203,
+     "max_tokens": 3000,
+     "temperature": 0.1
+    },
+    {
+     "sha256": "892ada4da44b4826a81388e9204f73600dccc25094db003baacba90076c7b0e3",
+     "chars": 30140,
+     "max_tokens": 800,
+     "temperature": 0.1
+    },
+    {
+     "sha256": "80a28ecf489dd241d645e770687ecc9784e0fbd6648be7e8db92ac9634cdf84e",
+     "chars": 30093,
+     "max_tokens": 3000,
+     "temperature": 0.1
+    },
+    {
+     "sha256": "48dbf35b87caa1d253464314657a67b9a6d6d5c2daeac761a42c5f0f82850c1c",
+     "chars": 31175,
+     "max_tokens": 800,
+     "temperature": 0.1
+    },
+    {
+     "sha256": "a84d0c9b21f8f1755c5741831a056940e1caeefa89e6d09ac14f25bd541d9f16",
+     "chars": 31128,
+     "max_tokens": 3000,
+     "temperature": 0.1
+    },
+    {
+     "sha256": "1c43db5d5818e1ba36979bee20f7d5204709bad4b4677544449b2e256dc84179",
+     "chars": 31730,
+     "max_tokens": 800,
+     "temperature": 0.1
+    },
+    {
+     "sha256": "499437aa99cec59dc4ad8aff504491cf3ed06da80a5466bdbf4e8513be2ecf5e",
+     "chars": 31683,
+     "max_tokens": 3000,
+     "temperature": 0.1
+    },
+    {
+     "sha256": "f21dfdd4d54206027a29a474c3531dad73abe5c2970f2547dff4c54617dab740",
+     "chars": 32285,
+     "max_tokens": 800,
+     "temperature": 0.1
+    },
+    {
+     "sha256": "b52fb6dc4f59ee26a0359189e100abfdacaecd0e9e5224846cccd173326611ed",
+     "chars": 32238,
+     "max_tokens": 3000,
+     "temperature": 0.1
+    },
+    {
+     "sha256": "4f741ec81f24d42feb9507cf44f87e0fc9bb20d04156ecd9e70a0b602a1f8c0e",
+     "chars": 32841,
+     "max_tokens": 800,
+     "temperature": 0.1
+    },
+    {
+     "sha256": "a3c08a64bac639bfa55ace6fad6b67d6eeaf2397960fe4d10945d87a260b2abe",
+     "chars": 32794,
+     "max_tokens": 3000,
+     "temperature": 0.1
+    },
+    {
+     "sha256": "9aa7ca8fa766a53fd70d666ec491d90e9401bde2ad03fab5e22e28727aea92cc",
+     "chars": 33398,
+     "max_tokens": 800,
+     "temperature": 0.1
+    },
+    {
+     "sha256": "c2280446c9594105a1741973c9ed40b66ec1c138bbfb98c6d33aa9082a64bdea",
+     "chars": 33351,
+     "max_tokens": 3000,
+     "temperature": 0.1
+    },
+    {
+     "sha256": "454f0db254ee0ba5e94a9ac6a45fd38ad847825e8b186cf5623ded64dc0584c2",
+     "chars": 3767,
+     "max_tokens": 3000,
+     "temperature": 0.1
+    },
+    {
+     "sha256": "4fddef9876708c8397a6c4bc36b9b9fa1dbbecbf6ef638cdd47efe8cf9c544cf",
+     "chars": 33062,
+     "max_tokens": 800,
+     "temperature": 0.1
+    },
+    {
+     "sha256": "558dfc1690676c647f2a60bb4393185844dcb104a7c5869c9f1d70f6326fc72c",
+     "chars": 33015,
+     "max_tokens": 3000,
+     "temperature": 0.1
+    }
+   ]
+  }
+ ]
+}

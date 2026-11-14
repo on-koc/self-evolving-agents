@@ -3,8 +3,11 @@
 Every component that calls a language model takes it from one place
 (`src/self_evolving_agents/llm/`), and every component that embeds text takes the
 embedder from one place (`embeddings.py`). So any backend below works for every
-method (ReasoningBank, MaTTS, the adaptations, claims as memory), for the judge and
-the extractor, for the claim graph's hypothesis proposer, and in every protocol.
+method (ReasoningBank, MaTTS, the adaptations, claims as memory, the Hypothesizer,
+the investigation memory), for the judge and the extractor, for the claim graph's
+hypothesis proposer, for the DiscoveryWorld knowledge grader and behaviour coder, and
+in every protocol (`sea compare run`, `sea discovery run`, `--grader` of `sea
+discovery grade`).
 
 **Status.** Each backend has been exercised through its official client library
 against a local stand-in server, and the Hugging Face backends against tiny models

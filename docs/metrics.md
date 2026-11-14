@@ -524,3 +524,79 @@ achieved on its own benchmarks.
 | judge agreement, false success, false failure | stream | | higher, lower, lower | 7.2 |
 | selected, first and best attempt | scaling | | | 7.3 |
 | new items, model calls, tokens, estimated cost | stream | | lower cost | 7.4 |
+
+## 10. DiscoveryWorld measures
+
+Used by the DiscoveryWorld memory experiment ([`discoveryworld.md`](discoveryworld.md)).
+**None has been measured with a language model.** A *world* is one scenario at one
+difficulty and one seed; the seed changes the hidden discovery in 23 of the 24
+scenario-difficulty combinations.
+
+### 10.1 DiscoveryWorld's three measures
+
+| Measure | Definition | Range, direction | Limitations |
+|---|---|---|---|
+| task completion | 1 if the simulator marks the task completed successfully (`completedSuccessfully`) | 0 or 1, higher | a forced final choice (a flag placed, a key used) can be right by luck |
+| procedural progress | share of the scorecard's sub-goals reached (`scoreNormalized`) | 0 to 1, higher | rewards using instruments and collecting samples whether or not they were needed |
+| explanatory knowledge | share of the world's critical questions a grader model answers 1 for, given the agent's knowledge | 0 to 1, higher | depends on the grader; judges what is written, not what was understood |
+
+The knowledge graded is the Hypothesizer's knowledge store at the end of the episode,
+as in the DiscoveryWorld paper; for other agents, their reasoning at every step, as
+the paper did for ReAct. The grading prompt is DiscoveryWorld's own, quoted
+unchanged; temperature 0. An unreadable grade counts as 0, as in the original.
+
+### 10.2 Remembering instead of finding
+
+| Measure | Definition | Direction |
+|---|---|---|
+| stale knowledge | the knowledge written in a world, graded with the critical questions of an earlier world of the same kind (same scenario and difficulty, another seed). Only questions that differ from the current world's are asked. The largest share over earlier worlds | lower |
+| first test is an earlier answer | Combinatorial Chemistry: the first substances put to test equal an earlier world's answer and not the current one | lower |
+
+"Earlier worlds" are those of the experience phase (for an experience episode, those
+before it in the stream). A stale grade of 1 means the agent states what was true
+elsewhere instead of what it found here.
+
+### 10.3 Behaviours from the actions
+
+Read from the actions and their results, with no model. Each is defined for the
+themes where the actions can show it, and is missing (not 0) elsewhere.
+
+| Indicator | Definition | Themes |
+|---|---|---|
+| alternatives | at least two candidates tested before the final answer (distinct measured objects; in chemistry, distinct jar contents put to test) | all |
+| candidates before commit | how many | all |
+| confounds | chemistry: share of switches to different jar contents preceded by cleaning the jar | Combinatorial Chemistry |
+| revision | chemistry: share of failed tests followed by a different test rather than the same one | Combinatorial Chemistry |
+| controls | a reference measured: known-age artifacts (Archaeology, Challenge), crystals of known frequency (Reactor Lab) | those two |
+| premature commitment | the task completed with at most one candidate tested | all |
+| repeated measurement | an instrument used on the same object more than once | all |
+
+The final answer is the action that completed the task; an episode that did not
+complete has none, and every test in it counts.
+
+### 10.4 Behaviours coded by a model
+
+A model reads a record of the episode (task, reasoning, actions with object names,
+results, the agent's notes), with every sentence that mentions memory or earlier
+tasks removed, and answers yes or no for: control, alternatives, confound, revision,
+premature commitment, with the step and a quote. Definitions are in
+`discovery/behaviours.py`. **Not a result until validated**: agreement with people,
+Cohen's kappa of at least 0.6 per behaviour, measured on a sample exported without
+arms.
+
+### 10.5 Use of strategies
+
+| Measure | Definition |
+|---|---|
+| cited strategy | in a transfer episode, the agent's reasoning names a shown strategy's label (S1, ...) or shares at least 60% of the content words of one |
+
+A weak indicator: it shows that a strategy was talked about, not that it was followed.
+
+### 10.6 Comparisons
+
+Arms are compared world by world (same phase, condition and position in the stream),
+with repeats averaged per world first; paired differences, 95% bootstrap intervals
+and permutation p-values as in section 4. Lesion effects compare an arm with the
+same frozen memory minus one kind, on the same worlds. Over the experience phase,
+the first half of the stream is compared with the second.
+

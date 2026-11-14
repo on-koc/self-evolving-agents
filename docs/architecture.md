@@ -31,7 +31,9 @@ src/self_evolving_agents/
 │     run.py           runs one method into a run directory
 │     no_memory/  reasoningbank/  matts/  conditioned_retrieval/
 │     policy_program/  claim_memory/  claim_graph/
+│     hypothesizer/  investigation_memory/
 ├── compare.py       runs several methods on the same stream and reports
+├── discovery/       the DiscoveryWorld experiment: phases, knowledge grading, behaviours, report
 └── cli.py           the `sea` command
 ```
 
@@ -129,6 +131,7 @@ testable: the same policy can be rerun on the same seeds with one parameter chan
 |---|---|---|---|
 | `StepwiseAgent` | `agents/stepwise.py` | one per action | the paper's setting: reasoning, then one action, at every step |
 | `PolicyProgramAgent` | `methods/policy_program/` | one per episode, plus repairs | the model writes a rule policy, which is validated and executed |
+| `HypothesizerAgent` | `methods/hypothesizer/` | two per step, plus a consolidation every ten | DiscoveryWorld's own agent; reads the API's JSON observation |
 | `PolicyAgent` | `agents/rule.py` | none | executes a given rule policy; used by every simulator experiment |
 
 An agent receives a `MemoryBlock` (text for its prompt, and the ids of the items in
@@ -149,8 +152,10 @@ backend with:
   raises and stops the run; it is never swallowed by an agent;
 - provenance logging of the full request and response of every call.
 
-Backends: `AnthropicBackend` (official SDK), `ScriptedLLM` (test double) and
-`OfflineDemoLLM` (a rule-based stand-in for dry runs; its outputs are not results).
+Backends: `AnthropicBackend`, `OpenAIBackend` (any OpenAI-compatible server),
+`OllamaBackend` and `HuggingFaceBackend` (all on their official client libraries;
+see [`models.md`](models.md)), `ScriptedLLM` (test double) and `OfflineDemoLLM` (a
+rule-based stand-in for dry runs; its outputs are not results).
 The request carries the paper's decoding temperatures; the Claude backend omits them
 for models that do not accept sampling parameters (see the fidelity document).
 

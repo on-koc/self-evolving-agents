@@ -207,6 +207,8 @@ class StreamLoop:
         store: provenance store; every trajectory and verdict is recorded, and the
             memory records what it creates.
         on_record: called after each task, e.g. to print progress.
+        learn: ``False`` freezes the memory: it is consulted but not changed, and no
+            usage statistics are kept. Used to evaluate a memory built earlier.
     """
 
     def __init__(
@@ -220,6 +222,7 @@ class StreamLoop:
         env_factory: Callable[[Task], TextEnv] = make_env,
         on_record: Callable[[TaskRecord], None] | None = None,
         store_steps: bool = True,
+        learn: bool = True,
     ):
         self.agent = agent
         self.memory = memory or Memory()
@@ -229,8 +232,9 @@ class StreamLoop:
         self.env_factory = env_factory
         self.on_record = on_record
         self.store_steps = store_steps
+        self.learn = learn
         self.records: list[TaskRecord] = []
-        if self.memory.learns and judge is None:
+        if self.memory.learns and learn and judge is None:
             raise ValueError(
                 f"the {self.memory.name} memory learns from verdicts and needs a judge"
             )
@@ -286,11 +290,14 @@ class StreamLoop:
             query = env.query
             retrieval = self.memory.retrieve(env, task, query)
             attempts = self.scaling.attempts(self, env, task, query, retrieval)
-            learned = self.scaling.learn(self, env, task, query, attempts)
+            learned = (
+                self.scaling.learn(self, env, task, query, attempts) if self.learn else Learned()
+            )
 
             chosen = attempts.trajectories[attempts.selected]
             verdict = attempts.verdicts[attempts.selected]
-            self.memory.record_use(retrieval, chosen, verdict)
+            if self.learn:
+                self.memory.record_use(retrieval, chosen, verdict)
             outcomes = [t.outcome for t in attempts.trajectories]
             scores = [o.score if o else 0.0 for o in outcomes]
             outcome = chosen.outcome

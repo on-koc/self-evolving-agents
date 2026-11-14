@@ -4,6 +4,7 @@
     sea run --method NAME ...             run one method on a stream of tasks
     sea show RUN                          summary and memory items of a run
     sea compare run|report ...            several methods on the same stream (a protocol)
+    sea discovery run|grade|report ...    the DiscoveryWorld memory experiment
     sea claims ...                        the claim graph: studies, replication, reports
     sea policy run ...                    run a rule policy (no model) on scanning tasks
     sea prov lineage RUN ID               where a record came from / what it influenced
@@ -385,6 +386,10 @@ def build_parser() -> argparse.ArgumentParser:
     from .compare import add_compare_commands
 
     add_compare_commands(sub)
+
+    from .discovery.cli import add_discovery_commands
+
+    add_discovery_commands(sub)
     return parser
 
 

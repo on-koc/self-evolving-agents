@@ -6,10 +6,21 @@ lesson came from.
 The repository holds an implementation of
 [ReasoningBank](https://arxiv.org/abs/2509.25140) (Ouyang et al., ICLR 2026;
 [reference code](https://github.com/google-research/reasoning-bank)) as a baseline,
-three adaptations of it to simulation environments, and two extensions in which a
-lesson is a *conditional claim* that has to survive controlled experiments. The
-environments are [BSK-RL](https://github.com/AVSLab/bsk_rl) spacecraft tasking on the
-Basilisk simulator and [DiscoveryWorld](https://github.com/allenai/discoveryworld).
+three adaptations of it to simulation environments, two extensions in which a lesson
+is a *conditional claim* that has to survive controlled experiments, and an
+*investigation memory* for scientific discovery tasks. The environments are
+[BSK-RL](https://github.com/AVSLab/bsk_rl) spacecraft tasking on the Basilisk
+simulator and [DiscoveryWorld](https://github.com/allenai/discoveryworld).
+
+Two use cases:
+
+- **Spacecraft operations (Basilisk).** Which control settings work for which
+  spacecraft; measured without a language model (results below).
+- **Scientific discovery (DiscoveryWorld).** Can an agent with frozen model weights
+  improve how it investigates across tasks, so that it discovers more efficiently and
+  predicts better under unseen mechanisms? The claim tested is that what transfers
+  is how to investigate, not what was found. Built and verified, not yet run with a
+  model: [`docs/discoveryworld.md`](docs/discoveryworld.md).
 
 ## What is established, and what is not
 
@@ -18,7 +29,9 @@ Basilisk simulator and [DiscoveryWorld](https://github.com/allenai/discoveryworl
 | The ReasoningBank baseline follows the paper | compared row by row with the paper and the reference code; ten discrepancies found, eight corrected and two kept as documented deviations; equivalence with the published system is **not** claimed. [`docs/reasoningbank-fidelity.md`](docs/reasoningbank-fidelity.md) |
 | Each method is separate and runs on its own | one folder and one page per method; dependencies between folders enforced by a test. [`docs/methods/`](docs/methods/README.md) |
 | The claim graph (needs no language model) | **measured** on Basilisk: two studies, a five-fold replication, one ablation; about 25,000 simulated episodes |
-| Every method that needs a language model, the baseline included | **not measured.** No model was available for this work. Each is tested for its mechanics with scripted stand-ins, and the comparison that would measure it is specified in advance. [`docs/protocols/model-comparison.md`](docs/protocols/model-comparison.md) |
+| Every method that needs a language model, the baseline included | **not measured.** No model was available for this work. Each is tested for its mechanics with scripted stand-ins, and the comparison that would measure it is specified in advance. [`docs/protocols/model-comparison.md`](docs/protocols/model-comparison.md), [`docs/protocols/discoveryworld.md`](docs/protocols/discoveryworld.md) |
+| DiscoveryWorld's Hypothesizer baseline | ported so that its prompts are byte-identical to the released agent's (31 of 31 checked); its knowledge grader's prompt likewise |
+| Model backends | Claude, any OpenAI-compatible server, Ollama, and Hugging Face models on this machine, for every component; verified against local stand-in servers and tiny local models. [`docs/models.md`](docs/models.md) |
 
 Nothing here is a measured statement about how ReasoningBank performs in these
 environments.
@@ -34,6 +47,8 @@ environments.
 | `policy_program` | adaptation | the model writes one executable rule policy per episode |
 | `claim_graph` | extension | conditional claims tested by experiments the method chooses |
 | `claim_memory` | extension | tested claims shown to a language-model agent as its memory |
+| `hypothesizer` | DiscoveryWorld | DiscoveryWorld's own agent: hypotheses and evidence within an episode |
+| `investigation_memory` | extension | evidence, conditional hypotheses and transferable strategies across tasks |
 
 ```bash
 sea methods
@@ -85,9 +100,11 @@ Variability over repeated runs, the ablation, costs and every negative result ar
 pip install -e ".[all,dev]"
 ```
 
-Extras: `bsk` (Basilisk and BSK-RL), `discoveryworld`, `anthropic`, `gemini` (the
-paper's embedding model), `plots`, `dev`. Python 3.10 or newer. On first use Basilisk
-downloads about 116 MB of SPICE kernels from `naif.jpl.nasa.gov`.
+Extras: `bsk` (Basilisk and BSK-RL), `discoveryworld`, `anthropic`, `openai` (any
+OpenAI-compatible server), `ollama`, `huggingface` (transformers and
+sentence-transformers; brings PyTorch, not in `all`), `gemini` (the paper's embedding
+model), `plots`, `dev`. Python 3.10 or newer. On first use Basilisk downloads about
+116 MB of SPICE kernels from `naif.jpl.nasa.gov`.
 
 ```bash
 pytest
@@ -150,17 +167,39 @@ With an Anthropic API key, the pre-registered comparison under the cheaper agent
 sea compare run --protocol protocols/scan_policy_agent.json --out runs/scan-policy-agent
 ```
 
+Any other model works the same way, e.g. a local one through Ollama:
+
+```bash
+sea run --method reasoningbank --env toy-scan --seeds 0:3 --llm ollama:qwen2.5:7b --llm-option num_ctx=16384 --out runs/rb-ollama
+```
+
+The DiscoveryWorld experiment, dry run with the stand-in (a few minutes):
+
+```bash
+sea discovery run --protocol protocols/discovery_dry_run.json --out runs/discovery-dry
+```
+
+```bash
+sea discovery grade runs/discovery-dry --grader offline-demo
+```
+
+```bash
+sea discovery report runs/discovery-dry
+```
+
 ## Documentation
 
 | Document | Contents |
 |---|---|
 | [`docs/metrics.md`](docs/metrics.md) | every reported metric: definition, formula, direction, relevance, limitations |
+| [`docs/discoveryworld.md`](docs/discoveryworld.md) | the DiscoveryWorld use case: question, memory types, design, measures, emergence criteria |
+| [`docs/models.md`](docs/models.md) | model and embedding backends and their options |
 | [`docs/reasoningbank-fidelity.md`](docs/reasoningbank-fidelity.md) | the baseline against the paper and the reference code, row by row; what can and cannot be claimed |
 | [`docs/methods/`](docs/methods/README.md) | one page per method: motivation, approach, implementation, differences from the baseline, parameters, how to run it, limitations |
 | [`docs/comparison.md`](docs/comparison.md) | the methods compared as designs (Part A) and by experiment (Part B) |
 | [`docs/discussion.md`](docs/discussion.md) | effectiveness, failure modes, improvements, open questions |
 | [`docs/reproducibility.md`](docs/reproducibility.md) | versions, seeds, commands, how recorded results are checked, known confounds |
-| [`docs/protocols/`](docs/protocols/) | protocols written before the runs: the robustness experiments, and the language-model comparison |
+| [`docs/protocols/`](docs/protocols/) | protocols written before the runs: the robustness experiments, the language-model comparison, the DiscoveryWorld experiment |
 | [`docs/results-bsk-battery.md`](docs/results-bsk-battery.md) | the two Basilisk studies in detail, including what went wrong |
 | [`docs/architecture.md`](docs/architecture.md) | modules, the environment contract, provenance |
 
@@ -175,17 +214,20 @@ src/self_evolving_agents/
     no_memory/  reasoningbank/  matts/                from the paper
     conditioned_retrieval/  policy_program/           adaptations
     claim_graph/  claim_memory/                       extensions
+    hypothesizer/  investigation_memory/              DiscoveryWorld baseline and extension
   compare.py                                          several methods on one stream
+  discovery/                                          the DiscoveryWorld experiment and its measures
 protocols/     comparison protocols (model-dependent; not yet run with a model)
 studies/       claim-study configurations
 results/       compact outputs of the studies run on Basilisk
-tests/         262 tests
+tests/         310 tests
 ```
 
 ## Limits
 
-- No language model has been run. Whether ReasoningBank, its adaptations or the
-  claims-as-memory extension help an agent in these environments is unknown.
+- No language model has been run. Whether ReasoningBank, its adaptations, the
+  claims-as-memory extension or the investigation memory help an agent in these
+  environments is unknown.
 - The baseline is not equivalent to the published system: different environments,
   models that do not accept the published decoding temperatures, and a different
   default embedder. The fidelity document lists every deviation.

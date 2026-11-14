@@ -39,6 +39,10 @@ Fidelity of the baseline to the paper: [`reasoningbank-fidelity.md`](reasoningba
 | `policy_program` | adaptation | the model writes one executable rule policy per episode instead of choosing every action | yes |
 | `claim_graph` | extension | lessons are conditional claims, each tested by controlled experiments that the method chooses itself | no |
 | `claim_memory` | extension | the tested claims are shown to a language-model agent where ReasoningBank would show its lessons | yes |
+| `hypothesizer` | DiscoveryWorld's baseline | the benchmark's own agent: records measurements and hypotheses with a status after every step, within one episode | yes |
+| `investigation_memory` | extension | memory across tasks in three kinds: evidence from one world, hypotheses with the conditions they were observed under, strategies meant to transfer; linked by support, contradiction and use | yes |
+
+The last two belong to the DiscoveryWorld use case and are described in [`discoveryworld.md`](discoveryworld.md); they are not repeated in the tables below, which compare the methods of the scanning task.
 
 `reasoningbank` is the baseline. An *adaptation* changes how ReasoningBank is applied
 to simulation environments and keeps its idea. An *extension* adds a mechanism the
@@ -195,7 +199,7 @@ predictions in [`protocols/model-comparison.md`](protocols/model-comparison.md).
 | The same under the policy-writing agent | **not measured**; protocol fixed | B.10 |
 | `matts` against the baseline and its controls | **not measured**; protocol fixed | B.10 |
 | A language model as the source of hypotheses for the claim graph | **not measured**; protocol fixed | B.10 |
-| Anything on DiscoveryWorld | **not measured** | |
+| The DiscoveryWorld memory experiment (Hypothesizer, ReasoningBank, investigation memory and its controls) | **not measured**; protocol fixed | [`discoveryworld.md`](discoveryworld.md), [`protocols/discoveryworld.md`](protocols/discoveryworld.md) |
 
 ## B.2 Design of the measured comparison, and its fairness
 

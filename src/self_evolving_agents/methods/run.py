@@ -41,6 +41,7 @@ def run_method(
     store_steps: bool = True,
     quiet: bool = False,
     extra_config: dict[str, Any] | None = None,
+    learn: bool = True,
 ) -> tuple[int, dict[str, Any]]:
     """Run ``method`` over ``tasks`` in order and write the run to ``out``.
 
@@ -98,6 +99,7 @@ def run_method(
         store=store,
         on_record=None if quiet else progress,
         store_steps=store_steps,
+        learn=learn,
     )
     config = {
         **built.describe,

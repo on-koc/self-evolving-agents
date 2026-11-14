@@ -1,0 +1,102 @@
+{
+  "name": "discovery-dry-run",
+  "title": "Dry run of the DiscoveryWorld memory experiment with the stand-in model (plumbing check, not a result)",
+  "model": {
+    "llm": "offline-demo",
+    "embedder": "hashing"
+  },
+  "grader": {
+    "llm": "offline-demo"
+  },
+  "agent": "hypothesizer",
+  "agent_options": {
+    "observation": "json"
+  },
+  "max_steps": 6,
+  "experience": {
+    "order": "interleaved",
+    "worlds": [
+      {
+        "scenario": "Combinatorial Chemistry",
+        "difficulty": "Easy",
+        "seeds": [
+          0,
+          1
+        ]
+      }
+    ]
+  },
+  "transfer": {
+    "same_world": [
+      {
+        "scenario": "Combinatorial Chemistry",
+        "difficulty": "Easy",
+        "seeds": [
+          0
+        ]
+      }
+    ],
+    "new_world": [
+      {
+        "scenario": "Combinatorial Chemistry",
+        "difficulty": "Easy",
+        "seeds": [
+          2
+        ]
+      }
+    ],
+    "new_theme": [
+      {
+        "scenario": "Proteomics",
+        "difficulty": "Easy",
+        "seeds": [
+          0
+        ]
+      }
+    ]
+  },
+  "arms": {
+    "hypothesizer": {
+      "method": "hypothesizer"
+    },
+    "reasoningbank": {
+      "method": "reasoningbank",
+      "agent": "hypothesizer"
+    },
+    "investigation_memory": {
+      "method": "investigation_memory"
+    },
+    "answer_memory": {
+      "method": "investigation_memory",
+      "options": {
+        "mode": "answers"
+      }
+    },
+    "placebo": {
+      "method": "investigation_memory",
+      "options": {
+        "mode": "placebo"
+      }
+    },
+    "instructed": {
+      "method": "investigation_memory",
+      "options": {
+        "mode": "instructed"
+      }
+    }
+  },
+  "lesions": {
+    "investigation_memory": [
+      {
+        "name": "strategies_removed",
+        "options": {
+          "include": [
+            "evidence",
+            "hypotheses"
+          ]
+        }
+      }
+    ]
+  },
+  "repeats": 1
+}

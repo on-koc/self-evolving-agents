@@ -21,7 +21,7 @@ from ..embeddings import Embedder
 from ..provenance import ProvenanceStore
 from .stream import EnvJudge, Judge, Memory, Scaling, StreamLoop
 
-AGENTS = ("stepwise", "policy_program")
+AGENTS = ("stepwise", "policy_program", "hypothesizer")
 
 
 @dataclass(frozen=True)
@@ -100,6 +100,23 @@ METHODS: dict[str, MethodSpec] = {
             _NOT_RUN,
         ),
         MethodSpec(
+            "hypothesizer",
+            "DiscoveryWorld Hypothesizer",
+            "baseline (DiscoveryWorld)",
+            "DiscoveryWorld's own agent: acts, then records measurements and hypotheses with "
+            "a status after every step, within one episode. No memory across episodes.",
+            _NOT_RUN,
+        ),
+        MethodSpec(
+            "investigation_memory",
+            "Investigation memory",
+            "extension",
+            "Memory across tasks in three kinds: evidence from one world, hypotheses with the "
+            "conditions they were observed under, and investigation strategies meant to "
+            "transfer, linked by support, contradiction and use.",
+            _NOT_RUN,
+        ),
+        MethodSpec(
             "claim_graph",
             "Conditional claim graph",
             "extension",
@@ -152,6 +169,14 @@ def config_class(method: str) -> type:
         from .claim_memory import ClaimMemoryConfig
 
         return ClaimMemoryConfig
+    if method == "hypothesizer":
+        from .hypothesizer import HypothesizerConfig
+
+        return HypothesizerConfig
+    if method == "investigation_memory":
+        from .investigation_memory import InvestigationMemoryConfig
+
+        return InvestigationMemoryConfig
     if method in METHODS:
         raise ValueError(
             f"{method} is a study, not a stream method; run it with `sea claims study`"
@@ -197,6 +222,10 @@ def _agent(kind: str, llm: Any, options: dict[str, Any]) -> Agent:
         from .policy_program import PolicyProgramAgent
 
         return PolicyProgramAgent(llm, **options)
+    if kind == "hypothesizer":
+        from .hypothesizer import HypothesizerAgent
+
+        return HypothesizerAgent(llm, **options)
     raise ValueError(f"agent must be one of {AGENTS}")
 
 
@@ -212,6 +241,7 @@ def build_stream(
     store: ProvenanceStore | None = None,
     on_record: Callable[[Any], None] | None = None,
     store_steps: bool = True,
+    learn: bool = True,
 ) -> Built:
     """Wire up one stream method.
 
@@ -225,12 +255,20 @@ def build_stream(
         agent_options: constructor options of the agent (history window, ...).
         bank_path: where a learning memory keeps its bank.
         embedder: embeds queries for retrieval.
+        learn: ``False`` freezes the memory (it is consulted, not changed).
     """
     config = make_config(method, options)
+    agent_options = dict(agent_options or {})
     if method == "policy_program":
         agent = "policy_program"
+    if method == "hypothesizer":
+        agent = "hypothesizer"
+        agent_options = {**config.agent_options(), **agent_options}
+    if method == "investigation_memory" and agent == "stepwise":
+        # Built for DiscoveryWorld, where the benchmark's own agent is the natural actor.
+        agent = "hypothesizer"
     policy_agent = agent == "policy_program"
-    the_agent = _agent(agent, llm, dict(agent_options or {}))
+    the_agent = _agent(agent, llm, agent_options)
 
     # An agent that writes a policy gives no step-by-step reasoning, so whatever
     # memory it is paired with has to show the extractor the observations instead,
@@ -247,13 +285,20 @@ def build_stream(
     scaling: Scaling = Scaling()
     judge: Judge | None = None
 
-    if method == "no_memory":
+    if method in ("no_memory", "hypothesizer"):
         if config.judge == "env":
             judge = EnvJudge()
         elif config.judge == "llm":
             from .reasoningbank import LLMJudge
 
             judge = LLMJudge(llm)
+
+    elif method == "investigation_memory":
+        from .investigation_memory import build as build_investigation
+
+        memory, judge = build_investigation(
+            config, llm, path=bank_path, embedder=embedder, store=store
+        )
 
     elif method in ("reasoningbank", "matts", "policy_program"):
         from .reasoningbank import ReasoningBankConfig
@@ -332,6 +377,7 @@ def build_stream(
         store=store,
         on_record=on_record,
         store_steps=store_steps,
+        learn=learn,
     )
     describe = {
         "method": method,
@@ -343,5 +389,6 @@ def build_stream(
         "judge": judge.source if judge is not None else "none",
         "embedder": getattr(getattr(memory, "bank", None), "embedder", None)
         and memory.bank.embedder.name,  # type: ignore[attr-defined]
+        "learn": learn,
     }
     return Built(loop, method, config, the_agent, memory, describe)

@@ -1,0 +1,196 @@
+{
+  "name": "discovery-main",
+  "title": "DiscoveryWorld memory experiment: does experience improve how an agent investigates?",
+  "model": {
+    "llm": "ollama:qwen2.5:32b",
+    "llm_options": {
+      "num_ctx": 16384
+    },
+    "embedder": "hashing"
+  },
+  "grader": {
+    "llm": "openai:gpt-4o"
+  },
+  "agent": "hypothesizer",
+  "agent_options": {
+    "observation": "json"
+  },
+  "max_steps": 100,
+  "experience": {
+    "order": "interleaved",
+    "worlds": [
+      {
+        "scenario": "Combinatorial Chemistry",
+        "difficulty": "Easy",
+        "seeds": [
+          0,
+          1,
+          2
+        ]
+      },
+      {
+        "scenario": "Proteomics",
+        "difficulty": "Easy",
+        "seeds": [
+          0,
+          1,
+          2
+        ]
+      },
+      {
+        "scenario": "Archaeology Dating",
+        "difficulty": "Easy",
+        "seeds": [
+          0,
+          1,
+          2
+        ]
+      },
+      {
+        "scenario": "Space Sick",
+        "difficulty": "Easy",
+        "seeds": [
+          0,
+          1,
+          2
+        ]
+      }
+    ]
+  },
+  "transfer": {
+    "same_world": [
+      {
+        "scenario": "Combinatorial Chemistry",
+        "difficulty": "Easy",
+        "seeds": [
+          0
+        ]
+      },
+      {
+        "scenario": "Proteomics",
+        "difficulty": "Easy",
+        "seeds": [
+          0
+        ]
+      },
+      {
+        "scenario": "Archaeology Dating",
+        "difficulty": "Easy",
+        "seeds": [
+          0
+        ]
+      },
+      {
+        "scenario": "Space Sick",
+        "difficulty": "Easy",
+        "seeds": [
+          0
+        ]
+      }
+    ],
+    "new_world": [
+      {
+        "scenario": "Combinatorial Chemistry",
+        "difficulty": "Easy",
+        "seeds": [
+          3,
+          4
+        ]
+      },
+      {
+        "scenario": "Proteomics",
+        "difficulty": "Easy",
+        "seeds": [
+          3,
+          4
+        ]
+      },
+      {
+        "scenario": "Archaeology Dating",
+        "difficulty": "Easy",
+        "seeds": [
+          3,
+          4
+        ]
+      },
+      {
+        "scenario": "Space Sick",
+        "difficulty": "Easy",
+        "seeds": [
+          3,
+          4
+        ]
+      }
+    ],
+    "new_theme": [
+      {
+        "scenario": "Plant Nutrients",
+        "difficulty": "Easy",
+        "seeds": [
+          0,
+          1
+        ]
+      },
+      {
+        "scenario": "Reactor Lab",
+        "difficulty": "Easy",
+        "seeds": [
+          0,
+          1
+        ]
+      }
+    ]
+  },
+  "arms": {
+    "hypothesizer": {
+      "method": "hypothesizer"
+    },
+    "reasoningbank": {
+      "method": "reasoningbank",
+      "agent": "hypothesizer"
+    },
+    "investigation_memory": {
+      "method": "investigation_memory"
+    },
+    "answer_memory": {
+      "method": "investigation_memory",
+      "options": {
+        "mode": "answers"
+      }
+    },
+    "placebo": {
+      "method": "investigation_memory",
+      "options": {
+        "mode": "placebo"
+      }
+    },
+    "instructed": {
+      "method": "investigation_memory",
+      "options": {
+        "mode": "instructed"
+      }
+    }
+  },
+  "lesions": {
+    "investigation_memory": [
+      {
+        "name": "strategies_removed",
+        "options": {
+          "include": [
+            "evidence",
+            "hypotheses"
+          ]
+        }
+      },
+      {
+        "name": "findings_removed",
+        "options": {
+          "include": [
+            "strategies"
+          ]
+        }
+      }
+    ]
+  },
+  "repeats": 3
+}

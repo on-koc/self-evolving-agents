@@ -66,6 +66,8 @@ class OfflineDemoLLM:
     # -- acting -----------------------------------------------------------------
 
     def _act(self, request: LLMRequest) -> str:
+        if request.messages[0]["content"].startswith(_DW_ACT_START):
+            return _dw_act(request.messages[0]["content"])
         observation = request.messages[0]["content"].split("## Current observation")[-1]
         if "Battery" not in observation:
             return '<think>Unfamiliar environment; taking a neutral action.</think>\n<action>{"action": "DISCOVERY_FEED_GET_UPDATES"}</action>'
@@ -171,5 +173,147 @@ class OfflineDemoLLM:
         notes = [f"- {content}" for _, _, content in self._lessons(request.messages[0]["content"])]
         return "Notes for the next attempt:\n" + "\n".join(notes)
 
+    # -- DiscoveryWorld --------------------------------------------------------
+
+    def _knowledge(self, request: LLMRequest) -> str:
+        """Writes down the result of the last action when it reads like a measurement."""
+        results = re.findall(
+            r'"result_of_last_action": "((?:[^"\\]|\\.)*)"', request.messages[0]["content"]
+        )
+        last = results[-1].encode().decode("unicode_escape") if results else ""
+        items = []
+        if any(word in last for word in ("results are as follows", "You use", "dispense")):
+            items.append({"measurement": " ".join(last.split())[:300]})
+        return "```json\n" + json.dumps({"scientific_knowledge": items}) + "\n```"
+
+    def _consolidate(self, request: LLMRequest) -> str:
+        text = request.messages[0]["content"]
+        found = _json_after(text, "Here is the existing knowledge base:")
+        items = (found or {}).get("scientific_knowledge", [])[-10:]
+        return "```json\n" + json.dumps({"scientific_knowledge": items}) + "\n```"
+
+    def _extract_investigation(self, request: LLMRequest) -> str:
+        text = request.messages[0]["content"]
+        evidence = [
+            {"text": " ".join(line.split("| result:")[-1].split())[:200], "step": i}
+            for i, line in enumerate(text.splitlines())
+            if "results are as follows" in line or "dispense" in line
+        ][:5]
+        answer: dict[str, object] = {
+            "evidence": evidence,
+            "hypotheses": [
+                {
+                    "statement": "The task's outcome depends on which object is used.",
+                    "conditions": "the world of this attempt",
+                    "status": "open",
+                    "supported_by": list(range(len(evidence)))[:2],
+                    "contradicted_by": [],
+                }
+            ],
+            "strategies": [
+                {
+                    "statement": "Pick up the instrument the task names before anything else.",
+                    "applies_when": "the task names an instrument",
+                    "test": "teleport to the instrument and pick it up",
+                    "basis": "offline-demo canned note",
+                }
+            ],
+        }
+        labels = re.findall(r"^(S\d+): ", text, flags=re.MULTILINE)
+        if labels:
+            success = "attempt was a success" in text
+            answer["strategy_review"] = [
+                {
+                    "id": label,
+                    "used": True,
+                    "outcome": "helped" if success else "did not help",
+                    "reason": "offline-demo",
+                    "revised_statement": None,
+                    "revised_applies_when": None,
+                }
+                for label in labels
+            ]
+        return json.dumps(answer)
+
+    def _grade_knowledge(self, request: LLMRequest) -> str:
+        """1 if the quoted answer in the question appears in the agent's knowledge."""
+        text = request.messages[0]["content"]
+        found_question = re.search(r"Critical Question:\n```\n(.*?)\n```", text, flags=re.S)
+        found_knowledge = re.search(r"Agent's Knowledge:\n```\n(.*?)\n```", text, flags=re.S)
+        question = found_question.group(1) if found_question else ""
+        knowledge = (found_knowledge.group(1) if found_knowledge else "").lower()
+        quoted = re.findall(r"`([^`]+)`", question)
+        hit = bool(quoted) and all(q.lower() in knowledge for q in quoted)
+        return json.dumps(
+            {
+                "criticalQuestion": " ".join(question.split())[:200],
+                "evaluation": int(hit),
+                "explanation": "offline-demo: looked for the quoted answer in the knowledge",
+            }
+        )
+
+    def _code_behaviour(self, request: LLMRequest) -> str:
+        names = re.findall(r'^- "([a-z_]+)":', request.system, flags=re.MULTILINE)
+        return json.dumps(
+            {name: {"present": False, "evidence": "offline-demo codes nothing"} for name in names}
+        )
+
     def _generic(self, request: LLMRequest) -> str:
         return "(offline-demo has no behaviour for this request)"
+
+
+_DW_ACT_START = "You are playing a video game about making scientific discoveries."
+_SCENERY = {"floor", "wall", "grass", "path", "sand", "dirt", "road", "fence", "agent"}
+
+
+def _json_after(text: str, marker: str) -> dict | None:
+    """The first ```json block after ``marker``."""
+    tail = text.split(marker, 1)[-1]
+    match = re.search(r"```json\n(.*?)```", tail, flags=re.DOTALL)
+    if not match:
+        return None
+    try:
+        value = json.loads(match.group(1))
+    except json.JSONDecodeError:
+        return None
+    return value if isinstance(value, dict) else None
+
+
+def _dw_act(prompt: str) -> str:
+    """A rule-based explorer for DiscoveryWorld: valid actions, no intelligence."""
+    observation = _json_after(prompt, "Environment Observation (as JSON):") or {}
+    ui = observation.get("ui") or {}
+    if (ui.get("dialog_box") or {}).get("is_in_dialog"):
+        return json.dumps({"chosen_dialog_option_int": 1, "explanation": "offline-demo"})
+    step = int(ui.get("world_steps") or 0)
+    inventory = [o for o in ui.get("inventoryObjects") or [] if o.get("name") not in _SCENERY]
+    reach = [
+        o
+        for o in ui.get("accessibleEnvironmentObjects") or []
+        if o.get("name") not in _SCENERY
+        and not str(o.get("name", "")).startswith(("table", "door"))
+    ]
+    nearby = [
+        o
+        for objects in ((ui.get("nearbyObjects") or {}).get("objects") or {}).values()
+        for o in objects
+        if o.get("name") not in _SCENERY
+    ]
+    tools = [
+        o for o in inventory if any(w in o.get("name", "") for w in ("meter", "scope", "dispenser"))
+    ]
+    if tools and reach and step % 3 == 2:
+        action = {
+            "action": "USE",
+            "arg1": tools[0]["uuid"],
+            "arg2": reach[step % len(reach)]["uuid"],
+        }
+    elif reach and step % 3 == 1:
+        action = {"action": "PICKUP", "arg1": reach[step % len(reach)]["uuid"]}
+    elif nearby:
+        action = {"action": "TELEPORT_TO_OBJECT", "arg1": nearby[step % len(nearby)]["uuid"]}
+    else:
+        action = {"action": "DISCOVERY_FEED_GET_UPDATES"}
+    return json.dumps(
+        {**action, "explanation": "offline-demo explores", "memory": "", "running_hypotheses": []}
+    )

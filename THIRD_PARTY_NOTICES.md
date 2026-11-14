@@ -33,6 +33,24 @@ were written for this repository from the paper and from the reference
 implementation's observed behaviour; the comparison row by row is in
 `docs/reasoningbank-fidelity.md`.
 
+## DiscoveryWorld (prompts quoted)
+
+- Source: https://github.com/allenai/discoveryworld (commit `fd59132`, 2025-03-10)
+- Paper: Jansen et al., *DiscoveryWorld: A Virtual Environment for Developing and
+  Evaluating Automated Scientific Discovery Agents*, NeurIPS 2024 Datasets and Benchmarks
+- License: Apache License 2.0, Copyright Allen Institute for AI
+
+| File in `src/self_evolving_agents/` | Text | Source | Changes |
+|---|---|---|---|
+| `methods/hypothesizer/prompts.py` | the Hypothesizer agent's action, dialog, knowledge and consolidation prompts | `agents/HypothesizerAgent.py` | none; one optional insertion point for cross-episode memory, empty when unused |
+| `discovery/knowledge.py` | the knowledge-scoring prompt | `scripts/knowledgeScorer.py` | none |
+
+The Hypothesizer's control flow was re-implemented on this repository's agent
+interface; tests check that it produces the original's prompts byte for byte.
+`envs/discoveryworld.py` contains a compatibility shim for DiscoveryWorld's scenario
+generator under Python 3.12 and later; DiscoveryWorld itself is a dependency and is
+not redistributed.
+
 ## Used as dependencies (not redistributed)
 
 | Project | Use here | License |

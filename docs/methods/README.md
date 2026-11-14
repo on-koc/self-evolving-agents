@@ -13,6 +13,8 @@ and its default.
 | `policy_program` | adaptation | [policy_program.md](policy_program.md) | the model writes one executable policy per episode | yes | mechanics only |
 | `claim_memory` | extension | [claim_memory.md](claim_memory.md) | tested claims shown to an agent as memory | yes | mechanics only |
 | `claim_graph` | extension | [claim_graph.md](claim_graph.md) | conditional claims tested by chosen experiments | no | measured on Basilisk |
+| `hypothesizer` | baseline (DiscoveryWorld) | [hypothesizer.md](hypothesizer.md) | DiscoveryWorld's own agent: hypotheses and evidence within an episode | yes | prompts byte-identical to the original; not run |
+| `investigation_memory` | extension | [investigation_memory.md](investigation_memory.md) | evidence, conditional hypotheses and strategies across tasks | yes | mechanics only |
 
 "Mechanics only" means: every code path is exercised by tests with scripted
 stand-ins for the model, and no language model has been called. Nothing is known
@@ -33,6 +35,8 @@ methods/
   policy_program ──────────► reasoningbank
   claim_graph ─────────────► (shared only)
   claim_memory ────────────► stream, reasoningbank, claim_graph
+  hypothesizer ────────────► (shared only)                           (DiscoveryWorld's baseline)
+  investigation_memory ────► stream, reasoningbank
 ```
 
 These are the only dependencies allowed. `tests/test_methods.py` reads every import
