@@ -87,6 +87,78 @@ def rb_run(tmp_path_factory) -> Path:
     return out
 
 
+def test_run_with_an_openai_compatible_server_applies_the_published_temperatures(
+    fake_openai, tmp_path, capsys
+):
+    out = tmp_path / "rb-openai"
+    code, _ = sea(
+        capsys,
+        *("run", "--method", "reasoningbank", "--env", "toy-scan", "--regime", "small_battery"),
+        *("--seeds", "0:2", "--llm", f"openai:local-model@{fake_openai.base_url}"),
+        *("--llm-option", "seed=5", "--llm-option", "price_in=0", "--llm-option", "price_out=0"),
+        *("--embedder", f"openai:embed-model@{fake_openai.base_url}", "--out", out),
+    )
+    assert code == 0
+    config = json.loads((out / "config.json").read_text())
+    assert config["llm"] == f"openai:local-model@{fake_openai.base_url}"
+    assert config["llm_options"] == {"seed": 5, "price_in": 0, "price_out": 0}
+    summary = json.loads((out / "summary.json").read_text())
+    assert summary["stand_in_model"] is False and summary["completed"] == 2
+    assert summary["llm"]["estimated_cost_usd"] == 0.0
+    assert summary["memory"]["embedder"] == "openai-embed-model"
+    chats = [r["body"] for r in fake_openai.requests if r["path"].endswith("/chat/completions")]
+    by_kind = {}
+    for body in chats:
+        system = body["messages"][0]["content"]
+        kind = (
+            "judge"
+            if '"success" or "failure"' in system
+            else "extract"
+            if "# Memory Item i\n" in system
+            else "act"
+        )
+        by_kind.setdefault(kind, set()).add(body.get("temperature"))
+    # ReasoningBank's decoding temperatures (Appendix A.2), applied because this backend can.
+    assert by_kind == {"act": {0.7}, "judge": {0.0}, "extract": {1.0}}
+    assert any(r["path"].endswith("/embeddings") for r in fake_openai.requests)
+
+
+def test_run_with_ollama_passes_backend_options(fake_ollama, tmp_path, capsys):
+    out = tmp_path / "none-ollama"
+    code, _ = sea(
+        capsys,
+        *("run", "--method", "no_memory", "--env", "toy-scan", "--seeds", "0:1"),
+        *("--llm", f"ollama:llama3.2:3b@{fake_ollama.base_url}"),
+        *("--llm-option", "num_ctx=16384", "--llm-option", "think=false", "--out", out),
+    )
+    assert code == 0
+    bodies = [r["body"] for r in fake_ollama.requests if r["path"] == "/api/chat"]
+    assert bodies and all(b["options"]["num_ctx"] == 16384 and b["think"] is False for b in bodies)
+    assert json.loads((out / "summary.json").read_text())["llm"]["estimated_cost_usd"] == 0.0
+
+
+def test_compare_can_swap_the_model_backend(fake_openai, tmp_path, capsys):
+    protocol = dict(
+        PROTOCOL,
+        arms={"no_memory": {"method": "no_memory"}, "reasoningbank": {"method": "reasoningbank"}},
+        repeats=1,
+    )
+    (tmp_path / "protocol.json").write_text(json.dumps(protocol))
+    out = tmp_path / "comparison"
+    code, text = sea(
+        capsys,
+        *("compare", "run", "--protocol", tmp_path / "protocol.json", "--out", out),
+        *("--llm", f"openai:local-model@{fake_openai.base_url}", "--llm-option", "seed=1"),
+    )
+    assert code == 0
+    resolved = json.loads((out / "protocol.json").read_text())
+    assert resolved["model"]["llm_options"] == {"seed": 1}
+    assert "These numbers are not results" not in text
+    assert 'with `{"seed": 1}`' in (out / "comparison.md").read_text()
+    config = json.loads((out / "reasoningbank" / "rep-0" / "config.json").read_text())
+    assert config["llm_options"] == {"seed": 1}
+
+
 def test_run_writes_a_complete_run_directory(rb_run):
     for name in ("config.json", "provenance.sqlite", "bank.jsonl", "records.jsonl", "summary.json"):
         assert (rb_run / name).exists(), name

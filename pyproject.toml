@@ -21,6 +21,13 @@ discoveryworld = ["discoveryworld>=0.0.2"]
 anthropic = ["anthropic>=2.0"]
 # The embedding model the ReasoningBank paper used (gemini-embedding-001), through the official SDK.
 gemini = ["google-genai>=1.0"]
+# Any OpenAI-compatible server (OpenAI, vLLM, llama.cpp, LM Studio, Together, HF router, ...).
+openai = ["openai>=1.60"]
+# Ollama's own API, through the official client.
+ollama = ["ollama>=0.5"]
+# Models run on this machine: transformers for chat models, sentence-transformers for
+# embeddings. Large (torch); not part of "all".
+huggingface = ["transformers>=4.56", "torch>=2.2", "sentence-transformers>=3.0"]
 plots = ["matplotlib"]
 dev = ["pytest>=7.3", "ruff>=0.4"]
 all = [
@@ -30,6 +37,8 @@ all = [
     "discoveryworld>=0.0.2",
     "anthropic>=2.0",
     "google-genai>=1.0",
+    "openai>=1.60",
+    "ollama>=0.5",
     "matplotlib",
 ]
 

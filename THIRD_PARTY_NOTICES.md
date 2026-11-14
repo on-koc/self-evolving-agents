@@ -42,6 +42,11 @@ implementation's observed behaviour; the comparison row by row is in
 | [DiscoveryWorld](https://github.com/allenai/discoveryworld) (Allen Institute for AI) | Scientific-discovery environment behind the `discoveryworld` adapter | Apache 2.0 |
 | [anthropic](https://github.com/anthropics/anthropic-sdk-python) | Claude backend | MIT |
 | [google-genai](https://github.com/googleapis/python-genai) | optional: the embedding model the paper used | Apache 2.0 |
+| [openai](https://github.com/openai/openai-python) | OpenAI-compatible model and embedding servers | Apache 2.0 |
+| [ollama](https://github.com/ollama/ollama-python) | Ollama model and embedding servers | MIT |
+| [transformers](https://github.com/huggingface/transformers) | optional: chat models run on this machine | Apache 2.0 |
+| [sentence-transformers](https://github.com/UKPLab/sentence-transformers) | optional: embedding models run on this machine | Apache 2.0 |
+| [PyTorch](https://github.com/pytorch/pytorch) | optional: runs the local models | BSD-3-Clause |
 | NumPy | Embeddings and statistics | BSD-3-Clause |
 
 Basilisk downloads NASA NAIF SPICE kernels (`de430.bsp` and others) from

@@ -9,6 +9,15 @@ from pathlib import Path
 from typing import Any
 
 
+def _options(pairs: list[str] | None) -> dict[str, Any]:
+    from ...llm import parse_options
+
+    try:
+        return parse_options(pairs)
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from None
+
+
 def _range(pair: list[int]) -> range:
     return range(int(pair[0]), int(pair[1]))
 
@@ -53,6 +62,7 @@ def run_study(
     budget: int | None = None,
     workers: int = 0,
     llm_spec: str | None = None,
+    llm_options: dict[str, Any] | None = None,
     evaluate: bool = True,
     quiet: bool = False,
     cache_path: Path | None = None,
@@ -105,7 +115,11 @@ def run_study(
         if llm_spec:
             from ...llm import TrackedLLM, make_backend
 
-            llm = TrackedLLM(make_backend(llm_spec), cache_dir=out / "llm_cache", store=store)
+            llm = TrackedLLM(
+                make_backend(llm_spec, **(llm_options or {})),
+                cache_dir=out / "llm_cache",
+                store=store,
+            )
             proposers.append(
                 LLMProposer(llm, domain, policy_text=scanning_policy().describe(), every=3)
             )
@@ -181,6 +195,7 @@ def cmd_study(args: argparse.Namespace) -> int:
         budget=args.budget,
         workers=args.workers,
         llm_spec=args.llm,
+        llm_options=_options(args.llm_option),
         evaluate=not args.no_eval,
         cache_path=Path(args.cache) if args.cache else None,
     )
@@ -420,7 +435,15 @@ def add_claims_commands(sub: Any) -> None:
     )
     study.add_argument("--workers", type=int, default=0, help="parallel simulator processes")
     study.add_argument(
-        "--llm", help="also ask this model for hypotheses, e.g. anthropic:claude-opus-5-5"
+        "--llm",
+        help="also ask this model for hypotheses: anthropic:<model>, openai:<model>[@<address>], "
+        "ollama:<model>[@<address>] or hf:<model>",
+    )
+    study.add_argument(
+        "--llm-option",
+        action="append",
+        metavar="NAME=VALUE",
+        help="an option of the model backend, e.g. num_ctx=16384",
     )
     study.add_argument(
         "--seed-base",

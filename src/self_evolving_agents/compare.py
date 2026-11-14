@@ -58,18 +58,31 @@ def run_protocol(
     arms: list[str] | None = None,
     repeats: int | None = None,
     quiet: bool = False,
+    llm_options: dict[str, Any] | None = None,
+    embedder: str | None = None,
+    embedder_options: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Run every arm of the protocol on the same task stream.
 
     ``llm`` overrides the protocol's model for every arm (``offline-demo`` gives a
-    dry run of the whole protocol). Runs go to ``out/<arm>/rep-<i>/`` and continue
-    from their caches when repeated.
+    dry run of the whole protocol), and ``llm_options`` its backend options; the same
+    for the embedder. Runs go to ``out/<arm>/rep-<i>/`` and continue from their caches
+    when repeated.
     """
     out = Path(out)
     out.mkdir(parents=True, exist_ok=True)
     model = dict(protocol.get("model") or {})
     if llm:
         model["llm"] = llm
+        # Options belong to a backend: those of the protocol's model do not carry over.
+        model["llm_options"] = dict(llm_options or {})
+    elif llm_options:
+        model["llm_options"] = {**(model.get("llm_options") or {}), **llm_options}
+    if embedder:
+        model["embedder"] = embedder
+        model["embedder_options"] = dict(embedder_options or {})
+    elif embedder_options:
+        model["embedder_options"] = {**(model.get("embedder_options") or {}), **embedder_options}
     budget = protocol.get("budget") or {}
     n_repeats = int(repeats or protocol.get("repeats", 1))
     tasks = protocol_tasks(protocol)
@@ -93,6 +106,8 @@ def run_protocol(
                 agent_options=protocol.get("agent_options"),
                 embedder=model.get("embedder", "hashing"),
                 effort=model.get("effort"),
+                llm_options=model.get("llm_options"),
+                embedder_options=model.get("embedder_options"),
                 max_cost=budget.get("max_cost_usd_per_run"),
                 max_calls=budget.get("max_calls_per_run"),
                 quiet=quiet,
@@ -238,8 +253,15 @@ def render_comparison(result: dict[str, Any]) -> str:
     model = result.get("model") or {}
     stream = result["stream"]
     lines += [
-        f"Model: `{model.get('llm', '?')}`; embedder: `{model.get('embedder', 'hashing')}`. "
-        f"Stream: `{json.dumps(stream)}`. Every arm ran the same tasks in the same order.",
+        f"Model: `{model.get('llm', '?')}`"
+        + (f" with `{json.dumps(model['llm_options'])}`" if model.get("llm_options") else "")
+        + f"; embedder: `{model.get('embedder', 'hashing')}`"
+        + (
+            f" with `{json.dumps(model['embedder_options'])}`"
+            if model.get("embedder_options")
+            else ""
+        )
+        + f". Stream: `{json.dumps(stream)}`. Every arm ran the same tasks in the same order.",
         "",
         "## Arms",
         "",
@@ -354,12 +376,22 @@ def cmd_compare_run(args: argparse.Namespace) -> int:
         protocol = load_protocol(args.protocol)
     except ValueError as exc:
         raise SystemExit(str(exc)) from None
+    from .llm import parse_options
+
+    try:
+        llm_options = parse_options(args.llm_option)
+        embedder_options = parse_options(args.embedder_option)
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from None
     statuses = run_protocol(
         protocol,
         args.out,
         llm=args.llm,
         arms=args.arms.split(",") if args.arms else None,
         repeats=args.repeats,
+        llm_options=llm_options,
+        embedder=args.embedder,
+        embedder_options=embedder_options,
     )
     result = report_protocol(args.out)
     print(render_comparison(result))
@@ -380,7 +412,21 @@ def add_compare_commands(sub: Any) -> None:
     run = compare.add_parser("run", help="run every arm of a protocol and report")
     run.add_argument("--protocol", required=True, help="JSON protocol file (see protocols/)")
     run.add_argument("--out", required=True, help="directory for the arms' runs")
-    run.add_argument("--llm", help="model for every arm (overrides the protocol)")
+    run.add_argument(
+        "--llm",
+        help="model for every arm (overrides the protocol): anthropic:<model>, "
+        "openai:<model>[@<address>], ollama:<model>[@<address>], hf:<model> or offline-demo",
+    )
+    run.add_argument(
+        "--llm-option",
+        action="append",
+        metavar="NAME=VALUE",
+        help="an option of the model backend (added to, or replacing, the protocol's)",
+    )
+    run.add_argument("--embedder", help="embedder for every arm (overrides the protocol)")
+    run.add_argument(
+        "--embedder-option", action="append", metavar="NAME=VALUE", help="an option of the embedder"
+    )
     run.add_argument("--arms", help="comma-separated subset of the arms to run")
     run.add_argument("--repeats", type=int, help="repeats per arm (overrides the protocol)")
     run.set_defaults(func=cmd_compare_run)

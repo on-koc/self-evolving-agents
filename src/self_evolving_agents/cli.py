@@ -112,20 +112,39 @@ def _add_task_options(p: argparse.ArgumentParser) -> None:
     )
 
 
+LLM_HELP = (
+    "the language model: 'anthropic:<model>', 'openai:<model>[@<address>]' (any "
+    "OpenAI-compatible server), 'ollama:<model>[@<address>]', 'hf:<model>' (transformers, "
+    "on this machine) or 'offline-demo' (a rule-based stand-in, for dry runs)"
+)
+EMBEDDER_HELP = (
+    "the embedder for retrieval: 'hashing' (offline word overlap), 'gemini' (the "
+    "ReasoningBank paper's), 'openai:<model>[@<address>]', 'ollama:<model>[@<address>]' or "
+    "'hf:<model>' (sentence-transformers)"
+)
+
+
 def _add_model_options(p: argparse.ArgumentParser) -> None:
     g = p.add_argument_group("model")
+    g.add_argument("--llm", default="anthropic:claude-opus-5-5", help=LLM_HELP)
     g.add_argument(
-        "--llm",
-        default="anthropic:claude-opus-5-5",
-        help="'anthropic:<model>' or 'offline-demo' (a scripted stand-in, for dry runs)",
+        "--llm-option",
+        action="append",
+        metavar="NAME=VALUE",
+        help="an option of the model backend, e.g. num_ctx=16384 (ollama), "
+        "honour_temperature=false (openai), device=cpu (hf)",
     )
     g.add_argument(
-        "--effort", choices=["low", "medium", "high", "xhigh", "max"], help="Claude effort level"
+        "--effort",
+        choices=["low", "medium", "high", "xhigh", "max"],
+        help="Claude effort level (anthropic only)",
     )
+    g.add_argument("--embedder", default="hashing", help=EMBEDDER_HELP)
     g.add_argument(
-        "--embedder",
-        default="hashing",
-        help="'hashing' (offline, word overlap) or 'gemini' (the paper's embedding model)",
+        "--embedder-option",
+        action="append",
+        metavar="NAME=VALUE",
+        help="an option of the embedder, e.g. prefix='query: ' (hf) or dimensions=256 (openai)",
     )
     g.add_argument(
         "--max-cost", type=float, help="stop when the estimated spend reaches this many USD"
@@ -173,6 +192,8 @@ def cmd_run(args: argparse.Namespace) -> int:
             agent=args.agent,
             embedder=args.embedder,
             effort=args.effort,
+            llm_options=parse_options(args.llm_option),
+            embedder_options=parse_options(args.embedder_option),
             max_cost=args.max_cost,
             max_calls=args.max_calls,
             bank=args.bank,

@@ -61,7 +61,8 @@ class LLMRequest:
     several different rollouts and still be replayed from the cache.
 
     ``temperature`` is a hint. Backends whose API no longer accepts sampling
-    parameters (current Claude models) ignore it.
+    parameters (current Claude models) ignore it; the others apply it and report what
+    they applied in ``LLMResponse.meta``.
     """
 
     system: str
@@ -72,21 +73,29 @@ class LLMRequest:
     sample: int = 0
     meta: dict[str, Any] = field(default_factory=dict)
 
-    def cache_key(self, model: str) -> str:
-        return stable_hash(
-            {
-                "model": model,
-                "system": self.system,
-                "messages": self.messages,
-                "max_tokens": self.max_tokens,
-                "sample": self.sample,
-            },
-            length=32,
-        )
+    def cache_key(self, model: str, extra: dict[str, Any] | None = None) -> str:
+        """Key of this request in the response cache.
+
+        ``extra`` holds whatever else decides the reply for a given backend: the
+        temperature if the backend applies it, a seed, a context length. A backend
+        that ignores those passes nothing, and its keys do not depend on them.
+        """
+        payload: dict[str, Any] = {
+            "model": model,
+            "system": self.system,
+            "messages": self.messages,
+            "max_tokens": self.max_tokens,
+            "sample": self.sample,
+        }
+        if extra:
+            payload["extra"] = extra
+        return stable_hash(payload, length=32)
 
 
 @dataclass
 class LLMResponse:
+    """A reply. ``meta`` records what the backend actually applied (temperature, seed, ...)."""
+
     text: str
     model: str
     usage: Usage = field(default_factory=Usage)
@@ -94,11 +103,22 @@ class LLMResponse:
     latency_s: float = 0.0
     cached: bool = False
     call_id: str = ""
+    meta: dict[str, Any] = field(default_factory=dict)
 
 
 @runtime_checkable
 class LLMBackend(Protocol):
-    """Anything that can answer an :class:`LLMRequest`."""
+    """Anything that can answer an :class:`LLMRequest`.
+
+    Two optional members refine how :class:`TrackedLLM` treats a backend:
+
+    * ``signature(request) -> dict``: what, besides the model and the prompt, decides
+      the reply (an applied temperature, a seed). It becomes part of the cache key,
+      so that changing one of them is not answered from the cache.
+    * ``price_per_mtok``: ``(input, output)`` in USD per million tokens, for backends
+      whose prices are not in :data:`PRICES_PER_MTOK`. ``(0.0, 0.0)`` for a model
+      that runs on the local machine.
+    """
 
     model: str
 
@@ -118,13 +138,17 @@ PRICES_PER_MTOK: dict[str, tuple[float, float]] = {
 }
 
 
-def estimate_cost_usd(model: str, usage: Usage) -> float | None:
+def estimate_cost_usd(
+    model: str, usage: Usage, price: tuple[float, float] | None = None
+) -> float | None:
     """Rough cost of one call, or ``None`` if the model's prices are not known here.
 
-    Cache reads are billed at about a tenth of the input price and cache writes at
-    about 1.25x; both are approximations of the published multipliers.
+    ``price`` is ``(input, output)`` in USD per million tokens and takes precedence
+    over the table. Cache reads are billed at about a tenth of the input price and
+    cache writes at about 1.25x; both are approximations of the published multipliers.
     """
-    price = PRICES_PER_MTOK.get(model)
+    if price is None:
+        price = PRICES_PER_MTOK.get(model)
     if price is None:
         return None
     p_in, p_out = price
@@ -194,6 +218,7 @@ class TrackedLLM:
             stop_reason=d.get("stop_reason", "end_turn"),
             latency_s=0.0,
             cached=True,
+            meta=dict(d.get("meta") or {}),
         )
 
     def _cache_put(self, key: str, request: LLMRequest, response: LLMResponse) -> None:
@@ -206,6 +231,7 @@ class TrackedLLM:
             "usage": response.usage.to_dict(),
             "stop_reason": response.stop_reason,
             "purpose": request.purpose,
+            "meta": response.meta,
         }
         tmp = path.with_suffix(".tmp")
         tmp.write_text(json.dumps(payload))
@@ -234,7 +260,8 @@ class TrackedLLM:
     # -- main entry point -------------------------------------------------------
 
     def complete(self, request: LLMRequest) -> LLMResponse:
-        key = request.cache_key(self.model)
+        signature = getattr(self.backend, "signature", None)
+        key = request.cache_key(self.model, signature(request) if signature else None)
         response = self._cache_get(key)
         if response is None:
             self._check_budget()
@@ -246,7 +273,9 @@ class TrackedLLM:
             self.usage.output_tokens += response.usage.output_tokens
             self.usage.cache_read_tokens += response.usage.cache_read_tokens
             self.usage.cache_write_tokens += response.usage.cache_write_tokens
-            cost = estimate_cost_usd(response.model, response.usage)
+            cost = estimate_cost_usd(
+                response.model, response.usage, getattr(self.backend, "price_per_mtok", None)
+            )
             if cost is None:
                 self.cost_known = False
             else:
@@ -264,7 +293,9 @@ class TrackedLLM:
                     "system": request.system,
                     "messages": request.messages,
                     "sample": request.sample,
+                    "temperature": request.temperature,
                     "meta": request.meta,
+                    "applied": response.meta,
                 },
                 response=response.text,
                 usage=response.usage.to_dict(),

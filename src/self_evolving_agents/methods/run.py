@@ -33,6 +33,8 @@ def run_method(
     agent_options: dict[str, Any] | None = None,
     embedder: str = "hashing",
     effort: str | None = None,
+    llm_options: dict[str, Any] | None = None,
+    embedder_options: dict[str, Any] | None = None,
     max_cost: float | None = None,
     max_calls: int | None = None,
     bank: str | Path | None = None,
@@ -42,10 +44,14 @@ def run_method(
 ) -> tuple[int, dict[str, Any]]:
     """Run ``method`` over ``tasks`` in order and write the run to ``out``.
 
+    ``llm`` and ``embedder`` are descriptions such as ``ollama:llama3.2:3b`` or
+    ``hf:BAAI/bge-small-en-v1.5``; ``llm_options`` and ``embedder_options`` go to the
+    backend's constructor (see :func:`..llm.make_backend` and :func:`..embeddings.make_embedder`).
+
     Returns ``(status, summary)``. Status 2 means the model budget ran out before the
     stream was finished; what was completed is still written.
     """
-    from ..llm import Budget, BudgetExceeded, TrackedLLM, make_backend
+    from ..llm import Budget, BudgetExceeded, TrackedLLM, is_stand_in, make_backend, split_spec
     from ..provenance import ProvenanceStore
 
     if method not in METHODS:
@@ -53,8 +59,11 @@ def run_method(
     out = Path(out)
     out.mkdir(parents=True, exist_ok=True)
     store = ProvenanceStore(out / "provenance.sqlite")
-    backend_options: dict[str, Any] = {}
-    if effort and not llm.startswith("offline"):
+    stand_in = is_stand_in(llm)
+    backend_options: dict[str, Any] = dict(llm_options or {})
+    provider = split_spec(llm)[0]
+    if effort and (provider == "anthropic" or provider.startswith("claude-")):
+        # Effort is a Claude setting; other backends have their own (reasoning_effort, think).
         backend_options["effort"] = effort
     tracked = TrackedLLM(
         make_backend(llm, **backend_options),
@@ -85,7 +94,7 @@ def run_method(
         agent=agent,
         agent_options=agent_options,
         bank_path=bank or out / "bank.jsonl",
-        embedder=make_embedder(embedder, cache_dir=out),
+        embedder=make_embedder(embedder, cache_dir=out, **(embedder_options or {})),
         store=store,
         on_record=None if quiet else progress,
         store_steps=store_steps,
@@ -93,15 +102,17 @@ def run_method(
     config = {
         **built.describe,
         "llm": llm,
+        "llm_options": llm_options or {},
         "effort": effort,
         "embedder_spec": embedder,
+        "embedder_options": embedder_options or {},
         "budget": {"max_cost_usd": max_cost, "max_calls": max_calls},
         "tasks": [task.to_dict() for task in tasks],
         **(extra_config or {}),
     }
     (out / "config.json").write_text(json.dumps(config, indent=2, default=str))
     store.start_run(method, out.name, config)
-    if llm.startswith("offline") and not quiet:
+    if stand_in and not quiet:
         print(
             "NOTE: offline-demo is a rule-based stand-in, not a language model. "
             "This run exercises the method's plumbing; its numbers are not results."
@@ -122,7 +133,7 @@ def run_method(
             "method": method,
             "completed": len(built.loop.records),
             "planned": len(tasks),
-            "stand_in_model": llm.startswith("offline"),
+            "stand_in_model": stand_in,
             "metrics": built.loop.summary(),
             "memory": built.memory.stats(),
             "llm": tracked.summary(),

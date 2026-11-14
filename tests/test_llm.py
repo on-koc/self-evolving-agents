@@ -145,7 +145,7 @@ def test_calls_are_logged_to_provenance():
 
 def test_make_backend_specs():
     assert make_backend("offline-demo").model == "offline-demo"
-    with pytest.raises(LLMError, match="unknown LLM spec"):
+    with pytest.raises(LLMError, match="unknown model description"):
         make_backend("gpt-oops")
 
 
