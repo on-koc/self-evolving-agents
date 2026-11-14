@@ -1,0 +1,385 @@
+{
+ "note": "Mean held-out score of the conditional method under three rules for when a claim applies. Same graph, same seeds; only the conditional method differs.",
+ "rules": {
+  "scope_only": "a claim applies wherever its scope contains the conditions (the rule in force while the experiments ran)",
+  "nearest_test_in_scope": "and the nearest test lies in the same region (added before any held-out result existed; first evaluation)",
+  "nearest_test_agrees": "and the nearest test came out the way the claim says (current; corrected after the first evaluation)"
+ },
+ "groups": {
+  "interpolation: untested battery sizes at the small array": {
+   "scope_only": {
+    "mean_score": 0.3477,
+    "failure_rate": 0.0234,
+    "episodes": 128
+   },
+   "nearest_test_in_scope": {
+    "mean_score": 0.3477,
+    "failure_rate": 0.0234,
+    "episodes": 128
+   },
+   "nearest_test_agrees": {
+    "mean_score": 0.3477,
+    "failure_rate": 0.0234,
+    "episodes": 128
+   },
+   "oracle": {
+    "mean_score": 0.347,
+    "failure_rate": 0.0156,
+    "episodes": 128
+   },
+   "flat": {
+    "mean_score": -0.0933,
+    "failure_rate": 0.4609,
+    "episodes": 128
+   },
+   "per_point": [
+    {
+     "conditions": {
+      "battery_capacity_wh": 35,
+      "panel_area_m2": 0.1
+     },
+     "scope_only": {
+      "mean_score": 0.0171,
+      "settings": {
+       "precharge_window_s": 900.0,
+       "precharge_below": 0.6,
+       "desat_above": 0.3,
+       "charge_margin": 0.25,
+       "charge_below": 0.4
+      }
+     },
+     "nearest_test_in_scope": {
+      "mean_score": 0.0171,
+      "settings": {
+       "precharge_window_s": 900.0,
+       "precharge_below": 0.6,
+       "desat_above": 0.3,
+       "charge_margin": 0.25,
+       "charge_below": 0.4
+      }
+     },
+     "nearest_test_agrees": {
+      "mean_score": 0.0171,
+      "settings": {
+       "precharge_window_s": 900.0,
+       "precharge_below": 0.6,
+       "desat_above": 0.3,
+       "charge_margin": 0.25,
+       "charge_below": 0.4
+      }
+     }
+    },
+    {
+     "conditions": {
+      "battery_capacity_wh": 70,
+      "panel_area_m2": 0.1
+     },
+     "scope_only": {
+      "mean_score": 0.2104,
+      "settings": {
+       "desat_above": 0.3,
+       "charge_margin": 0.25
+      }
+     },
+     "nearest_test_in_scope": {
+      "mean_score": 0.2104,
+      "settings": {
+       "desat_above": 0.3,
+       "charge_margin": 0.25
+      }
+     },
+     "nearest_test_agrees": {
+      "mean_score": 0.2104,
+      "settings": {
+       "desat_above": 0.3,
+       "charge_margin": 0.25
+      }
+     }
+    },
+    {
+     "conditions": {
+      "battery_capacity_wh": 140,
+      "panel_area_m2": 0.1
+     },
+     "scope_only": {
+      "mean_score": 0.443,
+      "settings": {
+       "charge_below": 0.1,
+       "desat_above": 0.3
+      }
+     },
+     "nearest_test_in_scope": {
+      "mean_score": 0.443,
+      "settings": {
+       "charge_below": 0.1,
+       "desat_above": 0.3
+      }
+     },
+     "nearest_test_agrees": {
+      "mean_score": 0.443,
+      "settings": {
+       "charge_below": 0.1,
+       "desat_above": 0.3
+      }
+     }
+    },
+    {
+     "conditions": {
+      "battery_capacity_wh": 280,
+      "panel_area_m2": 0.1
+     },
+     "scope_only": {
+      "mean_score": 0.7203,
+      "settings": {
+       "charge_below": 0.1,
+       "desat_above": 0.3
+      }
+     },
+     "nearest_test_in_scope": {
+      "mean_score": 0.7203,
+      "settings": {
+       "charge_below": 0.1,
+       "desat_above": 0.3
+      }
+     },
+     "nearest_test_agrees": {
+      "mean_score": 0.7203,
+      "settings": {
+       "charge_below": 0.1,
+       "desat_above": 0.3
+      }
+     }
+    }
+   ]
+  },
+  "interpolation: array areas between the two studied": {
+   "scope_only": {
+    "mean_score": 0.4769,
+    "failure_rate": 0.0156,
+    "episodes": 128
+   },
+   "nearest_test_in_scope": {
+    "mean_score": 0.449,
+    "failure_rate": 0.0156,
+    "episodes": 128
+   },
+   "nearest_test_agrees": {
+    "mean_score": 0.4517,
+    "failure_rate": 0.0156,
+    "episodes": 128
+   },
+   "oracle": {
+    "mean_score": 0.4567,
+    "failure_rate": 0.0078,
+    "episodes": 128
+   },
+   "flat": {
+    "mean_score": -0.0335,
+    "failure_rate": 0.4766,
+    "episodes": 128
+   },
+   "per_point": [
+    {
+     "conditions": {
+      "battery_capacity_wh": 35,
+      "panel_area_m2": 0.16
+     },
+     "scope_only": {
+      "mean_score": 0.2062,
+      "settings": {
+       "precharge_window_s": 900.0,
+       "precharge_below": 0.6,
+       "desat_above": 0.3,
+       "charge_margin": 0.25,
+       "charge_below": 0.4
+      }
+     },
+     "nearest_test_in_scope": {
+      "mean_score": 0.2062,
+      "settings": {
+       "precharge_window_s": 900.0,
+       "precharge_below": 0.6,
+       "desat_above": 0.3,
+       "charge_margin": 0.25,
+       "charge_below": 0.4
+      }
+     },
+     "nearest_test_agrees": {
+      "mean_score": 0.2062,
+      "settings": {
+       "precharge_window_s": 900.0,
+       "precharge_below": 0.6,
+       "desat_above": 0.3,
+       "charge_margin": 0.25,
+       "charge_below": 0.4
+      }
+     }
+    },
+    {
+     "conditions": {
+      "battery_capacity_wh": 70,
+      "panel_area_m2": 0.13
+     },
+     "scope_only": {
+      "mean_score": 0.2952,
+      "settings": {
+       "desat_above": 0.3,
+       "charge_margin": 0.25
+      }
+     },
+     "nearest_test_in_scope": {
+      "mean_score": 0.2952,
+      "settings": {
+       "desat_above": 0.3,
+       "charge_margin": 0.25
+      }
+     },
+     "nearest_test_agrees": {
+      "mean_score": 0.2952,
+      "settings": {
+       "desat_above": 0.3,
+       "charge_margin": 0.25
+      }
+     }
+    },
+    {
+     "conditions": {
+      "battery_capacity_wh": 140,
+      "panel_area_m2": 0.2
+     },
+     "scope_only": {
+      "mean_score": 0.6364,
+      "settings": {
+       "charge_below": 0.1,
+       "desat_above": 0.3,
+       "charge_margin": 0.25
+      }
+     },
+     "nearest_test_in_scope": {
+      "mean_score": 0.5251,
+      "settings": {
+       "charge_margin": 0.25
+      }
+     },
+     "nearest_test_agrees": {
+      "mean_score": 0.5356,
+      "settings": {
+       "desat_above": 0.3,
+       "charge_margin": 0.25
+      }
+     }
+    },
+    {
+     "conditions": {
+      "battery_capacity_wh": 280,
+      "panel_area_m2": 0.16
+     },
+     "scope_only": {
+      "mean_score": 0.7698,
+      "settings": {
+       "charge_below": 0.1,
+       "desat_above": 0.3
+      }
+     },
+     "nearest_test_in_scope": {
+      "mean_score": 0.7698,
+      "settings": {
+       "charge_below": 0.1,
+       "desat_above": 0.3
+      }
+     },
+     "nearest_test_agrees": {
+      "mean_score": 0.7698,
+      "settings": {
+       "charge_below": 0.1,
+       "desat_above": 0.3
+      }
+     }
+    }
+   ]
+  },
+  "extrapolation: array areas outside the studied range": {
+   "scope_only": {
+    "mean_score": 0.6069,
+    "failure_rate": 0.0,
+    "episodes": 64
+   },
+   "nearest_test_in_scope": {
+    "mean_score": 0.5829,
+    "failure_rate": 0.0,
+    "episodes": 64
+   },
+   "nearest_test_agrees": {
+    "mean_score": 0.5869,
+    "failure_rate": 0.0,
+    "episodes": 64
+   },
+   "oracle": {
+    "mean_score": 0.6042,
+    "failure_rate": 0.0,
+    "episodes": 64
+   },
+   "flat": {
+    "mean_score": 0.6042,
+    "failure_rate": 0.0,
+    "episodes": 64
+   },
+   "per_point": [
+    {
+     "conditions": {
+      "battery_capacity_wh": 140,
+      "panel_area_m2": 0.07
+     },
+     "scope_only": {
+      "mean_score": 0.3813,
+      "settings": {
+       "charge_below": 0.1,
+       "desat_above": 0.3
+      }
+     },
+     "nearest_test_in_scope": {
+      "mean_score": 0.3813,
+      "settings": {
+       "charge_below": 0.1,
+       "desat_above": 0.3
+      }
+     },
+     "nearest_test_agrees": {
+      "mean_score": 0.3813,
+      "settings": {
+       "charge_below": 0.1,
+       "desat_above": 0.3
+      }
+     }
+    },
+    {
+     "conditions": {
+      "battery_capacity_wh": 140,
+      "panel_area_m2": 0.4
+     },
+     "scope_only": {
+      "mean_score": 0.8325,
+      "settings": {
+       "charge_below": 0.1,
+       "desat_above": 0.3,
+       "charge_margin": 0.25
+      }
+     },
+     "nearest_test_in_scope": {
+      "mean_score": 0.7845,
+      "settings": {
+       "charge_margin": 0.25
+      }
+     },
+     "nearest_test_agrees": {
+      "mean_score": 0.7925,
+      "settings": {
+       "desat_above": 0.3,
+       "charge_margin": 0.25
+      }
+     }
+    }
+   ]
+  }
+ }
+}

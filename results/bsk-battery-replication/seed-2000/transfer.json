@@ -1,0 +1,1104 @@
+{
+  "interpolation (inside the studied range)": {
+    "test_points": [
+      {
+        "battery_capacity_wh": 35
+      },
+      {
+        "battery_capacity_wh": 70
+      },
+      {
+        "battery_capacity_wh": 140
+      },
+      {
+        "battery_capacity_wh": 280
+      }
+    ],
+    "seeds": [
+      5000,
+      5031
+    ],
+    "n_seeds": 32,
+    "overall": {
+      "reference": {
+        "mean_score": 0.305,
+        "failure_rate": 0.1953,
+        "success_rate": 0.7812,
+        "episodes": 128
+      },
+      "flat": {
+        "mean_score": 0.2589,
+        "failure_rate": 0.2969,
+        "success_rate": 0.6953,
+        "episodes": 128
+      },
+      "pooled": {
+        "mean_score": 0.5313,
+        "failure_rate": 0.0156,
+        "success_rate": 0.9688,
+        "episodes": 128
+      },
+      "conditional": {
+        "mean_score": 0.6209,
+        "failure_rate": 0.0156,
+        "success_rate": 0.9766,
+        "episodes": 128
+      },
+      "oracle": {
+        "mean_score": 0.607,
+        "failure_rate": 0.0,
+        "success_rate": 0.9531,
+        "episodes": 128
+      }
+    },
+    "comparisons": {
+      "conditional_minus_pooled": {
+        "score": {
+          "n": 128,
+          "mean_a": 0.620928,
+          "mean_b": 0.531342,
+          "diff": 0.089586,
+          "ci_low": 0.068383,
+          "ci_high": 0.113029,
+          "p_value": 0.0002,
+          "confidence": 0.95
+        },
+        "failure_rate": {
+          "n": 128,
+          "mean_a": 0.015625,
+          "mean_b": 0.015625,
+          "diff": 0.0,
+          "ci_low": 0.0,
+          "ci_high": 0.0,
+          "p_value": 1.0,
+          "confidence": 0.95
+        },
+        "score_by_seed": {
+          "n": 32,
+          "mean_a": 0.620928,
+          "mean_b": 0.531342,
+          "diff": 0.089586,
+          "ci_low": 0.069592,
+          "ci_high": 0.110366,
+          "p_value": 0.0002,
+          "confidence": 0.95
+        },
+        "failure_rate_by_seed": {
+          "n": 32,
+          "mean_a": 0.015625,
+          "mean_b": 0.015625,
+          "diff": 0.0,
+          "ci_low": 0.0,
+          "ci_high": 0.0,
+          "p_value": 1.0,
+          "confidence": 0.95
+        }
+      },
+      "conditional_minus_flat": {
+        "score": {
+          "n": 128,
+          "mean_a": 0.620928,
+          "mean_b": 0.258912,
+          "diff": 0.362016,
+          "ci_low": 0.265781,
+          "ci_high": 0.460964,
+          "p_value": 0.0002,
+          "confidence": 0.95
+        },
+        "failure_rate": {
+          "n": 128,
+          "mean_a": 0.015625,
+          "mean_b": 0.296875,
+          "diff": -0.28125,
+          "ci_low": -0.359375,
+          "ci_high": -0.203125,
+          "p_value": 0.0002,
+          "confidence": 0.95
+        },
+        "score_by_seed": {
+          "n": 32,
+          "mean_a": 0.620928,
+          "mean_b": 0.258912,
+          "diff": 0.362016,
+          "ci_low": 0.299254,
+          "ci_high": 0.423493,
+          "p_value": 0.0002,
+          "confidence": 0.95
+        },
+        "failure_rate_by_seed": {
+          "n": 32,
+          "mean_a": 0.015625,
+          "mean_b": 0.296875,
+          "diff": -0.28125,
+          "ci_low": -0.328125,
+          "ci_high": -0.234375,
+          "p_value": 0.0002,
+          "confidence": 0.95
+        }
+      },
+      "conditional_minus_reference": {
+        "score": {
+          "n": 128,
+          "mean_a": 0.620928,
+          "mean_b": 0.304989,
+          "diff": 0.315939,
+          "ci_low": 0.23371,
+          "ci_high": 0.402041,
+          "p_value": 0.0002,
+          "confidence": 0.95
+        },
+        "failure_rate": {
+          "n": 128,
+          "mean_a": 0.015625,
+          "mean_b": 0.195312,
+          "diff": -0.179688,
+          "ci_low": -0.25,
+          "ci_high": -0.117188,
+          "p_value": 0.0002,
+          "confidence": 0.95
+        },
+        "score_by_seed": {
+          "n": 32,
+          "mean_a": 0.620928,
+          "mean_b": 0.304989,
+          "diff": 0.315939,
+          "ci_low": 0.245561,
+          "ci_high": 0.382228,
+          "p_value": 0.0002,
+          "confidence": 0.95
+        },
+        "failure_rate_by_seed": {
+          "n": 32,
+          "mean_a": 0.015625,
+          "mean_b": 0.195312,
+          "diff": -0.179688,
+          "ci_low": -0.226562,
+          "ci_high": -0.132812,
+          "p_value": 0.0002,
+          "confidence": 0.95
+        }
+      },
+      "pooled_minus_reference": {
+        "score": {
+          "n": 128,
+          "mean_a": 0.531342,
+          "mean_b": 0.304989,
+          "diff": 0.226353,
+          "ci_low": 0.133102,
+          "ci_high": 0.319043,
+          "p_value": 0.0002,
+          "confidence": 0.95
+        },
+        "failure_rate": {
+          "n": 128,
+          "mean_a": 0.015625,
+          "mean_b": 0.195312,
+          "diff": -0.179688,
+          "ci_low": -0.25,
+          "ci_high": -0.117188,
+          "p_value": 0.0002,
+          "confidence": 0.95
+        },
+        "score_by_seed": {
+          "n": 32,
+          "mean_a": 0.531342,
+          "mean_b": 0.304989,
+          "diff": 0.226353,
+          "ci_low": 0.160124,
+          "ci_high": 0.286854,
+          "p_value": 0.0002,
+          "confidence": 0.95
+        },
+        "failure_rate_by_seed": {
+          "n": 32,
+          "mean_a": 0.015625,
+          "mean_b": 0.195312,
+          "diff": -0.179688,
+          "ci_low": -0.226562,
+          "ci_high": -0.132812,
+          "p_value": 0.0002,
+          "confidence": 0.95
+        }
+      },
+      "flat_minus_reference": {
+        "score": {
+          "n": 128,
+          "mean_a": 0.258912,
+          "mean_b": 0.304989,
+          "diff": -0.046077,
+          "ci_low": -0.121866,
+          "ci_high": 0.028953,
+          "p_value": 0.235953,
+          "confidence": 0.95
+        },
+        "failure_rate": {
+          "n": 128,
+          "mean_a": 0.296875,
+          "mean_b": 0.195312,
+          "diff": 0.101562,
+          "ci_low": 0.039062,
+          "ci_high": 0.164062,
+          "p_value": 0.002,
+          "confidence": 0.95
+        },
+        "score_by_seed": {
+          "n": 32,
+          "mean_a": 0.258912,
+          "mean_b": 0.304989,
+          "diff": -0.046077,
+          "ci_low": -0.115004,
+          "ci_high": 0.026892,
+          "p_value": 0.210558,
+          "confidence": 0.95
+        },
+        "failure_rate_by_seed": {
+          "n": 32,
+          "mean_a": 0.296875,
+          "mean_b": 0.195312,
+          "diff": 0.101562,
+          "ci_low": 0.046875,
+          "ci_high": 0.148633,
+          "p_value": 0.0024,
+          "confidence": 0.95
+        }
+      },
+      "oracle_minus_conditional": {
+        "score": {
+          "n": 128,
+          "mean_a": 0.607024,
+          "mean_b": 0.620928,
+          "diff": -0.013903,
+          "ci_low": -0.040295,
+          "ci_high": 0.020018,
+          "p_value": 0.409118,
+          "confidence": 0.95
+        },
+        "failure_rate": {
+          "n": 128,
+          "mean_a": 0.0,
+          "mean_b": 0.015625,
+          "diff": -0.015625,
+          "ci_low": -0.039062,
+          "ci_high": 0.0,
+          "p_value": 0.5019,
+          "confidence": 0.95
+        },
+        "score_by_seed": {
+          "n": 32,
+          "mean_a": 0.607024,
+          "mean_b": 0.620928,
+          "diff": -0.013903,
+          "ci_low": -0.04125,
+          "ci_high": 0.018392,
+          "p_value": 0.387323,
+          "confidence": 0.95
+        },
+        "failure_rate_by_seed": {
+          "n": 32,
+          "mean_a": 0.0,
+          "mean_b": 0.015625,
+          "diff": -0.015625,
+          "ci_low": -0.039062,
+          "ci_high": 0.0,
+          "p_value": 0.492701,
+          "confidence": 0.95
+        }
+      }
+    },
+    "per_point": [
+      {
+        "conditions": {
+          "battery_capacity_wh": 35
+        },
+        "methods": {
+          "reference": {
+            "mean_score": -0.5352,
+            "failure_rate": 0.75,
+            "success_rate": 0.2188,
+            "failures": {
+              "battery": 24
+            },
+            "settings": {},
+            "claims_applied": []
+          },
+          "flat": {
+            "mean_score": -0.7451,
+            "failure_rate": 0.9375,
+            "success_rate": 0.0625,
+            "failures": {
+              "battery": 30
+            },
+            "settings": {
+              "charge_below": 0.1,
+              "desat_above": 0.3,
+              "charge_margin": 0.25
+            },
+            "claims_applied": [
+              "claim_c6b81cc412b0",
+              "claim_b17a3cc7229e",
+              "claim_f9867c7df577"
+            ]
+          },
+          "pooled": {
+            "mean_score": 0.3881,
+            "failure_rate": 0.0625,
+            "success_rate": 0.9375,
+            "failures": {
+              "battery": 2
+            },
+            "settings": {
+              "charge_below": 0.4,
+              "precharge_window_s": 900.0,
+              "precharge_below": 0.6,
+              "desat_above": 0.3,
+              "charge_margin": 0.25
+            },
+            "claims_applied": [
+              "claim_ecd3d2432e5e",
+              "claim_fc6ed5afacdb",
+              "claim_b17a3cc7229e",
+              "claim_f9867c7df577"
+            ]
+          },
+          "conditional": {
+            "mean_score": 0.3566,
+            "failure_rate": 0.0625,
+            "success_rate": 0.9062,
+            "failures": {
+              "battery": 2
+            },
+            "settings": {
+              "charge_below": 0.6,
+              "precharge_window_s": 900.0,
+              "precharge_below": 0.6,
+              "desat_above": 0.3,
+              "charge_margin": 0.25
+            },
+            "claims_applied": [
+              "claim_33d045066679",
+              "claim_7705fe8e2885",
+              "claim_268a956f0584",
+              "claim_b56541d3254d",
+              "claim_2db24fbc0828"
+            ]
+          },
+          "oracle": {
+            "mean_score": 0.3479,
+            "failure_rate": 0.0,
+            "success_rate": 0.8125,
+            "failures": {},
+            "settings": {
+              "charge_below": 0.6,
+              "desat_above": 0.6
+            },
+            "claims_applied": []
+          }
+        }
+      },
+      {
+        "conditions": {
+          "battery_capacity_wh": 70
+        },
+        "methods": {
+          "reference": {
+            "mean_score": 0.4237,
+            "failure_rate": 0.0312,
+            "success_rate": 0.9062,
+            "failures": {
+              "battery": 1
+            },
+            "settings": {},
+            "claims_applied": []
+          },
+          "flat": {
+            "mean_score": 0.2598,
+            "failure_rate": 0.25,
+            "success_rate": 0.7188,
+            "failures": {
+              "battery": 8
+            },
+            "settings": {
+              "charge_below": 0.1,
+              "desat_above": 0.3,
+              "charge_margin": 0.25
+            },
+            "claims_applied": [
+              "claim_c6b81cc412b0",
+              "claim_b17a3cc7229e",
+              "claim_f9867c7df577"
+            ]
+          },
+          "pooled": {
+            "mean_score": 0.5308,
+            "failure_rate": 0.0,
+            "success_rate": 1.0,
+            "failures": {},
+            "settings": {
+              "charge_below": 0.4,
+              "precharge_window_s": 900.0,
+              "precharge_below": 0.6,
+              "desat_above": 0.3,
+              "charge_margin": 0.25
+            },
+            "claims_applied": [
+              "claim_ecd3d2432e5e",
+              "claim_fc6ed5afacdb",
+              "claim_b17a3cc7229e",
+              "claim_f9867c7df577"
+            ]
+          },
+          "conditional": {
+            "mean_score": 0.5748,
+            "failure_rate": 0.0,
+            "success_rate": 1.0,
+            "failures": {},
+            "settings": {
+              "precharge_window_s": 900.0,
+              "precharge_below": 0.6,
+              "desat_above": 0.3,
+              "charge_margin": 0.25
+            },
+            "claims_applied": [
+              "claim_268a956f0584",
+              "claim_b56541d3254d",
+              "claim_2db24fbc0828"
+            ]
+          },
+          "oracle": {
+            "mean_score": 0.5166,
+            "failure_rate": 0.0,
+            "success_rate": 1.0,
+            "failures": {},
+            "settings": {
+              "charge_below": 0.25,
+              "desat_above": 0.3
+            },
+            "claims_applied": []
+          }
+        }
+      },
+      {
+        "conditions": {
+          "battery_capacity_wh": 140
+        },
+        "methods": {
+          "reference": {
+            "mean_score": 0.5843,
+            "failure_rate": 0.0,
+            "success_rate": 1.0,
+            "failures": {},
+            "settings": {},
+            "claims_applied": []
+          },
+          "flat": {
+            "mean_score": 0.7044,
+            "failure_rate": 0.0,
+            "success_rate": 1.0,
+            "failures": {},
+            "settings": {
+              "charge_below": 0.1,
+              "desat_above": 0.3,
+              "charge_margin": 0.25
+            },
+            "claims_applied": [
+              "claim_c6b81cc412b0",
+              "claim_b17a3cc7229e",
+              "claim_f9867c7df577"
+            ]
+          },
+          "pooled": {
+            "mean_score": 0.546,
+            "failure_rate": 0.0,
+            "success_rate": 0.9688,
+            "failures": {},
+            "settings": {
+              "charge_below": 0.4,
+              "precharge_window_s": 900.0,
+              "precharge_below": 0.6,
+              "desat_above": 0.3,
+              "charge_margin": 0.25
+            },
+            "claims_applied": [
+              "claim_ecd3d2432e5e",
+              "claim_fc6ed5afacdb",
+              "claim_b17a3cc7229e",
+              "claim_f9867c7df577"
+            ]
+          },
+          "conditional": {
+            "mean_score": 0.7105,
+            "failure_rate": 0.0,
+            "success_rate": 1.0,
+            "failures": {},
+            "settings": {
+              "charge_below": 0.1,
+              "precharge_window_s": 900.0,
+              "precharge_below": 0.6,
+              "desat_above": 0.3,
+              "charge_margin": 0.25
+            },
+            "claims_applied": [
+              "claim_c452ceebbd2b",
+              "claim_268a956f0584",
+              "claim_b56541d3254d",
+              "claim_2db24fbc0828"
+            ]
+          },
+          "oracle": {
+            "mean_score": 0.7175,
+            "failure_rate": 0.0,
+            "success_rate": 1.0,
+            "failures": {},
+            "settings": {
+              "charge_below": 0.1,
+              "desat_above": 0.3
+            },
+            "claims_applied": []
+          }
+        }
+      },
+      {
+        "conditions": {
+          "battery_capacity_wh": 280
+        },
+        "methods": {
+          "reference": {
+            "mean_score": 0.7472,
+            "failure_rate": 0.0,
+            "success_rate": 1.0,
+            "failures": {},
+            "settings": {},
+            "claims_applied": []
+          },
+          "flat": {
+            "mean_score": 0.8166,
+            "failure_rate": 0.0,
+            "success_rate": 1.0,
+            "failures": {},
+            "settings": {
+              "charge_below": 0.1,
+              "desat_above": 0.3,
+              "charge_margin": 0.25
+            },
+            "claims_applied": [
+              "claim_c6b81cc412b0",
+              "claim_b17a3cc7229e",
+              "claim_f9867c7df577"
+            ]
+          },
+          "pooled": {
+            "mean_score": 0.6604,
+            "failure_rate": 0.0,
+            "success_rate": 0.9688,
+            "failures": {},
+            "settings": {
+              "charge_below": 0.4,
+              "precharge_window_s": 900.0,
+              "precharge_below": 0.6,
+              "desat_above": 0.3,
+              "charge_margin": 0.25
+            },
+            "claims_applied": [
+              "claim_ecd3d2432e5e",
+              "claim_fc6ed5afacdb",
+              "claim_b17a3cc7229e",
+              "claim_f9867c7df577"
+            ]
+          },
+          "conditional": {
+            "mean_score": 0.8418,
+            "failure_rate": 0.0,
+            "success_rate": 1.0,
+            "failures": {},
+            "settings": {
+              "charge_below": 0.05,
+              "desat_above": 0.3,
+              "charge_margin": 0.25
+            },
+            "claims_applied": [
+              "claim_c452ceebbd2b",
+              "claim_846616fc9fa0",
+              "claim_b56541d3254d",
+              "claim_2db24fbc0828"
+            ]
+          },
+          "oracle": {
+            "mean_score": 0.8461,
+            "failure_rate": 0.0,
+            "success_rate": 1.0,
+            "failures": {},
+            "settings": {
+              "charge_below": 0.05,
+              "desat_above": 0.3
+            },
+            "claims_applied": []
+          }
+        }
+      }
+    ]
+  },
+  "extrapolation (outside the studied range)": {
+    "test_points": [
+      {
+        "battery_capacity_wh": 18
+      },
+      {
+        "battery_capacity_wh": 600
+      }
+    ],
+    "seeds": [
+      5000,
+      5031
+    ],
+    "n_seeds": 32,
+    "overall": {
+      "reference": {
+        "mean_score": -0.0167,
+        "failure_rate": 0.4844,
+        "success_rate": 0.5156,
+        "episodes": 64
+      },
+      "flat": {
+        "mean_score": -0.0296,
+        "failure_rate": 0.5,
+        "success_rate": 0.5,
+        "episodes": 64
+      },
+      "pooled": {
+        "mean_score": 0.0308,
+        "failure_rate": 0.4062,
+        "success_rate": 0.5781,
+        "episodes": 64
+      },
+      "conditional": {
+        "mean_score": 0.3768,
+        "failure_rate": 0.2031,
+        "success_rate": 0.7969,
+        "episodes": 64
+      },
+      "oracle": {
+        "mean_score": 0.479,
+        "failure_rate": 0.0938,
+        "success_rate": 0.8281,
+        "episodes": 64
+      }
+    },
+    "comparisons": {
+      "conditional_minus_pooled": {
+        "score": {
+          "n": 64,
+          "mean_a": 0.376765,
+          "mean_b": 0.030833,
+          "diff": 0.345932,
+          "ci_low": 0.224246,
+          "ci_high": 0.472754,
+          "p_value": 0.0002,
+          "confidence": 0.95
+        },
+        "failure_rate": {
+          "n": 64,
+          "mean_a": 0.203125,
+          "mean_b": 0.40625,
+          "diff": -0.203125,
+          "ci_low": -0.296875,
+          "ci_high": -0.109375,
+          "p_value": 0.0004,
+          "confidence": 0.95
+        },
+        "score_by_seed": {
+          "n": 32,
+          "mean_a": 0.376765,
+          "mean_b": 0.030833,
+          "diff": 0.345932,
+          "ci_low": 0.235463,
+          "ci_high": 0.459004,
+          "p_value": 0.0002,
+          "confidence": 0.95
+        },
+        "failure_rate_by_seed": {
+          "n": 32,
+          "mean_a": 0.203125,
+          "mean_b": 0.40625,
+          "diff": -0.203125,
+          "ci_low": -0.296875,
+          "ci_high": -0.125,
+          "p_value": 0.0002,
+          "confidence": 0.95
+        }
+      },
+      "conditional_minus_flat": {
+        "score": {
+          "n": 64,
+          "mean_a": 0.376765,
+          "mean_b": -0.029622,
+          "diff": 0.406387,
+          "ci_low": 0.262504,
+          "ci_high": 0.555744,
+          "p_value": 0.0002,
+          "confidence": 0.95
+        },
+        "failure_rate": {
+          "n": 64,
+          "mean_a": 0.203125,
+          "mean_b": 0.5,
+          "diff": -0.296875,
+          "ci_low": -0.40625,
+          "ci_high": -0.1875,
+          "p_value": 0.0002,
+          "confidence": 0.95
+        },
+        "score_by_seed": {
+          "n": 32,
+          "mean_a": 0.376765,
+          "mean_b": -0.029622,
+          "diff": 0.406387,
+          "ci_low": 0.29523,
+          "ci_high": 0.51386,
+          "p_value": 0.0002,
+          "confidence": 0.95
+        },
+        "failure_rate_by_seed": {
+          "n": 32,
+          "mean_a": 0.203125,
+          "mean_b": 0.5,
+          "diff": -0.296875,
+          "ci_low": -0.375,
+          "ci_high": -0.203125,
+          "p_value": 0.0002,
+          "confidence": 0.95
+        }
+      },
+      "conditional_minus_reference": {
+        "score": {
+          "n": 64,
+          "mean_a": 0.376765,
+          "mean_b": -0.01675,
+          "diff": 0.393515,
+          "ci_low": 0.250452,
+          "ci_high": 0.53854,
+          "p_value": 0.0002,
+          "confidence": 0.95
+        },
+        "failure_rate": {
+          "n": 64,
+          "mean_a": 0.203125,
+          "mean_b": 0.484375,
+          "diff": -0.28125,
+          "ci_low": -0.390625,
+          "ci_high": -0.171875,
+          "p_value": 0.0002,
+          "confidence": 0.95
+        },
+        "score_by_seed": {
+          "n": 32,
+          "mean_a": 0.376765,
+          "mean_b": -0.01675,
+          "diff": 0.393515,
+          "ci_low": 0.281055,
+          "ci_high": 0.500619,
+          "p_value": 0.0002,
+          "confidence": 0.95
+        },
+        "failure_rate_by_seed": {
+          "n": 32,
+          "mean_a": 0.203125,
+          "mean_b": 0.484375,
+          "diff": -0.28125,
+          "ci_low": -0.359375,
+          "ci_high": -0.1875,
+          "p_value": 0.0002,
+          "confidence": 0.95
+        }
+      },
+      "pooled_minus_reference": {
+        "score": {
+          "n": 64,
+          "mean_a": 0.030833,
+          "mean_b": -0.01675,
+          "diff": 0.047583,
+          "ci_low": -0.043642,
+          "ci_high": 0.15853,
+          "p_value": 0.383723,
+          "confidence": 0.95
+        },
+        "failure_rate": {
+          "n": 64,
+          "mean_a": 0.40625,
+          "mean_b": 0.484375,
+          "diff": -0.078125,
+          "ci_low": -0.15625,
+          "ci_high": -0.015625,
+          "p_value": 0.062188,
+          "confidence": 0.95
+        },
+        "score_by_seed": {
+          "n": 32,
+          "mean_a": 0.030833,
+          "mean_b": -0.01675,
+          "diff": 0.047583,
+          "ci_low": -0.042012,
+          "ci_high": 0.147524,
+          "p_value": 0.326135,
+          "confidence": 0.95
+        },
+        "failure_rate_by_seed": {
+          "n": 32,
+          "mean_a": 0.40625,
+          "mean_b": 0.484375,
+          "diff": -0.078125,
+          "ci_low": -0.140625,
+          "ci_high": -0.015625,
+          "p_value": 0.056189,
+          "confidence": 0.95
+        }
+      },
+      "flat_minus_reference": {
+        "score": {
+          "n": 64,
+          "mean_a": -0.029622,
+          "mean_b": -0.01675,
+          "diff": -0.012872,
+          "ci_low": -0.061367,
+          "ci_high": 0.027551,
+          "p_value": 0.686863,
+          "confidence": 0.95
+        },
+        "failure_rate": {
+          "n": 64,
+          "mean_a": 0.5,
+          "mean_b": 0.484375,
+          "diff": 0.015625,
+          "ci_low": 0.0,
+          "ci_high": 0.046875,
+          "p_value": 1.0,
+          "confidence": 0.95
+        },
+        "score_by_seed": {
+          "n": 32,
+          "mean_a": -0.029622,
+          "mean_b": -0.01675,
+          "diff": -0.012872,
+          "ci_low": -0.064053,
+          "ci_high": 0.02688,
+          "p_value": 0.69946,
+          "confidence": 0.95
+        },
+        "failure_rate_by_seed": {
+          "n": 32,
+          "mean_a": 0.5,
+          "mean_b": 0.484375,
+          "diff": 0.015625,
+          "ci_low": 0.0,
+          "ci_high": 0.046875,
+          "p_value": 1.0,
+          "confidence": 0.95
+        }
+      },
+      "oracle_minus_conditional": {
+        "score": {
+          "n": 64,
+          "mean_a": 0.478957,
+          "mean_b": 0.376765,
+          "diff": 0.102191,
+          "ci_low": 0.018888,
+          "ci_high": 0.196351,
+          "p_value": 0.019796,
+          "confidence": 0.95
+        },
+        "failure_rate": {
+          "n": 64,
+          "mean_a": 0.09375,
+          "mean_b": 0.203125,
+          "diff": -0.109375,
+          "ci_low": -0.1875,
+          "ci_high": -0.046875,
+          "p_value": 0.015597,
+          "confidence": 0.95
+        },
+        "score_by_seed": {
+          "n": 32,
+          "mean_a": 0.478957,
+          "mean_b": 0.376765,
+          "diff": 0.102191,
+          "ci_low": 0.022273,
+          "ci_high": 0.192001,
+          "p_value": 0.018196,
+          "confidence": 0.95
+        },
+        "failure_rate_by_seed": {
+          "n": 32,
+          "mean_a": 0.09375,
+          "mean_b": 0.203125,
+          "diff": -0.109375,
+          "ci_low": -0.1875,
+          "ci_high": -0.046875,
+          "p_value": 0.015397,
+          "confidence": 0.95
+        }
+      }
+    },
+    "per_point": [
+      {
+        "conditions": {
+          "battery_capacity_wh": 18
+        },
+        "methods": {
+          "reference": {
+            "mean_score": -0.8768,
+            "failure_rate": 0.9688,
+            "success_rate": 0.0312,
+            "failures": {
+              "battery": 31
+            },
+            "settings": {},
+            "claims_applied": []
+          },
+          "flat": {
+            "mean_score": -0.9333,
+            "failure_rate": 1.0,
+            "success_rate": 0.0,
+            "failures": {
+              "battery": 32
+            },
+            "settings": {
+              "charge_below": 0.1,
+              "desat_above": 0.3,
+              "charge_margin": 0.25
+            },
+            "claims_applied": [
+              "claim_c6b81cc412b0",
+              "claim_b17a3cc7229e",
+              "claim_f9867c7df577"
+            ]
+          },
+          "pooled": {
+            "mean_score": -0.6402,
+            "failure_rate": 0.8125,
+            "success_rate": 0.1875,
+            "failures": {
+              "battery": 26
+            },
+            "settings": {
+              "charge_below": 0.4,
+              "precharge_window_s": 900.0,
+              "precharge_below": 0.6,
+              "desat_above": 0.3,
+              "charge_margin": 0.25
+            },
+            "claims_applied": [
+              "claim_ecd3d2432e5e",
+              "claim_fc6ed5afacdb",
+              "claim_b17a3cc7229e",
+              "claim_f9867c7df577"
+            ]
+          },
+          "conditional": {
+            "mean_score": -0.1234,
+            "failure_rate": 0.4062,
+            "success_rate": 0.5938,
+            "failures": {
+              "battery": 13
+            },
+            "settings": {
+              "charge_margin": 0.25,
+              "charge_below": 0.6
+            },
+            "claims_applied": [
+              "claim_2db24fbc0828",
+              "claim_33d045066679",
+              "claim_7705fe8e2885"
+            ]
+          },
+          "oracle": {
+            "mean_score": 0.0801,
+            "failure_rate": 0.1875,
+            "success_rate": 0.6562,
+            "failures": {
+              "battery": 6
+            },
+            "settings": {
+              "charge_below": 0.8,
+              "desat_above": 0.6
+            },
+            "claims_applied": []
+          }
+        }
+      },
+      {
+        "conditions": {
+          "battery_capacity_wh": 600
+        },
+        "methods": {
+          "reference": {
+            "mean_score": 0.8433,
+            "failure_rate": 0.0,
+            "success_rate": 1.0,
+            "failures": {},
+            "settings": {},
+            "claims_applied": []
+          },
+          "flat": {
+            "mean_score": 0.8741,
+            "failure_rate": 0.0,
+            "success_rate": 1.0,
+            "failures": {},
+            "settings": {
+              "charge_below": 0.1,
+              "desat_above": 0.3,
+              "charge_margin": 0.25
+            },
+            "claims_applied": [
+              "claim_c6b81cc412b0",
+              "claim_b17a3cc7229e",
+              "claim_f9867c7df577"
+            ]
+          },
+          "pooled": {
+            "mean_score": 0.7019,
+            "failure_rate": 0.0,
+            "success_rate": 0.9688,
+            "failures": {},
+            "settings": {
+              "charge_below": 0.4,
+              "precharge_window_s": 900.0,
+              "precharge_below": 0.6,
+              "desat_above": 0.3,
+              "charge_margin": 0.25
+            },
+            "claims_applied": [
+              "claim_ecd3d2432e5e",
+              "claim_fc6ed5afacdb",
+              "claim_b17a3cc7229e",
+              "claim_f9867c7df577"
+            ]
+          },
+          "conditional": {
+            "mean_score": 0.877,
+            "failure_rate": 0.0,
+            "success_rate": 1.0,
+            "failures": {},
+            "settings": {
+              "charge_below": 0.1,
+              "desat_above": 0.3
+            },
+            "claims_applied": [
+              "claim_c452ceebbd2b",
+              "claim_b56541d3254d"
+            ]
+          },
+          "oracle": {
+            "mean_score": 0.8778,
+            "failure_rate": 0.0,
+            "success_rate": 1.0,
+            "failures": {},
+            "settings": {
+              "charge_below": 0.05,
+              "desat_above": 0.3
+            },
+            "claims_applied": []
+          }
+        }
+      }
+    ]
+  }
+}

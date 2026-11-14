@@ -1,0 +1,33 @@
+{
+  "name": "toy-battery",
+  "title": "Toy surrogate: charge and desaturation strategies across battery sizes (plumbing check, not a result)",
+  "domain": {"env_id": "toy-scan", "variables": {"battery_capacity_wh": [25, 50, 100, 200, 400]}},
+  "hypotheses": [
+    {"statement": "A lower charge threshold collects more data.",
+     "intervention": {"charge_below": 0.10}, "baseline": {"charge_below": 0.25},
+     "author": "seed (hand-written)",
+     "mechanisms": [{"statement": "less time is spent in charge mode", "mediator": "time_charge_s", "mediator_direction": -1}]},
+    {"statement": "Unloading the reaction wheels early improves the score.",
+     "intervention": {"desat_above": 0.3}, "baseline": {"desat_above": 0.6},
+     "author": "seed (hand-written)",
+     "mechanisms": [
+       {"statement": "it prevents the wheels from reaching their speed limit", "mediator": "failure:wheels", "mediator_direction": -1},
+       {"statement": "slower wheels draw less power, so less time is spent charging", "mediator": "time_charge_s", "mediator_direction": -1,
+        "moderator": "max_wheel_speed_rpm", "moderator_direction": 1}]}
+  ],
+  "ladders": {"charge_below": [0.05, 0.10, 0.25, 0.40, 0.60, 0.80]},
+  "sweeps": {"max_wheel_speed_rpm": [1500, 3000, 6000]},
+  "tester": {"batch": 16, "max_seeds": 48, "seed_base": 1000},
+  "planner": {"boundary_ratio": 1.3},
+  "budget": 3000,
+  "per_round": 4,
+  "evaluation": {
+    "test_points": {
+      "interpolation (inside the studied range)": [{"battery_capacity_wh": 35}, {"battery_capacity_wh": 70}, {"battery_capacity_wh": 140}, {"battery_capacity_wh": 280}],
+      "extrapolation (outside the studied range)": [{"battery_capacity_wh": 18}, {"battery_capacity_wh": 600}]
+    },
+    "seeds": [5000, 5032],
+    "oracle_grid": {"charge_below": [0.05, 0.10, 0.25, 0.40, 0.60, 0.80], "desat_above": [0.3, 0.6]},
+    "tuning_seeds": [6000, 6016]
+  }
+}
