@@ -113,6 +113,10 @@ class OfflineDemoLLM:
 
     def _judge(self, request: LLMRequest) -> str:
         text = request.messages[0]["content"]
+        if "scientific discovery" in request.system:
+            if "marked complete" in text or "Task status: complete" in text:
+                return 'Thoughts: The task was marked complete.\nStatus: "success"'
+            return 'Thoughts: The task was not marked complete.\nStatus: "failure"'
         if "spacecraft lost" in text:
             return 'Thoughts: The trajectory ends with the spacecraft lost.\nStatus: "failure"'
         return 'Thoughts: The spacecraft survived to the end of the episode.\nStatus: "success"'

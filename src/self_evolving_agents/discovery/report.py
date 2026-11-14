@@ -343,7 +343,15 @@ def render(summary: dict[str, Any], protocol: dict[str, Any]) -> str:
     ):
         if not block:
             continue
-        lines += ["", f"## {title}", "", "| comparison | condition | " + " | ".join(metrics) + " |"]
+        lines += [
+            "",
+            f"## {title}",
+            "",
+            "Mean paired difference, 95% bootstrap interval, number of worlds; n/a where fewer "
+            "than two worlds can be paired.",
+            "",
+            "| comparison | condition | " + " | ".join(metrics) + " |",
+        ]
         lines.append("|---|---|" + "---|" * len(metrics))
         for key, values in block.items():
             name, condition = key.split("|")

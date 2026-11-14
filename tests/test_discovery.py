@@ -672,3 +672,37 @@ def test_discovery_protocol_runs_grades_and_reports(tmp_path, monkeypatch, capsy
         row["labels"] = {name: False for name in row["labels"]}
     sample.write_text("\n".join(json.dumps(r) for r in rows))
     assert main(["discovery", "agreement", str(out), "--labels", str(sample)]) == 0
+
+
+def test_paired_differences_average_repeats_per_world_first():
+    from self_evolving_agents.discovery.report import paired
+
+    def row(arm, position, repeat, value):
+        return {
+            "arm": arm,
+            "phase": "transfer",
+            "condition": "new_world",
+            "position": position,
+            "repeat": repeat,
+            "completion": value,
+        }
+
+    rows = [
+        row("memory", p, r, v)
+        for p, r, v in [
+            (0, 0, 1.0),
+            (0, 1, 0.0),
+            (1, 0, 1.0),
+            (1, 1, 1.0),
+            (2, 0, 1.0),
+            (2, 1, 1.0),
+        ]
+    ]
+    rows += [row("baseline", p, 0, 0.0) for p in range(3)]
+    result = paired(rows, "memory", "baseline", "completion", "transfer", "new_world")
+    assert result["n"] == 3, "three worlds, repeats averaged within each"
+    assert result["diff"] == pytest.approx((0.5 + 1.0 + 1.0) / 3)
+    assert (
+        paired(rows[:2] + rows[-1:], "memory", "baseline", "completion", "transfer", "new_world")
+        is None
+    )
